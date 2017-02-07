@@ -32,7 +32,7 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 					// this will map the angles on a [0-PI] range
 					double anglePixel = atan2(sy, sx);
 					anglePixel = anglePixel > 0 ? abs(anglePixel) : abs(CV_PI - abs(anglePixel)); // CV_PI is not that accurate, must abs!
-					
+
 					double magPixel = sqrt((sx*sx) + (sy)*(sy));
 
 					// distribute based on angle
@@ -41,7 +41,7 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 					if (valBins >= binSize) valBins = binSize - 1;
 
 					int bin1 = floor(valBins);
-					int bin2 = (int)(ceil(valBins)) % binSize;
+					int bin2 = (bin1 + 1) % binSize;
 
 					// (t - t_begin) / (t_end - t_begin)
 					// 15 - 0 / (20-0) = 0.75
@@ -51,9 +51,9 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 
 					float tBegin = bin1 == 0 ? 0 : bin1 * CV_PI / binSize;
 					float tEnd = bin2 == 0 ? CV_PI : bin2 * CV_PI / binSize;
-					if (tBegin == tEnd) {
+				/*	if (tBegin == tEnd) {
 						tEnd += CV_PI / binSize;
-					}
+					}*/
 
 					histogram[bin1] += magPixel * (tEnd - anglePixel) / (tEnd - tBegin);
 					histogram[bin2] += magPixel * (anglePixel - tBegin) / (tEnd - tBegin);
@@ -101,8 +101,8 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 		hog = mat.clone();
 		cv::cvtColor(hog, hog, CV_GRAY2BGR);
 
-		for (int y = 0; y < nrOfCellsHeight-1; y++) {
-			for (int x = 0; x < nrOfCellsWidth-1; x++) {
+		for (int y = 0; y < nrOfCellsHeight - 1; y++) {
+			for (int x = 0; x < nrOfCellsWidth - 1; x++) {
 
 				double cx = x * patchSize + patchSize / 2;
 				double cy = y * patchSize + patchSize / 2;
@@ -116,14 +116,14 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 
 				double maxVal = *std::max_element(hist.begin(), hist.end());
 				if (maxVal > 0) {
-					for (int i  = 0; i < binSize; i++) {
+					for (int i = 0; i < binSize; i++) {
 						double angle = ((i + 0.5) / binSize) * CV_PI + CV_PI / 2; // + 90° so it aligns perpendicular to gradient
 						double val = hist[i] / maxVal;
 
 						double vx = cos(angle) * patchSize / 2 * val;
 						double vy = sin(angle) * patchSize / 2 * val;
 
-						cv::line(hog, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(0, 0, 255));						
+						cv::line(hog, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(0, 0, 255));
 					}
 				}
 
@@ -134,7 +134,7 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 	HoGResult result;
 	result.width = nrOfCellsWidth - 1;
 	result.height = nrOfCellsHeight - 1;
-	result.data = newcells;
+	result.data = cells;
 	result.hogImage = hog;
 	return result;
 }

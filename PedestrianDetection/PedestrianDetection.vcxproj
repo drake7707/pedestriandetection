@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="DataSet.h" />
     <ClInclude Include="DataSetLabel.h" />
+    <ClInclude Include="Helper.h" />
     <ClInclude Include="HistogramOfOrientedGradients.h" />
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="stdafx.h" />
@@ -168,6 +169,7 @@
   <ItemGroup>
     <ClCompile Include="DataSet.cpp" />
     <ClCompile Include="DataSetLabel.cpp" />
+    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="HistogramOfOrientedGradients.cpp" />
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="PedestrianDetection.cpp" />

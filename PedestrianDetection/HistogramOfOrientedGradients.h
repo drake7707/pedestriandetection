@@ -1,7 +1,7 @@
 #pragma once
 #include "opencv2/opencv.hpp"
+#include "Helper.h"
 
-typedef std::vector<float> Histogram;
 
 struct HoGResult {
 	int width;

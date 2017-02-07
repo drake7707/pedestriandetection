@@ -33,7 +33,7 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 					double anglePixel = atan2(sy, sx);
 					anglePixel = anglePixel > 0 ? abs(anglePixel) : abs(CV_PI - abs(anglePixel)); // CV_PI is not that accurate, must abs!
 
-					double magPixel = sqrt((sx*sx) + (sy)*(sy));
+					double magPixel = sqrt((sx*sx) + (sy*sy));
 
 					// distribute based on angle
 					// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
@@ -51,9 +51,9 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 
 					float tBegin = bin1 == 0 ? 0 : bin1 * CV_PI / binSize;
 					float tEnd = bin2 == 0 ? CV_PI : bin2 * CV_PI / binSize;
-				/*	if (tBegin == tEnd) {
-						tEnd += CV_PI / binSize;
-					}*/
+					/*	if (tBegin == tEnd) {
+							tEnd += CV_PI / binSize;
+						}*/
 
 					histogram[bin1] += magPixel * (tEnd - anglePixel) / (tEnd - tBegin);
 					histogram[bin2] += magPixel * (anglePixel - tBegin) / (tEnd - tBegin);
@@ -75,13 +75,13 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 				dstHistogram[idx++] = cells[y][x][i];
 
 			for (int i = 0; i < cells[y][x + 1].size(); i++)
-				dstHistogram[idx++] = cells[y][x][i];
+				dstHistogram[idx++] = cells[y][x + 1][i];
 
 			for (int i = 0; i < cells[y + 1][x].size(); i++)
-				dstHistogram[idx++] = cells[y][x][i];
+				dstHistogram[idx++] = cells[y + 1][x][i];
 
 			for (int i = 0; i < cells[y + 1][x + 1].size(); i++)
-				dstHistogram[idx++] = cells[y][x][i];
+				dstHistogram[idx++] = cells[y + 1][x + 1][i];
 
 			double sum = 0;
 			for (int i = 0; i < dstHistogram.size(); i++)
@@ -101,12 +101,12 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 		hog = mat.clone();
 		cv::cvtColor(hog, hog, CV_GRAY2BGR);
 
-		for (int y = 0; y < nrOfCellsHeight - 1; y++) {
-			for (int x = 0; x < nrOfCellsWidth - 1; x++) {
+		for (int y = 0; y < nrOfCellsHeight; y++) {
+			for (int x = 0; x < nrOfCellsWidth; x++) {
 
 				double cx = x * patchSize + patchSize / 2;
 				double cy = y * patchSize + patchSize / 2;
-				Histogram& hist = newcells[y][x];
+				Histogram& hist = cells[y][x];
 				double sum = 0;
 				for (int i = 0; i < hist.size(); i++)
 					sum += hist[i] * hist[i];
@@ -134,7 +134,7 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 	HoGResult result;
 	result.width = nrOfCellsWidth - 1;
 	result.height = nrOfCellsHeight - 1;
-	result.data = cells;
+	result.data = newcells;
 	result.hogImage = hog;
 	return result;
 }

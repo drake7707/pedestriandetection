@@ -58,6 +58,8 @@ cv::Ptr<ml::SVM> buildModel() {
 	std::string currentNumber = "";
 	std::vector<cv::Mat> currentImages;
 
+	//namedWindow("HoGTest");
+
 	for (auto& l : labels) {
 
 		if (currentNumber != l.getNumber()) {
@@ -79,8 +81,21 @@ cv::Ptr<ml::SVM> buildModel() {
 
 			// build training mat
 
-			auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, false);
+			auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, true);
 			truePositiveFeatures.push_back(resultTP.getFeatureArray());
+
+/*			cv::imshow("Original", rgbTP);
+			cv::imshow("HoGTest", resultTP.hogImage);
+			setMouseCallback("HoGTest", [](int event, int x, int y, int flags, void* userdata) -> void {
+				HoGResult* r = (HoGResult*)userdata;
+
+				int cx = x / patchSize;
+				int cy = y / patchSize;
+				if (cx >= 0 && cy >= 0 && cx < r->width && cy < r->height)
+					showHistogram(r->data[cy][cx]);
+			}, &resultTP);
+			waitKey(0);
+			*/
 
 
 
@@ -222,7 +237,7 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 	//namedWindow("Test2");
 	std::vector<MatchRegion> matchingRegions;
 
-	for (float invscale = 1; invscale <= maxScaleReduction; invscale+=0.5)
+	for (float invscale = 1; invscale <= maxScaleReduction; invscale += 0.5)
 	{
 		cv::Mat imgToTest;
 		cv::resize(img, imgToTest, cv::Size2d(ceilTo(img.cols / invscale, slidingWindowWidth), ceilTo(img.rows / invscale, slidingWindowHeight)));
@@ -273,7 +288,7 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 
 void testDetection() {
 	Ptr<ml::SVM> svm;
-	//	svm = buildModel();
+	svm = buildModel();
 
 	svm = Algorithm::load<ml::SVM>("kittitraining.xml");
 
@@ -361,7 +376,8 @@ void testDetection() {
 
 int main()
 {
-	
+
+	testDetection();
 
 
 	//auto img = imread("D:\\circle.png");
@@ -373,7 +389,7 @@ int main()
 	auto result = getHistogramsOfOrientedGradient(img, 8, 18, true);
 
 
-	
+
 	namedWindow("HoG");
 	imshow("HoG", result.hogImage);
 

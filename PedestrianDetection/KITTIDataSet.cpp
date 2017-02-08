@@ -14,11 +14,6 @@ std::vector<DataSetLabel> KITTIDataSet::getLabels() const {
 
 		std::string fullPath = baseLabelPath + PATH_SEPARATOR + std::string(nrStr) + ".txt";
 
-		// TODO remove
-		/*if (std::string(nrStr) == "001000") {
-			break;
-		}*/
-
 		std::ifstream istr(fullPath);
 		if (!istr.is_open()) {
 			stop = true;

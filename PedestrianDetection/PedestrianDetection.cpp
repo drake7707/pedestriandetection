@@ -13,6 +13,7 @@
 #include "KITTIDataSet.h"
 #include "HistogramOfOrientedGradients.h"
 #include "Helper.h"
+#include "Detector.h"
 
 
 using namespace cv;
@@ -376,8 +377,16 @@ void testDetection() {
 
 int main()
 {
+	Detector d;
+	d.buildWeakHoGSVMClassifier();
+	ClassifierEvaluation evalResult =  d.evaluateWeakHoGSVMClassifier();
 
-	testDetection();
+	evalResult.print(std::cout);
+
+	getchar();
+
+
+	//testDetection();
 
 
 	//auto img = imread("D:\\circle.png");

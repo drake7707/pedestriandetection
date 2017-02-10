@@ -15,6 +15,8 @@
 #include "Helper.h"
 #include "Detector.h"
 
+#define __cplusplus
+
 
 using namespace cv;
 
@@ -85,18 +87,18 @@ cv::Ptr<ml::SVM> buildModel() {
 			auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, true);
 			truePositiveFeatures.push_back(resultTP.getFeatureArray());
 
-/*			cv::imshow("Original", rgbTP);
-			cv::imshow("HoGTest", resultTP.hogImage);
-			setMouseCallback("HoGTest", [](int event, int x, int y, int flags, void* userdata) -> void {
-				HoGResult* r = (HoGResult*)userdata;
+			/*			cv::imshow("Original", rgbTP);
+						cv::imshow("HoGTest", resultTP.hogImage);
+						setMouseCallback("HoGTest", [](int event, int x, int y, int flags, void* userdata) -> void {
+							HoGResult* r = (HoGResult*)userdata;
 
-				int cx = x / patchSize;
-				int cy = y / patchSize;
-				if (cx >= 0 && cy >= 0 && cx < r->width && cy < r->height)
-					showHistogram(r->data[cy][cx]);
-			}, &resultTP);
-			waitKey(0);
-			*/
+							int cx = x / patchSize;
+							int cy = y / patchSize;
+							if (cx >= 0 && cy >= 0 && cx < r->width && cy < r->height)
+								showHistogram(r->data[cy][cx]);
+						}, &resultTP);
+						waitKey(0);
+						*/
 
 
 
@@ -232,7 +234,7 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 	int slidingWindowWidth = 32;
 	int slidingWindowHeight = 64;
 	int slidingWindowStep = 8;
-	int maxScaleReduction = 4; // 4 times reduction
+	int maxScaleReduction = 6; // 4 times reduction
 
 
 	//namedWindow("Test2");
@@ -259,15 +261,17 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 
 						auto result = getHistogramsOfOrientedGradient(region, patchSize, binSize);
 						result = getHistogramsOfOrientedGradient(region, patchSize, binSize, false);
+
+						int svmClass = svm->predict(result.getFeatureMat(), noArray());
 						float svmResult = svm->predict(result.getFeatureMat(), noArray(), ml::StatModel::Flags::RAW_OUTPUT);
-						if (svmResult > threshold) {
+						if (svmClass == 1) {
 
 							double scaleX = img.cols / (double)imgToTest.cols;
 							double scaleY = img.rows / (double)imgToTest.rows;
 
 							MatchRegion mr;
 							mr.region = Rect2d(windowRect.x * scaleX, windowRect.y * scaleY, windowRect.width * scaleX, windowRect.height * scaleY);
-							mr.svmResult = svmResult;
+							mr.svmResult = abs(svmResult);
 							matchingRegions.push_back(mr);
 						}
 
@@ -289,7 +293,7 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 
 void testDetection() {
 	Ptr<ml::SVM> svm;
-	svm = buildModel();
+	//svm = buildModel();
 
 	svm = Algorithm::load<ml::SVM>("kittitraining.xml");
 
@@ -317,13 +321,13 @@ void testDetection() {
 
 		cv::Mat rgb = currentImages[0].clone();
 		cv::Mat depth = currentImages[1].clone();
-		cv::rectangle(rgb, l.getBbox(), Scalar(0, 0, 255), 2);
-		cv::rectangle(depth, l.getBbox(), Scalar(0, 0, 255), 2);
+	//	cv::rectangle(rgb, l.getBbox(), Scalar(0, 0, 255), 2);
+	//	cv::rectangle(depth, l.getBbox(), Scalar(0, 0, 255), 2);
 
 		std::vector<MatchRegion> matchingRegions = evaluateModelOnImage(currentImages[0], svm, 0.7);
 
 		for (auto& region : matchingRegions) {
-			cv::rectangle(rgb, region.region, Scalar(0, 255 * region.svmResult, 0), 2);
+			cv::rectangle(rgb, region.region, Scalar(0, 255, 0), 1);
 		}
 		std::cout << "Found " << matchingRegions.size() << " nr of matching regions " << std::endl;
 
@@ -379,23 +383,32 @@ int main()
 {
 	Detector d;
 	d.buildWeakHoGSVMClassifier();
-	ClassifierEvaluation evalResult =  d.evaluateWeakHoGSVMClassifier();
-
+	ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier();
 	evalResult.print(std::cout);
 
-	getchar();
+
+	testDetection();
+
+		
+		
+
+		evalResult.print(std::cout);
+
+		std::cout << "Done" << std::endl;
+
+		getchar();
 
 
-	//testDetection();
+		//testDetection();
 
 
-	//auto img = imread("D:\\circle.png");
+		//auto img = imread("D:\\circle.png");
 	auto img = imread("D:\\test.jpg");
 	namedWindow("Test");
 	imshow("Test", img);
 
 
-	auto result = getHistogramsOfOrientedGradient(img, 8, 18, true);
+	auto result = getHistogramsOfOrientedGradient(img, 8, 9, true);
 
 
 
@@ -408,7 +421,8 @@ int main()
 		int cx = x / patchSize;
 		int cy = y / patchSize;
 
-		showHistogram(r->data[cy][cx]);
+		if (cx >= 0 && cy >= 0 && cy < r->data.size() && cx < r->data[cy].size())
+			showHistogram(r->data[cy][cx]);
 	}, &result);
 
 

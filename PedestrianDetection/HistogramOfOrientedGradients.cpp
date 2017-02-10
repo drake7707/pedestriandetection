@@ -57,8 +57,18 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 
 					histogram[bin1] += magPixel * (tEnd - anglePixel) / (tEnd - tBegin);
 					histogram[bin2] += magPixel * (anglePixel - tBegin) / (tEnd - tBegin);
+
+					
 				}
 			}
+
+			// don't normalize per element, normalize over a region, see below
+			float histogramMax = *std::max_element(histogram.begin(), histogram.end());
+			if (histogramMax > 0) {
+				for (int i = 0; i < histogram.size(); i++)
+					histogram[i] /= histogramMax;
+			}
+
 			// cell x,y -> pixel range [x * cellSize-x * cellSize + cellSize], ...
 		}
 	}
@@ -132,9 +142,9 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 	}
 
 	HoGResult result;
-	result.width = nrOfCellsWidth - 1;
-	result.height = nrOfCellsHeight - 1;
-	result.data = newcells;
+	result.width = nrOfCellsWidth;
+	result.height = nrOfCellsHeight;
+	result.data = cells;
 	result.hogImage = hog;
 	return result;
 }

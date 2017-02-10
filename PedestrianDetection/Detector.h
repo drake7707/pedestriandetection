@@ -26,8 +26,8 @@ class Detector
 private:
 
 	
-	std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-	//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+	//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+	std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
 	std::string weakClassifierSVMFile = "kittitraining.xml";
 
 	int refWidth = 64;

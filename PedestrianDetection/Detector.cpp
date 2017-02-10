@@ -2,12 +2,11 @@
 #include "KITTIDataSet.h"
 
 
+int nrOfTN = 2;
 
 
-
-void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, std::function<void(cv::Mat&, HoGResult&)> tnFunc)  {
+void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, std::function<void(cv::Mat&, HoGResult&)> tnFunc) {
 	KITTIDataSet dataset(kittiDatasetPath);
-	int nrOfTN = 2;
 	srand(7707);
 
 
@@ -33,7 +32,7 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 			cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
 
 			// build training mat
-			
+
 			auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, true);
 			tpFunc(rgbTP, resultTP);
 			//truePositiveFeatures.push_back(resultTP.getFeatureArray());
@@ -71,7 +70,7 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 }
 cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 
-	int nrOfTN = 2;
+	
 
 	std::vector<std::vector<float>> truePositiveFeatures;
 	std::vector<std::vector<float>> trueNegativeFeatures;
@@ -110,11 +109,23 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 
 	cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 	svm->setType(cv::ml::SVM::C_SVC);
-	svm->setKernel(cv::ml::SVM::POLY);
-	svm->setC(0.01);
-	svm->setDegree(2);
+	svm->setKernel(cv::ml::SVM::LINEAR);
+	svm->setC(0.001);
+	//svm->setDegree(2);
 
+	//cv::Ptr<cv::ml::TrainData> tdata = cv::ml::TrainData::create(trainingMat, cv::ml::SampleTypes::ROW_SAMPLE, trainingLabels);
+	//svm->trainAuto(tdata);
+
+	cv::Mat classWeights(2, 1, CV_32FC1);
+	classWeights.at<float>(0, 0) = 1 - 1.0 / nrOfTN;
+	classWeights.at<float>(1, 0) = 1.0/nrOfTN;
+
+	//	svm->setClassWeights(classWeights);
+	std::cout << "Training SVM" << std::endl;
 	svm->train(trainingMat, cv::ml::ROW_SAMPLE, trainingLabels);
+
+	if (!svm->isTrained())
+		throw std::exception("SVM training failed");
 
 	svm->save(weakClassifierSVMFile);
 
@@ -130,22 +141,26 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier() {
 
 	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
 		// should be positive
+		int svmClass = svm->predict(result.getFeatureMat(), cv::noArray());
 		float svmResult = svm->predict(result.getFeatureMat(), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
-
-		if (svmResult > 0)
-			evalResult.nrOfTruePositives++;
-		else
-			evalResult.nrOfFalsePositives++;
+		if (!isnan(svmResult)) {
+			if (svmClass == 1)
+				evalResult.nrOfTruePositives++;
+			else
+				evalResult.nrOfFalsePositives++;
+		}
 
 	}, [&](cv::Mat& mat, HoGResult& result) -> void {
 
 		// should be negative
+		int svmClass = svm->predict(result.getFeatureMat(), cv::noArray());
 		float svmResult = svm->predict(result.getFeatureMat(), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
-
-		if (svmResult < 0)
-			evalResult.nrOfTrueNegatives++;
-		else
-			evalResult.nrOfFalseNegatives++;
+		if (!isnan(svmResult)) {
+			if (svmClass == -1)
+				evalResult.nrOfTrueNegatives++;
+			else
+				evalResult.nrOfFalseNegatives++;
+		}
 	});
 
 	return evalResult;

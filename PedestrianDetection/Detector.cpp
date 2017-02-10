@@ -3,7 +3,7 @@
 
 
 int nrOfTN = 2;
-int testSampleEvery = 500000;
+int testSampleEvery = 5;
 
 
 void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, std::function<void(cv::Mat&, HoGResult&)> tnFunc, std::function<bool(int)> includeSample) {
@@ -36,14 +36,14 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 
 				// build training mat
 
-				auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, false);
+				auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, false, true );
 				tpFunc(rgbTP, resultTP);
 				//truePositiveFeatures.push_back(resultTP.getFeatureArray());
 
 				cv::Mat rgbTPFlip;
 				cv::flip(rgbTP, rgbTPFlip, 1);
 
-				auto resultTPFlip = getHistogramsOfOrientedGradient(rgbTPFlip, patchSize, binSize, false);
+				auto resultTPFlip = getHistogramsOfOrientedGradient(rgbTPFlip, patchSize, binSize, false,true);
 				tpFunc(rgbTPFlip, resultTPFlip);
 				//truePositiveFeatures.push_back(resultTPFlip.getFeatureArray());
 
@@ -63,7 +63,7 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 						currentImages[0](rTN).copyTo(rgbTN);
 						cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
 
-						auto resultTN = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, false);
+						auto resultTN = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, false, false);
 						tnFunc(rgbTN, resultTN);
 						//trueNegativeFeatures.push_back(resultTN.getFeatureArray());
 					}

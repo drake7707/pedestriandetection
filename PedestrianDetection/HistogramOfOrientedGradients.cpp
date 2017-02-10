@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 
-HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage) {
+HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
 
 	cv::Mat mat = img.clone();
 	cv::cvtColor(img, mat, cv::COLOR_RGB2GRAY);
@@ -62,23 +62,25 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 				}
 			}
 
-
-			// L2 normalization
-			double sum = 0;
-			for (int i = 0; i < histogram.size(); i++)
-				sum += histogram[i] * histogram[i];
-			double norm = sqrt(sum);
-			if (norm > 0) {
+			// rescaling to [0-1]
+			double max = *std::max_element(histogram.begin(), histogram.end());
+			if (max > 0) {
 				for (int i = 0; i < histogram.size(); i++)
-					histogram[i] /= norm;
+					histogram[i] /= max;
 			}
 
-			//// rescaling to [0-1]
-			//double max = *std::max_element(histogram.begin(), histogram.end());
-			//if (max > 0) {
-			//	for (int i = 0; i < histogram.size(); i++)
-			//		histogram[i] /= max;
-			//}
+			if (l2normalize) {
+				// L2 normalization
+				double sum = 0;
+				for (int i = 0; i < histogram.size(); i++)
+					sum += histogram[i] * histogram[i];
+				double norm = sqrt(sum);
+				if (norm > 0) {
+					for (int i = 0; i < histogram.size(); i++)
+						histogram[i] /= norm;
+				}
+			}
+
 
 
 			//// don't normalize per element, normalize over a region, see below

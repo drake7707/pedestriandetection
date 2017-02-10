@@ -39,4 +39,4 @@ struct HoGResult {
 	}
 };
 
-HoGResult getHistogramsOfOrientedGradient(cv::Mat& mat, int patchSize, int binSize, bool createImage = false);
+HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage = false, bool l2normalize = true);

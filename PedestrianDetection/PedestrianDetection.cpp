@@ -260,7 +260,7 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 
 
 						auto result = getHistogramsOfOrientedGradient(region, patchSize, binSize);
-						result = getHistogramsOfOrientedGradient(region, patchSize, binSize, false);
+						result = getHistogramsOfOrientedGradient(region, patchSize, binSize, false,false);
 
 						int svmClass = svm->predict(result.getFeatureMat(), noArray());
 						float svmResult = svm->predict(result.getFeatureMat(), noArray(), ml::StatModel::Flags::RAW_OUTPUT);

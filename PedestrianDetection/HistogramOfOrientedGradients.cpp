@@ -58,53 +58,81 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 					histogram[bin1] += magPixel * (tEnd - anglePixel) / (tEnd - tBegin);
 					histogram[bin2] += magPixel * (anglePixel - tBegin) / (tEnd - tBegin);
 
-					
+
 				}
 			}
 
-			// don't normalize per element, normalize over a region, see below
-			float histogramMax = *std::max_element(histogram.begin(), histogram.end());
-			if (histogramMax > 0) {
+
+			// L2 normalization
+			double sum = 0;
+			for (int i = 0; i < histogram.size(); i++)
+				sum += histogram[i] * histogram[i];
+			double norm = sqrt(sum);
+			if (norm > 0) {
 				for (int i = 0; i < histogram.size(); i++)
-					histogram[i] /= histogramMax;
+					histogram[i] /= norm;
 			}
+
+			//// rescaling to [0-1]
+			//double max = *std::max_element(histogram.begin(), histogram.end());
+			//if (max > 0) {
+			//	for (int i = 0; i < histogram.size(); i++)
+			//		histogram[i] /= max;
+			//}
+
+
+			//// don't normalize per element, normalize over a region, see below
+			//float histogramMax = *std::max_element(histogram.begin(), histogram.end());
+			//if (histogramMax > 0) {
+			//	for (int i = 0; i < histogram.size(); i++) {
+			//		histogram[i] /= histogramMax;
+
+			//		if(isnan(histogram[i]))
+			//			throw std::exception("HoG feature contains NaN");
+			//	}
+			//}
 
 			// cell x,y -> pixel range [x * cellSize-x * cellSize + cellSize], ...
 		}
 	}
 
+	/*
+		std::vector<std::vector<Histogram>> newcells(nrOfCellsHeight - 1, std::vector<Histogram>(nrOfCellsWidth - 1, Histogram(binSize * 4, 0))); // histogram of elements per cell
+																																				  // now normalize all histograms
+		for (int y = 0; y < nrOfCellsHeight - 1; y++) {
+			for (int x = 0; x < nrOfCellsWidth - 1; x++) {
 
-	std::vector<std::vector<Histogram>> newcells(nrOfCellsHeight - 1, std::vector<Histogram>(nrOfCellsWidth - 1, Histogram(binSize * 4, 0))); // histogram of elements per cell
-																																			  // now normalize all histograms 
-	for (int y = 0; y < nrOfCellsHeight - 1; y++) {
-		for (int x = 0; x < nrOfCellsWidth - 1; x++) {
+				auto& dstHistogram = newcells[y][x];
+				int idx = 0;
+				for (int i = 0; i < cells[y][x].size(); i++)
+					dstHistogram[idx++] = cells[y][x][i];
 
-			auto& dstHistogram = newcells[y][x];
-			int idx = 0;
-			for (int i = 0; i < cells[y][x].size(); i++)
-				dstHistogram[idx++] = cells[y][x][i];
+				for (int i = 0; i < cells[y][x + 1].size(); i++)
+					dstHistogram[idx++] = cells[y][x + 1][i];
 
-			for (int i = 0; i < cells[y][x + 1].size(); i++)
-				dstHistogram[idx++] = cells[y][x + 1][i];
+				for (int i = 0; i < cells[y + 1][x].size(); i++)
+					dstHistogram[idx++] = cells[y + 1][x][i];
 
-			for (int i = 0; i < cells[y + 1][x].size(); i++)
-				dstHistogram[idx++] = cells[y + 1][x][i];
+				for (int i = 0; i < cells[y + 1][x + 1].size(); i++)
+					dstHistogram[idx++] = cells[y + 1][x + 1][i];
 
-			for (int i = 0; i < cells[y + 1][x + 1].size(); i++)
-				dstHistogram[idx++] = cells[y + 1][x + 1][i];
+				double max = *std::max_element(dstHistogram.begin(), dstHistogram.end());
+				if (max > 0) {
+					for (int i = 0; i < dstHistogram.size(); i++)
+						dstHistogram[i] /= max;
+				}
+				//double sum = 0;
+				//for (int i = 0; i < dstHistogram.size(); i++)
+				//	sum += dstHistogram[i] * dstHistogram[i];
 
-			double sum = 0;
-			for (int i = 0; i < dstHistogram.size(); i++)
-				sum += dstHistogram[i] * dstHistogram[i];
-
-			double norm = sqrt(sum);
-			if (norm > 0) {
-				for (int i = 0; i < dstHistogram.size(); i++)
-					dstHistogram[i] /= norm;
+				//double norm = sqrt(sum);
+				//if (norm > 0) {
+				//	for (int i = 0; i < dstHistogram.size(); i++)
+				//		dstHistogram[i] /= norm;
+				//}
 			}
 		}
-	}
-
+		*/
 	cv::Mat hog;
 	if (createImage) {
 
@@ -116,13 +144,8 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 
 				double cx = x * patchSize + patchSize / 2;
 				double cy = y * patchSize + patchSize / 2;
-				Histogram& hist = cells[y][x];
-				double sum = 0;
-				for (int i = 0; i < hist.size(); i++)
-					sum += hist[i] * hist[i];
-				double norm = sqrt(sum);
-				for (int i = 0; i < hist.size(); i++)
-					hist[i] /= norm;
+				Histogram hist = cells[y][x];
+
 
 				double maxVal = *std::max_element(hist.begin(), hist.end());
 				if (maxVal > 0) {

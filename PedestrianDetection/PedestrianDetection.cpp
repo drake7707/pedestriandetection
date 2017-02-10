@@ -321,8 +321,8 @@ void testDetection() {
 
 		cv::Mat rgb = currentImages[0].clone();
 		cv::Mat depth = currentImages[1].clone();
-	//	cv::rectangle(rgb, l.getBbox(), Scalar(0, 0, 255), 2);
-	//	cv::rectangle(depth, l.getBbox(), Scalar(0, 0, 255), 2);
+		//	cv::rectangle(rgb, l.getBbox(), Scalar(0, 0, 255), 2);
+		//	cv::rectangle(depth, l.getBbox(), Scalar(0, 0, 255), 2);
 
 		std::vector<MatchRegion> matchingRegions = evaluateModelOnImage(currentImages[0], svm, 0.7);
 
@@ -346,7 +346,9 @@ void testDetection() {
 		int iteration = 0;
 		do {
 			rTN = cv::Rect2d(randBetween(0, rgb.cols - l.getBbox().x), randBetween(0, rgb.rows - l.getBbox().y), l.getBbox().width, l.getBbox().height);
-		} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100);
+		} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100 && (rTN.x < 0 || rTN.y < 0 || rTN.x+rTN.width >= currentImages[0].cols || rTN.y+rTN.height >= currentImages[0].rows));
+
+		std::cout << rTN.x << " , " << rTN.y << "   " << rTN.width << " " << rTN.height << std::endl;
 
 		currentImages[0](rTN).copyTo(rgbTN);
 		cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
@@ -383,26 +385,28 @@ int main()
 {
 	Detector d;
 	d.buildWeakHoGSVMClassifier();
-	ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier();
+
+	std::cout << "Training set evaluation" << std::endl;
+	ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier(true);
+	evalResult.print(std::cout);
+
+	std::cout << "Test set evaluation" << std::endl;
+	evalResult = d.evaluateWeakHoGSVMClassifier(false);
 	evalResult.print(std::cout);
 
 
 	testDetection();
 
-		
-		
 
-		evalResult.print(std::cout);
+	std::cout << "Done" << std::endl;
 
-		std::cout << "Done" << std::endl;
-
-		getchar();
+	getchar();
 
 
-		//testDetection();
+	//testDetection();
 
 
-		//auto img = imread("D:\\circle.png");
+	//auto img = imread("D:\\circle.png");
 	auto img = imread("D:\\test.jpg");
 	namedWindow("Test");
 	imshow("Test", img);

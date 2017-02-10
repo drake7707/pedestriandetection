@@ -36,13 +36,13 @@ private:
 	int patchSize = 8;
 	int binSize = 9;
 
-	void iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, std::function<void(cv::Mat&, HoGResult&)> tnFunc);
+	void iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, std::function<void(cv::Mat&, HoGResult&)> tnFunc, std::function<bool(int)> includeSample);
 
 public:
 	cv::Ptr<cv::ml::SVM> buildWeakHoGSVMClassifier();
 
 
-	ClassifierEvaluation evaluateWeakHoGSVMClassifier();
+	ClassifierEvaluation evaluateWeakHoGSVMClassifier(bool onTrainingSet);
 
 
 

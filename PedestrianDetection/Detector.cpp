@@ -31,43 +31,47 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 			cv::Mat rgbTP;
 			cv::Rect2d& r = l.getBbox();
 			if (r.x >= 0 && r.y >= 0 && r.x + r.width < currentImages[0].cols && r.y + r.height < currentImages[0].rows) {
-				currentImages[0](l.getBbox()).copyTo(rgbTP);
-				cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
 
-				// build training mat
+				//for (auto& img : currentImages) {
+				auto& img = currentImages[0];
+					img(l.getBbox()).copyTo(rgbTP);
+					cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
 
-				auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, false, true );
-				tpFunc(rgbTP, resultTP);
-				//truePositiveFeatures.push_back(resultTP.getFeatureArray());
+					// build training mat
 
-				cv::Mat rgbTPFlip;
-				cv::flip(rgbTP, rgbTPFlip, 1);
+					auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, false, true);
+					tpFunc(rgbTP, resultTP);
+					//truePositiveFeatures.push_back(resultTP.getFeatureArray());
 
-				auto resultTPFlip = getHistogramsOfOrientedGradient(rgbTPFlip, patchSize, binSize, false,true);
-				tpFunc(rgbTPFlip, resultTPFlip);
-				//truePositiveFeatures.push_back(resultTPFlip.getFeatureArray());
+					cv::Mat rgbTPFlip;
+					cv::flip(rgbTP, rgbTPFlip, 1);
 
-				// take a number of true negative patches that don't overlap
-				for (int k = 0; k < nrOfTN; k++)
-				{
-					// take an equivalent patch at random for a true negative
-					cv::Mat rgbTN;
-					cv::Rect2d rTN;
+					auto resultTPFlip = getHistogramsOfOrientedGradient(rgbTPFlip, patchSize, binSize, false, true);
+					tpFunc(rgbTPFlip, resultTPFlip);
+					//truePositiveFeatures.push_back(resultTPFlip.getFeatureArray());
 
-					int iteration = 0;
-					do {
-						rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - l.getBbox().width), randBetween(0, currentImages[0].rows - l.getBbox().height), l.getBbox().width, l.getBbox().height);
-					} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100);
+					// take a number of true negative patches that don't overlap
+					for (int k = 0; k < nrOfTN; k++)
+					{
+						// take an equivalent patch at random for a true negative
+						cv::Mat rgbTN;
+						cv::Rect2d rTN;
 
-					if (iteration < 100) {
-						currentImages[0](rTN).copyTo(rgbTN);
-						cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
+						int iteration = 0;
+						do {
+							rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - l.getBbox().width), randBetween(0, currentImages[0].rows - l.getBbox().height), l.getBbox().width, l.getBbox().height);
+						} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100);
 
-						auto resultTN = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, false, false);
-						tnFunc(rgbTN, resultTN);
-						//trueNegativeFeatures.push_back(resultTN.getFeatureArray());
+						if (iteration < 100) {
+							img(rTN).copyTo(rgbTN);
+							cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
+
+							auto resultTN = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, false, true);
+							tnFunc(rgbTN, resultTN);
+							//trueNegativeFeatures.push_back(resultTN.getFeatureArray());
+						}
 					}
-				}
+				//}
 			}
 		}
 		idx++;
@@ -79,7 +83,7 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	std::vector<std::vector<float>> trueNegativeFeatures;
 	int featureSize;
 
-
+	std::cout << "Iterating dataset with test sample every " << testSampleEvery << " samples" << std::endl;
 	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
 		truePositiveFeatures.push_back(result.getFeatureArray());
 	}, [&](cv::Mat& mat, HoGResult& result) -> void {
@@ -129,12 +133,26 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	//cv::Ptr<cv::ml::TrainData> tdata = cv::ml::TrainData::create(trainingMat, cv::ml::SampleTypes::ROW_SAMPLE, trainingLabels);
 	//svm->trainAuto(tdata);
 
-	//cv::Mat classWeights(2, 1, CV_32FC1);
-	//// each TP has 2, 1 normal , 1 flipped
-	//classWeights.at<float>(0, 0) = 2 - 2.0 / nrOfTN;
-	//classWeights.at<float>(1, 0) = 2.0/nrOfTN;
-	//svm->setClassWeights(classWeights);
-	std::cout << "Training SVM" << std::endl;
+
+	
+	cv::Mat classWeights(2, 1, CV_32FC1);
+	
+	classWeights.at<float>(0, 0) = 0.5;// 499;
+	classWeights.at<float>(1, 0) = 0.5;// 501;
+	svm->setClassWeights(classWeights);
+	std::cout << "Training SVM with options: " << std::endl;
+	std::cout << "Type: " << svm->getType() << std::endl;
+	std::cout << "Kernel: " << svm->getKernelType() << std::endl;
+	std::cout << "C: " << svm->getC() << std::endl;
+	if (svm->getClassWeights().rows > 0)
+		std::cout << "Class weights: [" << svm->getClassWeights().at<float>(0, 0) << "," << svm->getClassWeights().at<float>(1, 0) << "]" << std::endl;
+	
+	std::cout << "Number of features per sample: " << featureSize << std::endl;
+	std::cout << "Number of training samples: " << trainingMat.rows << std::endl;
+	std::cout << "Number of true positive samples: " << truePositiveFeatures.size() << std::endl;
+	std::cout << "Number of true negative samples: " << trueNegativeFeatures.size() << std::endl;
+
+
 	bool success = svm->train(trainingMat, cv::ml::ROW_SAMPLE, trainingLabels);
 
 	if (!success || !svm->isTrained())

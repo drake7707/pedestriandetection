@@ -12,11 +12,16 @@ struct ClassifierEvaluation {
 	int nrOfFalseNegatives = 0;
 
 	void print(std::ostream& out) {
+
+		int totalNegatives = nrOfTrueNegatives + nrOfFalseNegatives;
+		int totalPositives = nrOfTruePositives + nrOfFalsePositives;
+
+		out << std::setprecision(2);
 		out << "Evaluation result " << std::endl;
-		out << "# True Positives " << nrOfTruePositives << std::endl;
-		out << "# True Negatives " << nrOfTrueNegatives << std::endl;
-		out << "# False Positives " << nrOfFalsePositives << std::endl;
-		out << "# False Negatives " << nrOfFalseNegatives << std::endl;
+		out << "# True Positives " << nrOfTruePositives << " (" << floor(nrOfTruePositives * 1.0 / totalPositives * 100) << "%)" << std::endl;
+		out << "# True Negatives " << nrOfTrueNegatives << " (" << floor(nrOfTrueNegatives * 1.0 / totalNegatives * 100) << "%)" << std::endl;
+		out << "# False Positives " << nrOfFalsePositives << " (" << floor(nrOfFalsePositives * 1.0 / totalPositives * 100) << "%)" << std::endl;
+		out << "# False Negatives " << nrOfFalseNegatives << " (" << floor(nrOfFalseNegatives * 1.0 / totalNegatives * 100) << "%)" << std::endl;
 	}
 };
 

@@ -81,19 +81,6 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 				}
 			}
 
-
-
-			//// don't normalize per element, normalize over a region, see below
-			//float histogramMax = *std::max_element(histogram.begin(), histogram.end());
-			//if (histogramMax > 0) {
-			//	for (int i = 0; i < histogram.size(); i++) {
-			//		histogram[i] /= histogramMax;
-
-			//		if(isnan(histogram[i]))
-			//			throw std::exception("HoG feature contains NaN");
-			//	}
-			//}
-
 			// cell x,y -> pixel range [x * cellSize-x * cellSize + cellSize], ...
 		}
 	}

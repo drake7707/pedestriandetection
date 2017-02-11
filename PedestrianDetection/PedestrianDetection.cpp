@@ -348,7 +348,7 @@ void testDetection() {
 			rTN = cv::Rect2d(randBetween(0, rgb.cols - l.getBbox().x), randBetween(0, rgb.rows - l.getBbox().y), l.getBbox().width, l.getBbox().height);
 		} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100 && (rTN.x < 0 || rTN.y < 0 || rTN.x+rTN.width >= currentImages[0].cols || rTN.y+rTN.height >= currentImages[0].rows));
 
-		std::cout << rTN.x << " , " << rTN.y << "   " << rTN.width << " " << rTN.height << std::endl;
+		//std::cout << rTN.x << " , " << rTN.y << "   " << rTN.width << " " << rTN.height << std::endl;
 
 		currentImages[0](rTN).copyTo(rgbTN);
 		cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
@@ -369,11 +369,11 @@ void testDetection() {
 
 
 		float tpResult = svm->predict(result.getFeatureMat());
-		std::cout << "TP result: " << tpResult << std::endl;
+	//	std::cout << "TP result: " << tpResult << std::endl;
 
 		result = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, true);
 		float tnResult = svm->predict(result.getFeatureMat());
-		std::cout << "TN result: " << tnResult << std::endl;
+	//	std::cout << "TN result: " << tnResult << std::endl;
 
 		waitKey(0);
 
@@ -383,6 +383,7 @@ void testDetection() {
 
 int main()
 {
+	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	Detector d;
 	d.buildWeakHoGSVMClassifier();
 
@@ -405,9 +406,9 @@ int main()
 
 	//testDetection();
 
-
+	
 	//auto img = imread("D:\\circle.png");
-	auto img = imread("D:\\test.jpg");
+	auto img = imread("D:\\PedestrianDetectionDatasets\\kitti\\depth\\000000.png");
 	namedWindow("Test");
 	imshow("Test", img);
 

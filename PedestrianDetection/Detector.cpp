@@ -1,6 +1,6 @@
 #include "Detector.h"
 #include "KITTIDataSet.h"
-
+#include <fstream>
 
 int nrOfTN = 2;
 int testSampleEvery = 5;
@@ -32,8 +32,8 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 			cv::Rect2d& r = l.getBbox();
 			if (r.x >= 0 && r.y >= 0 && r.x + r.width < currentImages[0].cols && r.y + r.height < currentImages[0].rows) {
 
-				//for (auto& img : currentImages) {
-				auto& img = currentImages[0];
+				for (auto& img : currentImages) {
+					//auto& img = currentImages[0];
 					img(l.getBbox()).copyTo(rgbTP);
 					cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
 
@@ -59,8 +59,11 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 
 						int iteration = 0;
 						do {
-							rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - l.getBbox().width), randBetween(0, currentImages[0].rows - l.getBbox().height), l.getBbox().width, l.getBbox().height);
-						} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100);
+							double width = l.getBbox().width * (1 + rand() * 1.0 / RAND_MAX * 4);
+							double height = l.getBbox().height * (1 + rand() * 1.0 / RAND_MAX * 4);
+							rTN = cv::Rect2d(randBetween(0, img.cols - width), randBetween(0, img.rows - height), width, height);
+						} while (iteration++ < 100 && ((rTN & l.getBbox()).area() > 0 || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= img.cols || rTN.y + rTN.height >= img.rows));
+
 
 						if (iteration < 100) {
 							img(rTN).copyTo(rgbTN);
@@ -68,15 +71,65 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 
 							auto resultTN = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, false, true);
 							tnFunc(rgbTN, resultTN);
+
 							//trueNegativeFeatures.push_back(resultTN.getFeatureArray());
 						}
 					}
-				//}
+				}
 			}
 		}
 		idx++;
 	}
 }
+
+
+void Detector::saveSVMLightFiles() {
+
+	std::ofstream trainingFile("training.dat");
+	if (!trainingFile.is_open())
+		throw std::exception("Unable to create training file");
+
+	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
+		std::vector<float> featureArray = result.getFeatureArray();
+		trainingFile << "+1 ";
+		for (int i = 0; i < featureArray.size(); i++)
+			trainingFile << (i+1) << ":" << featureArray[i] << " ";
+		trainingFile << "#";
+		trainingFile << std::endl;
+
+	}, [&](cv::Mat& mat, HoGResult& result) -> void {
+		std::vector<float> featureArray = result.getFeatureArray();
+		trainingFile << "-1 ";
+		for (int i = 0; i < featureArray.size(); i++)
+			trainingFile << (i + 1) << ":" << featureArray[i] << " ";
+		trainingFile << "#";
+		trainingFile << std::endl;
+	}, [&](int idx) -> bool { return (idx % testSampleEvery != 0); });
+
+
+	std::ofstream testFile("test.dat");
+	if (!testFile.is_open())
+		throw std::exception("Unable to create training file");
+
+	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
+		std::vector<float> featureArray = result.getFeatureArray();
+		testFile << "+1 ";
+		for (int i = 0; i < featureArray.size(); i++)
+			testFile << (i + 1) << ":" << featureArray[i] << " ";
+		testFile << "#";
+		testFile << std::endl;
+
+	}, [&](cv::Mat& mat, HoGResult& result) -> void {
+		std::vector<float> featureArray = result.getFeatureArray();
+		testFile << "-1 ";
+		for (int i = 0; i < featureArray.size(); i++)
+			testFile << (i + 1) << ":" << featureArray[i] << " ";
+		testFile << "#";
+		testFile << std::endl;
+	}, [&](int idx) -> bool { return (idx % testSampleEvery == 0); });
+
+}
+
 cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 
 	std::vector<std::vector<float>> truePositiveFeatures;
@@ -126,27 +179,32 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 
 	cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 	svm->setType(cv::ml::SVM::C_SVC);
-	svm->setKernel(cv::ml::SVM::LINEAR);
+	svm->setKernel(cv::ml::SVM::POLY);
 	svm->setC(0.001);
-	//svm->setDegree(2);
+	svm->setDegree(2);
 
 	//cv::Ptr<cv::ml::TrainData> tdata = cv::ml::TrainData::create(trainingMat, cv::ml::SampleTypes::ROW_SAMPLE, trainingLabels);
 	//svm->trainAuto(tdata);
+	auto& criteria = svm->getTermCriteria();
+	//criteria.maxCount = 4000;
 
 
-	
 	cv::Mat classWeights(2, 1, CV_32FC1);
-	
-	classWeights.at<float>(0, 0) = 0.5;// 499;
-	classWeights.at<float>(1, 0) = 0.5;// 501;
+
+	classWeights.at<float>(0, 0) = 0.5;
+	classWeights.at<float>(1, 0) = 0.5;
 	svm->setClassWeights(classWeights);
 	std::cout << "Training SVM with options: " << std::endl;
 	std::cout << "Type: " << svm->getType() << std::endl;
 	std::cout << "Kernel: " << svm->getKernelType() << std::endl;
 	std::cout << "C: " << svm->getC() << std::endl;
+	std::cout << "Iterations: " << criteria.maxCount << std::endl;
+
+	if (svm->getKernelType() == cv::ml::SVM::POLY)
+		std::cout << "Degree: " << svm->getDegree() << std::endl;
 	if (svm->getClassWeights().rows > 0)
 		std::cout << "Class weights: [" << svm->getClassWeights().at<float>(0, 0) << "," << svm->getClassWeights().at<float>(1, 0) << "]" << std::endl;
-	
+
 	std::cout << "Number of features per sample: " << featureSize << std::endl;
 	std::cout << "Number of training samples: " << trainingMat.rows << std::endl;
 	std::cout << "Number of true positive samples: " << truePositiveFeatures.size() << std::endl;

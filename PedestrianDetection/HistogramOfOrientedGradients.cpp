@@ -62,15 +62,65 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 				}
 			}
 
-			// rescaling to [0-1]
-			double max = *std::max_element(histogram.begin(), histogram.end());
-			if (max > 0) {
-				for (int i = 0; i < histogram.size(); i++)
-					histogram[i] /= max;
-			}
+			//// rescaling to [0-1]
+			//double max = *std::max_element(histogram.begin(), histogram.end());
+			//if (max > 0) {
+			//	for (int i = 0; i < histogram.size(); i++)
+			//		histogram[i] /= max;
+			//}
 
-			if (l2normalize) {
-				// L2 normalization
+
+			// cell x,y -> pixel range [x * cellSize-x * cellSize + cellSize], ...
+		}
+	}
+
+
+
+	
+
+	std::vector<std::vector<Histogram>> newcells(nrOfCellsHeight - 1, std::vector<Histogram>(nrOfCellsWidth - 1, Histogram(binSize * 4, 0))); // histogram of elements per cell
+																																			  // now normalize all histograms
+	for (int y = 0; y < nrOfCellsHeight - 1; y++) {
+		for (int x = 0; x < nrOfCellsWidth - 1; x++) {
+
+			auto& dstHistogram = newcells[y][x];
+			int idx = 0;
+			for (int i = 0; i < cells[y][x].size(); i++)
+				dstHistogram[idx++] = cells[y][x][i];
+
+			for (int i = 0; i < cells[y][x + 1].size(); i++)
+				dstHistogram[idx++] = cells[y][x + 1][i];
+
+			for (int i = 0; i < cells[y + 1][x].size(); i++)
+				dstHistogram[idx++] = cells[y + 1][x][i];
+
+			for (int i = 0; i < cells[y + 1][x + 1].size(); i++)
+				dstHistogram[idx++] = cells[y + 1][x + 1][i];
+
+		/*	double max = *std::max_element(dstHistogram.begin(), dstHistogram.end());
+			if (max > 0) {
+				for (int i = 0; i < dstHistogram.size(); i++)
+					dstHistogram[i] /= max;
+			}*/
+			double sum = 0;
+			for (int i = 0; i < dstHistogram.size(); i++)
+				sum += dstHistogram[i] * dstHistogram[i];
+
+			double norm = sqrt(sum);
+			if (norm > 0) {
+				for (int i = 0; i < dstHistogram.size(); i++)
+					dstHistogram[i] /= norm;
+			}
+		}
+	}
+
+	if (l2normalize) {
+		// L2 normalization
+		for (int y = 0; y < nrOfCellsHeight; y++) {
+
+			for (int x = 0; x < nrOfCellsWidth; x++) {
+				Histogram& histogram = cells[y][x];
+
 				double sum = 0;
 				for (int i = 0; i < histogram.size(); i++)
 					sum += histogram[i] * histogram[i];
@@ -80,48 +130,10 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 						histogram[i] /= norm;
 				}
 			}
-
-			// cell x,y -> pixel range [x * cellSize-x * cellSize + cellSize], ...
 		}
 	}
 
-	/*
-		std::vector<std::vector<Histogram>> newcells(nrOfCellsHeight - 1, std::vector<Histogram>(nrOfCellsWidth - 1, Histogram(binSize * 4, 0))); // histogram of elements per cell
-																																				  // now normalize all histograms
-		for (int y = 0; y < nrOfCellsHeight - 1; y++) {
-			for (int x = 0; x < nrOfCellsWidth - 1; x++) {
 
-				auto& dstHistogram = newcells[y][x];
-				int idx = 0;
-				for (int i = 0; i < cells[y][x].size(); i++)
-					dstHistogram[idx++] = cells[y][x][i];
-
-				for (int i = 0; i < cells[y][x + 1].size(); i++)
-					dstHistogram[idx++] = cells[y][x + 1][i];
-
-				for (int i = 0; i < cells[y + 1][x].size(); i++)
-					dstHistogram[idx++] = cells[y + 1][x][i];
-
-				for (int i = 0; i < cells[y + 1][x + 1].size(); i++)
-					dstHistogram[idx++] = cells[y + 1][x + 1][i];
-
-				double max = *std::max_element(dstHistogram.begin(), dstHistogram.end());
-				if (max > 0) {
-					for (int i = 0; i < dstHistogram.size(); i++)
-						dstHistogram[i] /= max;
-				}
-				//double sum = 0;
-				//for (int i = 0; i < dstHistogram.size(); i++)
-				//	sum += dstHistogram[i] * dstHistogram[i];
-
-				//double norm = sqrt(sum);
-				//if (norm > 0) {
-				//	for (int i = 0; i < dstHistogram.size(); i++)
-				//		dstHistogram[i] /= norm;
-				//}
-			}
-		}
-		*/
 	cv::Mat hog;
 	if (createImage) {
 
@@ -154,9 +166,9 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 	}
 
 	HoGResult result;
-	result.width = nrOfCellsWidth;
-	result.height = nrOfCellsHeight;
-	result.data = cells;
+	result.width = nrOfCellsWidth-1;
+	result.height = nrOfCellsHeight-1;
+	result.data = newcells;
 	result.hogImage = hog;
 	return result;
 }

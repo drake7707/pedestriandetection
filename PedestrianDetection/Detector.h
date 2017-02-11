@@ -46,6 +46,7 @@ private:
 public:
 	cv::Ptr<cv::ml::SVM> buildWeakHoGSVMClassifier();
 
+	void saveSVMLightFiles();
 
 	ClassifierEvaluation evaluateWeakHoGSVMClassifier(bool onTrainingSet);
 

@@ -383,6 +383,7 @@ void testDetection() {
 
 int main()
 {
+
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	Detector d;
 	d.buildWeakHoGSVMClassifier();

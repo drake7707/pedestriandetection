@@ -320,3 +320,7 @@ __pycache__/
 # End of https://www.gitignore.io/api/visualstudio,c++
 /PedestrianDetection/kittitraining.xml
 /PedestrianDetection/console.txt
+/PedestrianDetection/training.dat
+/PedestrianDetection/test.dat
+/PedestrianDetection/result.dat
+/PedestrianDetection/model.dat

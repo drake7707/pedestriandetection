@@ -31,7 +31,7 @@ void showHistogram(Histogram& histogram) {
 }
 
 int randBetween(int min, int max) {
-	return min + rand() % (max - min + 1);
+	return min + 1.0 * rand()/RAND_MAX * (max - min);
 }
 
 int ceilTo(double val, double target) {

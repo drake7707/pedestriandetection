@@ -1,13 +1,11 @@
 #include "Detector.h"
 #include "KITTIDataSet.h"
 #include <fstream>
-
-int nrOfTN = 2;
-int testSampleEvery = 5;
-bool addS2 = true;
+#include <string>
 
 
-void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, std::function<void(cv::Mat&, HoGResult&)> tnFunc, std::function<bool(int)> includeSample) {
+
+void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::function<void(cv::Mat&)> tnFunc, std::function<bool(int)> includeSample) {
 	KITTIDataSet dataset(kittiDatasetPath);
 	srand(7707);
 
@@ -40,15 +38,13 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 
 					// build training mat
 
-					auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, false, true);
-					tpFunc(rgbTP, resultTP);
+					tpFunc(rgbTP);
 					//truePositiveFeatures.push_back(resultTP.getFeatureArray());
 
 					cv::Mat rgbTPFlip;
 					cv::flip(rgbTP, rgbTPFlip, 1);
-
-					auto resultTPFlip = getHistogramsOfOrientedGradient(rgbTPFlip, patchSize, binSize, false, true);
-					tpFunc(rgbTPFlip, resultTPFlip);
+					
+					tpFunc(rgbTPFlip);
 					//truePositiveFeatures.push_back(resultTPFlip.getFeatureArray());
 
 					// take a number of true negative patches that don't overlap
@@ -69,9 +65,7 @@ void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, 
 						if (iteration < 100) {
 							img(rTN).copyTo(rgbTN);
 							cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
-
-							auto resultTN = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, false, true);
-							tnFunc(rgbTN, resultTN);
+							tnFunc(rgbTN);
 
 							//trueNegativeFeatures.push_back(resultTN.getFeatureArray());
 						}
@@ -90,19 +84,22 @@ void Detector::saveSVMLightFiles() {
 	if (!trainingFile.is_open())
 		throw std::exception("Unable to create training file");
 
-	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
-		std::vector<float> featureArray = result.getFeatureArray(addS2);
+
+	iterateDataset([&](cv::Mat& mat) -> void {
+		cv::Mat features = this->getFeatures(mat);
+		
 		trainingFile << "+1 ";
-		for (int i = 0; i < featureArray.size(); i++)
-			trainingFile << (i+1) << ":" << featureArray[i] << " ";
+		for (int i = 0; i < features.cols; i++)
+			trainingFile << (i+1) << ":" << features.at<float>(0,i) << " ";
 		trainingFile << "#";
 		trainingFile << std::endl;
 
-	}, [&](cv::Mat& mat, HoGResult& result) -> void {
-		std::vector<float> featureArray = result.getFeatureArray(addS2);
+	}, [&](cv::Mat& mat) -> void {
+		cv::Mat features = this->getFeatures(mat);
+
 		trainingFile << "-1 ";
-		for (int i = 0; i < featureArray.size(); i++)
-			trainingFile << (i + 1) << ":" << featureArray[i] << " ";
+		for (int i = 0; i < features.cols; i++)
+			trainingFile << (i + 1) << ":" << features.at<float>(0, i) << " ";
 		trainingFile << "#";
 		trainingFile << std::endl;
 	}, [&](int idx) -> bool { return (idx % testSampleEvery != 0); });
@@ -112,19 +109,20 @@ void Detector::saveSVMLightFiles() {
 	if (!testFile.is_open())
 		throw std::exception("Unable to create training file");
 
-	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
-		std::vector<float> featureArray = result.getFeatureArray(addS2);
+	iterateDataset([&](cv::Mat& mat) -> void {
+		cv::Mat features = this->getFeatures(mat);
+
 		testFile << "+1 ";
-		for (int i = 0; i < featureArray.size(); i++)
-			testFile << (i + 1) << ":" << featureArray[i] << " ";
+		for (int i = 0; i < features.cols; i++)
+			trainingFile << (i + 1) << ":" << features.at<float>(0, i) << " ";
 		testFile << "#";
 		testFile << std::endl;
 
-	}, [&](cv::Mat& mat, HoGResult& result) -> void {
-		std::vector<float> featureArray = result.getFeatureArray(addS2);
+	}, [&](cv::Mat& mat) -> void {
+		cv::Mat features = this->getFeatures(mat);
 		testFile << "-1 ";
-		for (int i = 0; i < featureArray.size(); i++)
-			testFile << (i + 1) << ":" << featureArray[i] << " ";
+		for (int i = 0; i < features.cols; i++)
+			trainingFile << (i + 1) << ":" << features.at<float>(0, i) << " ";
 		testFile << "#";
 		testFile << std::endl;
 	}, [&](int idx) -> bool { return (idx % testSampleEvery == 0); });
@@ -138,11 +136,11 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	int featureSize;
 
 	std::cout << "Iterating dataset with test sample every " << testSampleEvery << " samples" << std::endl;
-	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
-		truePositiveFeatures.push_back(result.getFeatureArray(addS2));
-	}, [&](cv::Mat& mat, HoGResult& result) -> void {
-		trueNegativeFeatures.push_back(result.getFeatureArray(addS2));
-	}, [](int idx) -> bool { return idx % testSampleEvery != 0; });
+	iterateDataset([&](cv::Mat& mat) -> void {
+		truePositiveFeatures.push_back(this->getFeatures(mat));
+	}, [&](cv::Mat& mat) -> void {
+		trueNegativeFeatures.push_back(this->getFeatures(mat));
+	}, [&](int idx) -> bool { return idx % testSampleEvery != 0; });
 
 	featureSize = truePositiveFeatures[0].size();
 
@@ -195,6 +193,7 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	classWeights.at<float>(0, 0) = 0.5;
 	classWeights.at<float>(1, 0) = 0.5;
 	svm->setClassWeights(classWeights);
+
 	std::cout << "Training SVM with options: " << std::endl;
 	std::cout << "Type: " << svm->getType() << std::endl;
 	std::cout << "Kernel: " << svm->getKernelType() << std::endl;
@@ -222,17 +221,16 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	return svm;
 }
 
-
-
 ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) {
 	cv::Ptr<cv::ml::SVM> svm = cv::Algorithm::load<cv::ml::SVM>(weakClassifierSVMFile);
 
 	ClassifierEvaluation evalResult;
 
-	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
+	iterateDataset([&](cv::Mat& mat) -> void {
 		// should be positive
-		int svmClass = svm->predict(result.getFeatureMat(addS2), cv::noArray());
-		float svmResult = svm->predict(result.getFeatureMat(addS2), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
+		cv::Mat features = this->getFeatures(mat);
+		int svmClass = svm->predict(features, cv::noArray());
+		float svmResult = svm->predict(features, cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
 		if (!isnan(svmResult)) {
 			if (svmClass == 1)
 				evalResult.nrOfTruePositives++;
@@ -240,11 +238,11 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 				evalResult.nrOfFalsePositives++;
 		}
 
-	}, [&](cv::Mat& mat, HoGResult& result) -> void {
-
+	}, [&](cv::Mat& mat) -> void {
 		// should be negative
-		int svmClass = svm->predict(result.getFeatureMat(addS2), cv::noArray());
-		float svmResult = svm->predict(result.getFeatureMat(addS2), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
+		cv::Mat features = this->getFeatures(mat);
+		int svmClass = svm->predict(features, cv::noArray());
+		float svmResult = svm->predict(features, cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
 		if (!isnan(svmResult)) {
 			if (svmClass == -1)
 				evalResult.nrOfTrueNegatives++;
@@ -255,3 +253,16 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 
 	return evalResult;
 }
+
+
+//--------------------------------------------
+
+
+
+
+cv::Mat Detector::getFeatures(cv::Mat& mat) {
+	auto result = getHistogramsOfOrientedGradient(mat, patchSize, binSize, false, true);
+	return result.getFeatureMat(addS2);
+}
+
+

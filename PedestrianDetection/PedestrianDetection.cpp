@@ -386,6 +386,9 @@ int main()
 
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	Detector d;
+
+	std::cout << " Detector Features options" << std::endl;
+	d.toString(std::cout);
 	d.buildWeakHoGSVMClassifier();
 
 	std::cout << "Training set evaluation" << std::endl;

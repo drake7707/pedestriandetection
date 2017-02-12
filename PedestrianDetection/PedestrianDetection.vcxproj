@@ -162,6 +162,7 @@
     <ClInclude Include="DataSetLabel.h" />
     <ClInclude Include="Detector.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="Histogram.h" />
     <ClInclude Include="HistogramOfOrientedGradients.h" />
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="stdafx.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="DataSetLabel.cpp" />
     <ClCompile Include="Detector.cpp" />
     <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="Histogram.cpp" />
     <ClCompile Include="HistogramOfOrientedGradients.cpp" />
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="PedestrianDetection.cpp" />

@@ -1,7 +1,7 @@
 #pragma once
 #include "opencv2/opencv.hpp"
 #include "Helper.h"
-
+#include "Histogram.h"
 
 struct HoGResult {
 	int width;
@@ -20,23 +20,11 @@ struct HoGResult {
 		{
 			for (int i = 0; i < width; i++)
 			{
-
-
-				double avg = 0;
-				for (float el : data[j][i]) {
-					avg += el;
+				for (float el : data[j][i])
 					arr.push_back(el);
-				}
-				avg /= data[j][i].size();
 
-				if (addS2) {
-					double sumvar = 0;
-					for (float el : data[j][i]) {
-						sumvar += (el - avg) * (el - avg);
-					}
-					arr.push_back(sumvar);
-				}
-
+				if (addS2)
+					arr.push_back(data[j][i].getS2());
 			}
 		}
 		return arr;
@@ -44,9 +32,6 @@ struct HoGResult {
 
 	cv::Mat getFeatureMat(bool addS2) {
 		auto featureArray = getFeatureArray(addS2);
-
-		double maxVal = *std::max_element(featureArray.begin(), featureArray.end());
-
 		cv::Mat imgSample(1, featureArray.size(), CV_32FC1);
 		for (int i = 0; i < featureArray.size(); i++)
 			imgSample.at<float>(0, i) = featureArray[i];

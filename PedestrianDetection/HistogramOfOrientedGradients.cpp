@@ -11,6 +11,7 @@ std::vector<std::vector<Histogram>> getL2NormalizationOverLargerPatch(const std:
 
 			auto& dstHistogram = newcells[y][x];
 			int idx = 0;
+
 			for (int i = 0; i < cells[y][x].size(); i++)
 				dstHistogram[idx++] = cells[y][x][i];
 

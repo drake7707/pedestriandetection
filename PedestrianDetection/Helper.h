@@ -1,7 +1,6 @@
 #pragma once
 #include "opencv2/opencv.hpp"
-
-typedef std::vector<float> Histogram;
+#include "Histogram.h"
 
 void showHistogram(Histogram& hist);
 

@@ -38,19 +38,36 @@ private:
 	int refWidth = 64;
 	int refHeight = 128;
 
+	int nrOfTN = 2;
+	int testSampleEvery = 5;
+	bool addS2 = true;
+
 	int patchSize = 8;
 	int binSize = 9;
 
-	void iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, std::function<void(cv::Mat&, HoGResult&)> tnFunc, std::function<bool(int)> includeSample);
+	cv::Mat getFeatures(cv::Mat& mat);
+
+	void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::function<void(cv::Mat&)> tnFunc, std::function<bool(int)> includeSample);
 
 public:
+	void toString(std::ostream& o) {
+		std::string str = "";
+
+		o << "Reference size: " << refWidth << "x" << refHeight << std::endl;
+		o << "Patch size: " << patchSize << std::endl;
+		o << "Bin size: " << binSize << std::endl;
+		o << "Number of TN per TP/TPFlipped : " << nrOfTN << std::endl;
+		o << "Training/test set split : " << (100 - (100 / testSampleEvery)) << "/" << (100 / testSampleEvery) << std::endl;
+		o << "Add S^2 of histograms to features: " << (addS2 ? "yes" : "no") << std::endl;
+	}
+
 	cv::Ptr<cv::ml::SVM> buildWeakHoGSVMClassifier();
 
 	void saveSVMLightFiles();
 
 	ClassifierEvaluation evaluateWeakHoGSVMClassifier(bool onTrainingSet);
 
-
+	
 
 	Detector()
 	{

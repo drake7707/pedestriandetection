@@ -46,117 +46,117 @@ void dumpTrainingMat(cv::Mat& trainingMat) {
 	imwrite("D:\\test.png", dmp);
 }
 
-cv::Ptr<ml::SVM> buildModel() {
-
-	int nrOfTN = 3;
-
-	std::vector<std::vector<float>> truePositiveFeatures;
-	std::vector<std::vector<float>> trueNegativeFeatures;
-	int featureSize;
-
-	KITTIDataSet dataset("D:\\PedestrianDetectionDatasets\\kitti");
-
-	std::vector<DataSetLabel> labels = dataset.getLabels();
-
-	std::string currentNumber = "";
-	std::vector<cv::Mat> currentImages;
-
-	//namedWindow("HoGTest");
-
-	for (auto& l : labels) {
-
-		if (currentNumber != l.getNumber()) {
-			currentNumber = l.getNumber();
-			currentImages = dataset.getImagesForNumber(currentNumber);
-		}
-
-		// get true positive and true negative image
-		// -----------------------------------------
-		cv::Mat rgbTP;
-		cv::Rect2d& r = l.getBbox();
-		if (r.x >= 0 && r.y >= 0 && r.x + r.width < currentImages[0].cols && r.y + r.height < currentImages[0].rows) {
-			currentImages[0](l.getBbox()).copyTo(rgbTP);
-			cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
-
-			// take an equivalent patch at random for a true negative
-			cv::Mat rgbTN;
-			cv::Rect2d rTN;
-
-			// build training mat
-
-			auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, true);
-			truePositiveFeatures.push_back(resultTP.getFeatureArray());
-
-			/*			cv::imshow("Original", rgbTP);
-						cv::imshow("HoGTest", resultTP.hogImage);
-						setMouseCallback("HoGTest", [](int event, int x, int y, int flags, void* userdata) -> void {
-							HoGResult* r = (HoGResult*)userdata;
-
-							int cx = x / patchSize;
-							int cy = y / patchSize;
-							if (cx >= 0 && cy >= 0 && cx < r->width && cy < r->height)
-								showHistogram(r->data[cy][cx]);
-						}, &resultTP);
-						waitKey(0);
-						*/
-
-
-
-			for (int k = 0; k < nrOfTN; k++)
-			{
-				int iteration = 0;
-				do {
-					rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - l.getBbox().width), randBetween(0, currentImages[0].rows - l.getBbox().height), l.getBbox().width, l.getBbox().height);
-				} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100);
-
-				currentImages[0](rTN).copyTo(rgbTN);
-				cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
-
-				auto resultTN = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, false);
-				trueNegativeFeatures.push_back(resultTN.getFeatureArray());
-			}
-
-			if (truePositiveFeatures.size() % 10 == 0)
-				std::cout << l.getNumber() << "   " << l.getBbox().x << "," << l.getBbox().y << " / " << l.getBbox().width << "x" << l.getBbox().height << std::endl;
-		}
-	}
-
-	featureSize = truePositiveFeatures[0].size();
-
-	cv::Mat trainingMat(truePositiveFeatures.size() + trueNegativeFeatures.size(), featureSize, CV_32FC1);
-	cv::Mat trainingLabels(truePositiveFeatures.size() + trueNegativeFeatures.size(), 1, CV_32SC1);
-
-	int idx = 0;
-	for (int i = 0; i < truePositiveFeatures.size(); i++)
-	{
-		for (int f = 0; f < trainingMat.cols; f++)
-			trainingMat.at<float>(idx, f) = truePositiveFeatures[i][f];
-		trainingLabels.at<int>(idx, 0) = 1;
-		idx++;
-	}
-
-	for (int i = 0; i < trueNegativeFeatures.size(); i++) {
-		for (int f = 0; f < trainingMat.cols; f++)
-			trainingMat.at<float>(idx, f) = trueNegativeFeatures[i][f];
-		trainingLabels.at<int>(idx, 0) = -1;
-		idx++;
-	}
-
-
-	Ptr<ml::SVM> svm = ml::SVM::create();
-	svm->setType(cv::ml::SVM::C_SVC);
-	svm->setKernel(cv::ml::SVM::POLY);
-	svm->setC(0.01);
-	svm->setDegree(2);
-
-	svm->train(trainingMat, cv::ml::ROW_SAMPLE, trainingLabels);
-
-
-
-	svm->save("kittitraining.xml");
-
-	return svm;
-}
+//cv::Ptr<ml::SVM> buildModel() {
+//
+//	int nrOfTN = 3;
+//
+//	std::vector<std::vector<float>> truePositiveFeatures;
+//	std::vector<std::vector<float>> trueNegativeFeatures;
+//	int featureSize;
+//
+//	KITTIDataSet dataset("D:\\PedestrianDetectionDatasets\\kitti");
+//
+//	std::vector<DataSetLabel> labels = dataset.getLabels();
+//
+//	std::string currentNumber = "";
+//	std::vector<cv::Mat> currentImages;
+//
+//	//namedWindow("HoGTest");
+//
+//	for (auto& l : labels) {
+//
+//		if (currentNumber != l.getNumber()) {
+//			currentNumber = l.getNumber();
+//			currentImages = dataset.getImagesForNumber(currentNumber);
+//		}
+//
+//		// get true positive and true negative image
+//		// -----------------------------------------
+//		cv::Mat rgbTP;
+//		cv::Rect2d& r = l.getBbox();
+//		if (r.x >= 0 && r.y >= 0 && r.x + r.width < currentImages[0].cols && r.y + r.height < currentImages[0].rows) {
+//			currentImages[0](l.getBbox()).copyTo(rgbTP);
+//			cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
+//
+//			// take an equivalent patch at random for a true negative
+//			cv::Mat rgbTN;
+//			cv::Rect2d rTN;
+//
+//			// build training mat
+//
+//			auto resultTP = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, true);
+//			truePositiveFeatures.push_back(resultTP.getFeatureArray(true));
+//
+//			/*			cv::imshow("Original", rgbTP);
+//						cv::imshow("HoGTest", resultTP.hogImage);
+//						setMouseCallback("HoGTest", [](int event, int x, int y, int flags, void* userdata) -> void {
+//							HoGResult* r = (HoGResult*)userdata;
+//
+//							int cx = x / patchSize;
+//							int cy = y / patchSize;
+//							if (cx >= 0 && cy >= 0 && cx < r->width && cy < r->height)
+//								showHistogram(r->data[cy][cx]);
+//						}, &resultTP);
+//						waitKey(0);
+//						*/
+//
+//
+//
+//			for (int k = 0; k < nrOfTN; k++)
+//			{
+//				int iteration = 0;
+//				do {
+//					rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - l.getBbox().width), randBetween(0, currentImages[0].rows - l.getBbox().height), l.getBbox().width, l.getBbox().height);
+//				} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100);
+//
+//				currentImages[0](rTN).copyTo(rgbTN);
+//				cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
+//
+//				auto resultTN = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, false);
+//				trueNegativeFeatures.push_back(resultTN.getFeatureArray(true));
+//			}
+//
+//			if (truePositiveFeatures.size() % 10 == 0)
+//				std::cout << l.getNumber() << "   " << l.getBbox().x << "," << l.getBbox().y << " / " << l.getBbox().width << "x" << l.getBbox().height << std::endl;
+//		}
+//	}
+//
+//	featureSize = truePositiveFeatures[0].size();
+//
+//	cv::Mat trainingMat(truePositiveFeatures.size() + trueNegativeFeatures.size(), featureSize, CV_32FC1);
+//	cv::Mat trainingLabels(truePositiveFeatures.size() + trueNegativeFeatures.size(), 1, CV_32SC1);
+//
+//	int idx = 0;
+//	for (int i = 0; i < truePositiveFeatures.size(); i++)
+//	{
+//		for (int f = 0; f < trainingMat.cols; f++)
+//			trainingMat.at<float>(idx, f) = truePositiveFeatures[i][f];
+//		trainingLabels.at<int>(idx, 0) = 1;
+//		idx++;
+//	}
+//
+//	for (int i = 0; i < trueNegativeFeatures.size(); i++) {
+//		for (int f = 0; f < trainingMat.cols; f++)
+//			trainingMat.at<float>(idx, f) = trueNegativeFeatures[i][f];
+//		trainingLabels.at<int>(idx, 0) = -1;
+//		idx++;
+//	}
+//
+//
+//	Ptr<ml::SVM> svm = ml::SVM::create();
+//	svm->setType(cv::ml::SVM::C_SVC);
+//	svm->setKernel(cv::ml::SVM::POLY);
+//	svm->setC(0.01);
+//	svm->setDegree(2);
+//
+//	svm->train(trainingMat, cv::ml::ROW_SAMPLE, trainingLabels);
+//
+//
+//
+//	svm->save("kittitraining.xml");
+//
+//	return svm;
+//}
 
 
 void testSVM() {
@@ -262,8 +262,8 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 						auto result = getHistogramsOfOrientedGradient(region, patchSize, binSize);
 						result = getHistogramsOfOrientedGradient(region, patchSize, binSize, false,false);
 
-						int svmClass = svm->predict(result.getFeatureMat(), noArray());
-						float svmResult = svm->predict(result.getFeatureMat(), noArray(), ml::StatModel::Flags::RAW_OUTPUT);
+						int svmClass = svm->predict(result.getFeatureMat(true), noArray());
+						float svmResult = svm->predict(result.getFeatureMat(true), noArray(), ml::StatModel::Flags::RAW_OUTPUT);
 						if (svmClass == 1) {
 
 							double scaleX = img.cols / (double)imgToTest.cols;
@@ -368,11 +368,11 @@ void testDetection() {
 
 
 
-		float tpResult = svm->predict(result.getFeatureMat());
+		float tpResult = svm->predict(result.getFeatureMat(true));
 	//	std::cout << "TP result: " << tpResult << std::endl;
 
 		result = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, true);
-		float tnResult = svm->predict(result.getFeatureMat());
+		float tnResult = svm->predict(result.getFeatureMat(true));
 	//	std::cout << "TN result: " << tnResult << std::endl;
 
 		waitKey(0);

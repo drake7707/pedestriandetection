@@ -2,6 +2,46 @@
 #include <vector>
 #include <iostream>
 
+
+std::vector<std::vector<Histogram>> getL2NormalizationOverLargerPatch(const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize) {
+	std::vector<std::vector<Histogram>> newcells(nrOfCellsHeight - 1, std::vector<Histogram>(nrOfCellsWidth - 1, Histogram(binSize * 4, 0))); // histogram of elements per cell
+																																			  // now normalize all histograms
+	for (int y = 0; y < nrOfCellsHeight - 1; y++) {
+		for (int x = 0; x < nrOfCellsWidth - 1; x++) {
+
+			auto& dstHistogram = newcells[y][x];
+			int idx = 0;
+			for (int i = 0; i < cells[y][x].size(); i++)
+				dstHistogram[idx++] = cells[y][x][i];
+
+			for (int i = 0; i < cells[y][x + 1].size(); i++)
+				dstHistogram[idx++] = cells[y][x + 1][i];
+
+			for (int i = 0; i < cells[y + 1][x].size(); i++)
+				dstHistogram[idx++] = cells[y + 1][x][i];
+
+			for (int i = 0; i < cells[y + 1][x + 1].size(); i++)
+				dstHistogram[idx++] = cells[y + 1][x + 1][i];
+
+			/*	double max = *std::max_element(dstHistogram.begin(), dstHistogram.end());
+			if (max > 0) {
+			for (int i = 0; i < dstHistogram.size(); i++)
+			dstHistogram[i] /= max;
+			}*/
+			double sum = 0;
+			for (int i = 0; i < dstHistogram.size(); i++)
+				sum += dstHistogram[i] * dstHistogram[i];
+
+			double norm = sqrt(sum);
+			if (norm > 0) {
+				for (int i = 0; i < dstHistogram.size(); i++)
+					dstHistogram[i] /= norm;
+			}
+		}
+	}
+	return newcells;
+}
+
 HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
 
 	cv::Mat mat = img.clone();
@@ -76,43 +116,7 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 
 
 
-	
-
-	std::vector<std::vector<Histogram>> newcells(nrOfCellsHeight - 1, std::vector<Histogram>(nrOfCellsWidth - 1, Histogram(binSize * 4, 0))); // histogram of elements per cell
-																																			  // now normalize all histograms
-	for (int y = 0; y < nrOfCellsHeight - 1; y++) {
-		for (int x = 0; x < nrOfCellsWidth - 1; x++) {
-
-			auto& dstHistogram = newcells[y][x];
-			int idx = 0;
-			for (int i = 0; i < cells[y][x].size(); i++)
-				dstHistogram[idx++] = cells[y][x][i];
-
-			for (int i = 0; i < cells[y][x + 1].size(); i++)
-				dstHistogram[idx++] = cells[y][x + 1][i];
-
-			for (int i = 0; i < cells[y + 1][x].size(); i++)
-				dstHistogram[idx++] = cells[y + 1][x][i];
-
-			for (int i = 0; i < cells[y + 1][x + 1].size(); i++)
-				dstHistogram[idx++] = cells[y + 1][x + 1][i];
-
-		/*	double max = *std::max_element(dstHistogram.begin(), dstHistogram.end());
-			if (max > 0) {
-				for (int i = 0; i < dstHistogram.size(); i++)
-					dstHistogram[i] /= max;
-			}*/
-			double sum = 0;
-			for (int i = 0; i < dstHistogram.size(); i++)
-				sum += dstHistogram[i] * dstHistogram[i];
-
-			double norm = sqrt(sum);
-			if (norm > 0) {
-				for (int i = 0; i < dstHistogram.size(); i++)
-					dstHistogram[i] /= norm;
-			}
-		}
-	}
+	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(cells, nrOfCellsWidth, nrOfCellsHeight, binSize);
 
 	if (l2normalize) {
 		// L2 normalization
@@ -133,43 +137,108 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 		}
 	}
 
-
 	cv::Mat hog;
-	if (createImage) {
-
-		hog = mat.clone();
-		cv::cvtColor(hog, hog, CV_GRAY2BGR);
-
-		for (int y = 0; y < nrOfCellsHeight; y++) {
-			for (int x = 0; x < nrOfCellsWidth; x++) {
-
-				double cx = x * patchSize + patchSize / 2;
-				double cy = y * patchSize + patchSize / 2;
-				Histogram hist = cells[y][x];
-
-
-				double maxVal = *std::max_element(hist.begin(), hist.end());
-				if (maxVal > 0) {
-					for (int i = 0; i < binSize; i++) {
-						double angle = ((i + 0.5) / binSize) * CV_PI + CV_PI / 2; // + 90° so it aligns perpendicular to gradient
-						double val = hist[i] / maxVal;
-
-						double vx = cos(angle) * patchSize / 2 * val;
-						double vy = sin(angle) * patchSize / 2 * val;
-
-						cv::line(hog, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(0, 0, 255));
-					}
-				}
-
-			}
-		}
-	}
+	if (createImage)
+		hog = createHoGImage(mat, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
 
 	HoGResult result;
-	result.width = nrOfCellsWidth-1;
-	result.height = nrOfCellsHeight-1;
+	result.width = nrOfCellsWidth - 1;
+	result.height = nrOfCellsHeight - 1;
 	result.data = newcells;
 	result.hogImage = hog;
 	return result;
 }
 
+
+cv::Mat createHoGImage(cv::Mat& mat, const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, int patchSize) {
+	cv::Mat hog;
+
+	hog = mat.clone();
+	cv::cvtColor(hog, hog, CV_GRAY2BGR);
+
+	for (int y = 0; y < nrOfCellsHeight; y++) {
+		for (int x = 0; x < nrOfCellsWidth; x++) {
+
+			double cx = x * patchSize + patchSize / 2;
+			double cy = y * patchSize + patchSize / 2;
+			Histogram hist = cells[y][x];
+
+
+			double maxVal = *std::max_element(hist.begin(), hist.end());
+			if (maxVal > 0) {
+				for (int i = 0; i < binSize; i++) {
+					double angle = ((i + 0.5) / binSize) * CV_PI + CV_PI / 2; // + 90° so it aligns perpendicular to gradient
+					double val = hist[i] / maxVal;
+
+					double vx = cos(angle) * patchSize / 2 * val;
+					double vy = sin(angle) * patchSize / 2 * val;
+
+					cv::line(hog, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(0, 0, 255));
+				}
+			}
+
+		}
+	}
+	return hog;
+}
+
+HoGResult getHistogramsOfX(cv::Mat& imgValues, cv::Mat& imgBinningValues, int patchSize, int binSize, bool createImage) {
+
+
+	double max = CV_PI;
+
+	int nrOfCellsWidth = imgValues.cols / patchSize;
+	int nrOfCellsHeight = imgValues.rows / patchSize;
+
+	std::vector<std::vector<Histogram>> cells(nrOfCellsHeight, std::vector<Histogram>(nrOfCellsWidth, Histogram(binSize, 0)));
+
+	for (int y = 0; y < nrOfCellsHeight; y++) {
+
+		for (int x = 0; x < nrOfCellsWidth; x++) {
+
+			Histogram& histogram = cells[y][x];
+
+			for (int l = 0; l < patchSize; l++) {
+				for (int k = 0; k < patchSize; k++) {
+
+					float anglePixel = imgBinningValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+					double magPixel = imgValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+
+					// distribute based on angle
+					// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
+					double valBins = anglePixel / max * binSize;
+					if (valBins >= binSize) valBins = binSize - 1;
+
+					int bin1 = floor(valBins);
+					int bin2 = (bin1 + 1) % binSize;
+
+					// (t - t_begin) / (t_end - t_begin)
+					// 15 - 0 / (20-0) = 0.75
+					// (t_end - t) / (t_end - t_begin)
+					// 20 - 15 / (20-0) = 0.25
+					// yay for computergraphics triangular scheme
+
+					float tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
+					float tEnd = bin2 == 0 ? max : bin2 * max / binSize;
+
+					histogram[bin1] += magPixel * (tEnd - anglePixel) / (tEnd - tBegin);
+					histogram[bin2] += magPixel * (anglePixel - tBegin) / (tEnd - tBegin);
+				}
+			}
+		}
+	}
+
+	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(cells, nrOfCellsWidth, nrOfCellsHeight, binSize);
+
+	cv::Mat hog;
+	if (createImage)
+		hog = createHoGImage(imgValues, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
+
+	HoGResult result;
+	result.width = nrOfCellsWidth - 1;
+	result.height = nrOfCellsHeight - 1;
+	result.data = newcells;
+	result.hogImage = hog;
+	return result;
+
+}

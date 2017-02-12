@@ -4,6 +4,7 @@
 
 int nrOfTN = 2;
 int testSampleEvery = 5;
+bool addS2 = true;
 
 
 void Detector::iterateDataset(std::function<void(cv::Mat&, HoGResult&)> tpFunc, std::function<void(cv::Mat&, HoGResult&)> tnFunc, std::function<bool(int)> includeSample) {
@@ -90,7 +91,7 @@ void Detector::saveSVMLightFiles() {
 		throw std::exception("Unable to create training file");
 
 	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
-		std::vector<float> featureArray = result.getFeatureArray();
+		std::vector<float> featureArray = result.getFeatureArray(addS2);
 		trainingFile << "+1 ";
 		for (int i = 0; i < featureArray.size(); i++)
 			trainingFile << (i+1) << ":" << featureArray[i] << " ";
@@ -98,7 +99,7 @@ void Detector::saveSVMLightFiles() {
 		trainingFile << std::endl;
 
 	}, [&](cv::Mat& mat, HoGResult& result) -> void {
-		std::vector<float> featureArray = result.getFeatureArray();
+		std::vector<float> featureArray = result.getFeatureArray(addS2);
 		trainingFile << "-1 ";
 		for (int i = 0; i < featureArray.size(); i++)
 			trainingFile << (i + 1) << ":" << featureArray[i] << " ";
@@ -112,7 +113,7 @@ void Detector::saveSVMLightFiles() {
 		throw std::exception("Unable to create training file");
 
 	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
-		std::vector<float> featureArray = result.getFeatureArray();
+		std::vector<float> featureArray = result.getFeatureArray(addS2);
 		testFile << "+1 ";
 		for (int i = 0; i < featureArray.size(); i++)
 			testFile << (i + 1) << ":" << featureArray[i] << " ";
@@ -120,7 +121,7 @@ void Detector::saveSVMLightFiles() {
 		testFile << std::endl;
 
 	}, [&](cv::Mat& mat, HoGResult& result) -> void {
-		std::vector<float> featureArray = result.getFeatureArray();
+		std::vector<float> featureArray = result.getFeatureArray(addS2);
 		testFile << "-1 ";
 		for (int i = 0; i < featureArray.size(); i++)
 			testFile << (i + 1) << ":" << featureArray[i] << " ";
@@ -138,9 +139,9 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 
 	std::cout << "Iterating dataset with test sample every " << testSampleEvery << " samples" << std::endl;
 	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
-		truePositiveFeatures.push_back(result.getFeatureArray());
+		truePositiveFeatures.push_back(result.getFeatureArray(addS2));
 	}, [&](cv::Mat& mat, HoGResult& result) -> void {
-		trueNegativeFeatures.push_back(result.getFeatureArray());
+		trueNegativeFeatures.push_back(result.getFeatureArray(addS2));
 	}, [](int idx) -> bool { return idx % testSampleEvery != 0; });
 
 	featureSize = truePositiveFeatures[0].size();
@@ -179,7 +180,7 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 
 	cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 	svm->setType(cv::ml::SVM::C_SVC);
-	svm->setKernel(cv::ml::SVM::POLY);
+	svm->setKernel(cv::ml::SVM::LINEAR);
 	svm->setC(0.001);
 	svm->setDegree(2);
 
@@ -230,8 +231,8 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 
 	iterateDataset([&](cv::Mat& mat, HoGResult& result) -> void {
 		// should be positive
-		int svmClass = svm->predict(result.getFeatureMat(), cv::noArray());
-		float svmResult = svm->predict(result.getFeatureMat(), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
+		int svmClass = svm->predict(result.getFeatureMat(addS2), cv::noArray());
+		float svmResult = svm->predict(result.getFeatureMat(addS2), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
 		if (!isnan(svmResult)) {
 			if (svmClass == 1)
 				evalResult.nrOfTruePositives++;
@@ -242,8 +243,8 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 	}, [&](cv::Mat& mat, HoGResult& result) -> void {
 
 		// should be negative
-		int svmClass = svm->predict(result.getFeatureMat(), cv::noArray());
-		float svmResult = svm->predict(result.getFeatureMat(), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
+		int svmClass = svm->predict(result.getFeatureMat(addS2), cv::noArray());
+		float svmResult = svm->predict(result.getFeatureMat(addS2), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
 		if (!isnan(svmResult)) {
 			if (svmClass == -1)
 				evalResult.nrOfTrueNegatives++;

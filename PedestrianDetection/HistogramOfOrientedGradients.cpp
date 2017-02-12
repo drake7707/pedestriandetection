@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-std::vector<std::vector<Histogram>> getL2NormalizationOverLargerPatch(const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize) {
+std::vector<std::vector<Histogram>> getL2NormalizationOverLargerPatch(const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, bool l2normalize) {
 	std::vector<std::vector<Histogram>> newcells(nrOfCellsHeight - 1, std::vector<Histogram>(nrOfCellsWidth - 1, Histogram(binSize * 4, 0))); // histogram of elements per cell
 																																			  // now normalize all histograms
 	for (int y = 0; y < nrOfCellsHeight - 1; y++) {
@@ -29,14 +29,16 @@ std::vector<std::vector<Histogram>> getL2NormalizationOverLargerPatch(const std:
 			for (int i = 0; i < dstHistogram.size(); i++)
 			dstHistogram[i] /= max;
 			}*/
-			double sum = 0;
-			for (int i = 0; i < dstHistogram.size(); i++)
-				sum += dstHistogram[i] * dstHistogram[i];
-
-			double norm = sqrt(sum);
-			if (norm > 0) {
+			if (l2normalize) {
+				double sum = 0;
 				for (int i = 0; i < dstHistogram.size(); i++)
-					dstHistogram[i] /= norm;
+					sum += dstHistogram[i] * dstHistogram[i];
+
+				double norm = sqrt(sum);
+				if (norm > 0) {
+					for (int i = 0; i < dstHistogram.size(); i++)
+						dstHistogram[i] /= norm;
+				}
 			}
 		}
 	}
@@ -117,7 +119,7 @@ HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSi
 
 
 
-	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(cells, nrOfCellsWidth, nrOfCellsHeight, binSize);
+	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(cells, nrOfCellsWidth, nrOfCellsHeight, binSize, l2normalize);
 
 	if (l2normalize) {
 		// L2 normalization
@@ -183,10 +185,10 @@ cv::Mat createHoGImage(cv::Mat& mat, const std::vector<std::vector<Histogram>>& 
 	return hog;
 }
 
-HoGResult getHistogramsOfX(cv::Mat& imgValues, cv::Mat& imgBinningValues, int patchSize, int binSize, bool createImage) {
+HoGResult getHistogramsOfX(cv::Mat& imgValues, cv::Mat& imgBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize) {
 
 
-	double max = CV_PI;
+	double max = 1;
 
 	int nrOfCellsWidth = imgValues.cols / patchSize;
 	int nrOfCellsHeight = imgValues.rows / patchSize;
@@ -229,12 +231,13 @@ HoGResult getHistogramsOfX(cv::Mat& imgValues, cv::Mat& imgBinningValues, int pa
 		}
 	}
 
-	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(cells, nrOfCellsWidth, nrOfCellsHeight, binSize);
+	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(cells, nrOfCellsWidth, nrOfCellsHeight, binSize, l2normalize);
 
 	cv::Mat hog;
-	if (createImage)
-		hog = createHoGImage(imgValues, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
-
+	if (createImage) {
+		cv::Mat m(imgValues.rows, imgValues.cols, CV_32FC1);
+		hog = createHoGImage(m, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
+	}
 	HoGResult result;
 	result.width = nrOfCellsWidth - 1;
 	result.height = nrOfCellsHeight - 1;

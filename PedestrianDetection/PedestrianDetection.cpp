@@ -262,8 +262,8 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 						auto result = getHistogramsOfOrientedGradient(region, patchSize, binSize);
 						result = getHistogramsOfOrientedGradient(region, patchSize, binSize, false,false);
 
-						int svmClass = svm->predict(result.getFeatureMat(true), noArray());
-						float svmResult = svm->predict(result.getFeatureMat(true), noArray(), ml::StatModel::Flags::RAW_OUTPUT);
+						int svmClass = svm->predict(result.getFeatureArray(true).toMat(), noArray());
+						float svmResult = svm->predict(result.getFeatureArray(true).toMat(), noArray(), ml::StatModel::Flags::RAW_OUTPUT);
 						if (svmClass == 1) {
 
 							double scaleX = img.cols / (double)imgToTest.cols;
@@ -368,11 +368,11 @@ void testDetection() {
 
 
 
-		float tpResult = svm->predict(result.getFeatureMat(true));
+		float tpResult = svm->predict(result.getFeatureArray(true).toMat());
 	//	std::cout << "TP result: " << tpResult << std::endl;
 
 		result = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, true);
-		float tnResult = svm->predict(result.getFeatureMat(true));
+		float tnResult = svm->predict(result.getFeatureArray(true).toMat());
 	//	std::cout << "TN result: " << tnResult << std::endl;
 
 		waitKey(0);
@@ -383,11 +383,11 @@ void testDetection() {
 
 int main()
 {
-
+	/*
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	Detector d;
 
-	std::cout << " Detector Features options" << std::endl;
+	std::cout << "Detector Features options:" << std::endl;
 	d.toString(std::cout);
 	d.buildWeakHoGSVMClassifier();
 
@@ -406,23 +406,51 @@ int main()
 	std::cout << "Done" << std::endl;
 
 	getchar();
-
+	*/
 
 	//testDetection();
 
 	
 	//auto img = imread("D:\\circle.png");
-	auto img = imread("D:\\PedestrianDetectionDatasets\\kitti\\depth\\000000.png");
+	auto img = imread("D:\\PedestrianDetectionDatasets\\kitti\\rgb\\000000.png");
 	namedWindow("Test");
 	imshow("Test", img);
 
 
-	auto result = getHistogramsOfOrientedGradient(img, 8, 9, true);
+//	auto result = getHistogramsOfOrientedGradient(img, 8, 9, true);
 
 
+	Mat hsl;
+	cvtColor(img, hsl, CV_BGR2HLS);
 
+	
+
+	Mat hs(hsl.rows, hsl.cols, CV_32F, Scalar(0));
+	for (int y = 0; y < hsl.rows; y++)
+	{
+		for (int x = 0; x < hsl.cols; x++)
+		{
+			cv::Vec3b v = hsl.at<cv::Vec3b>(y, x);
+			float h =  v[0]/ 180.0;
+			float s = v[1] / 255.0;
+			hs.at<float>(y, x) = h*s;
+		}
+	}
+
+	auto result = getHistogramsOfX(Mat(img.rows, img.cols, CV_32FC1, Scalar(1.0)), hs, patchSize, binSize, true, true);
+
+	for (int y = 0; y < result.height; y++)
+	{
+		for (int x = 0; x < result.width; x++)
+		{
+			
+		}
+	}
+
+	cv::normalize(hs, hs, 0, 1, CV_MINMAX);
+	
 	namedWindow("HoG");
-	imshow("HoG", result.hogImage);
+	imshow("HoG", hs);
 
 	setMouseCallback("HoG", [](int event, int x, int y, int flags, void* userdata) -> void {
 		HoGResult* r = (HoGResult*)userdata;

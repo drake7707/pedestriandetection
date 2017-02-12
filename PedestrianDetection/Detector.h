@@ -2,6 +2,8 @@
 #include "opencv2\opencv.hpp"
 #include <functional>
 #include "HistogramOfOrientedGradients.h"
+#include "FeatureVector.h"
+
 
 
 struct ClassifierEvaluation {
@@ -45,7 +47,7 @@ private:
 	int patchSize = 8;
 	int binSize = 9;
 
-	cv::Mat getFeatures(cv::Mat& mat);
+	FeatureVector getFeatures(cv::Mat& mat);
 
 	void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::function<void(cv::Mat&)> tnFunc, std::function<bool(int)> includeSample);
 

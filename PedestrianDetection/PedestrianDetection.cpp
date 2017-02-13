@@ -356,7 +356,7 @@ struct MatchRegion {
 	float svmResult;
 };
 
-std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, float threshold) {
+std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Detector& d, double threshold) {
 
 	int slidingWindowWidth = 32;
 	int slidingWindowHeight = 64;
@@ -367,31 +367,28 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 	//namedWindow("Test2");
 	std::vector<MatchRegion> matchingRegions;
 
-	for (float invscale = 1; invscale <= maxScaleReduction; invscale += 0.5)
+	for (float invscale = 1; invscale <= maxScaleReduction; invscale += 0.3)
 	{
 		cv::Mat imgToTest;
 		cv::resize(img, imgToTest, cv::Size2d(ceilTo(img.cols / invscale, slidingWindowWidth), ceilTo(img.rows / invscale, slidingWindowHeight)));
 
 		for (int j = 0; j < imgToTest.rows / slidingWindowHeight - 1; j++)
 		{
-			for (int verticalStep = 0; verticalStep < slidingWindowWidth; verticalStep += slidingWindowStep)
+			for (float verticalStep = 0; verticalStep < slidingWindowWidth; verticalStep += slidingWindowStep/invscale)
 			{
 				for (int i = 0; i < imgToTest.cols / slidingWindowWidth - 1; i++)
 				{
 
-					for (int horizontalStep = 0; horizontalStep < slidingWindowWidth; horizontalStep += slidingWindowStep)
+					for (float horizontalStep = 0; horizontalStep < slidingWindowWidth; horizontalStep += slidingWindowStep/invscale)
 					{
 						cv::Rect windowRect(i * slidingWindowWidth + horizontalStep, j * slidingWindowHeight + verticalStep, slidingWindowWidth, slidingWindowHeight);
 						cv::Mat region;
 						cv::resize(imgToTest(windowRect), region, Size2d(refWidth, refHeight));
 
 
-						auto result = getHistogramsOfOrientedGradient(region, patchSize, binSize);
-						result = getHistogramsOfOrientedGradient(region, patchSize, binSize, false, false);
-
-						int svmClass = svm->predict(result.getFeatureArray(true).toMat(), noArray());
-						float svmResult = svm->predict(result.getFeatureArray(true).toMat(), noArray(), ml::StatModel::Flags::RAW_OUTPUT);
-						if (svmClass == 1) {
+						float svmResult = d.evaluate(region);
+						int svmClass = svmResult < 0 ? -1 : 1;
+						if (svmClass == 1 && abs(svmResult) > threshold) {
 
 							double scaleX = img.cols / (double)imgToTest.cols;
 							double scaleY = img.rows / (double)imgToTest.rows;
@@ -418,11 +415,11 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 }
 
 
-void testDetection() {
-	Ptr<ml::SVM> svm;
+void testDetection(Detector& d, double threshold) {
+	//Ptr<ml::SVM> svm;
 	//svm = buildModel();
 
-	svm = Algorithm::load<ml::SVM>("kittitraining.xml");
+	//svm = Algorithm::load<ml::SVM>("kittitraining.xml");
 
 	KITTIDataSet dataset("C:\\Users\\dwight\\Downloads\\dwight\\kitti");
 
@@ -445,13 +442,15 @@ void testDetection() {
 			currentNumber = l.getNumber();
 			currentImages = dataset.getImagesForNumber(currentNumber);
 		}
+		else
+			continue;
 
 		cv::Mat rgb = currentImages[0].clone();
 		cv::Mat depth = currentImages[1].clone();
 		//	cv::rectangle(rgb, l.getBbox(), Scalar(0, 0, 255), 2);
 		//	cv::rectangle(depth, l.getBbox(), Scalar(0, 0, 255), 2);
 
-		std::vector<MatchRegion> matchingRegions = evaluateModelOnImage(currentImages[0], svm, 0.7);
+		std::vector<MatchRegion> matchingRegions = evaluateModelOnImage(currentImages[0], d, threshold);
 
 		for (auto& region : matchingRegions) {
 			cv::rectangle(rgb, region.region, Scalar(0, 255, 0), 1);
@@ -462,45 +461,46 @@ void testDetection() {
 		imshow("RGB", rgb);
 		//	imshow("DEPTH", depth);
 
-		cv::Mat rgbTP;
+		/*cv::Mat rgbTP;
 		currentImages[0](l.getBbox()).copyTo(rgbTP);
-		cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
-
-		// take an equivalent patch at random for a true negative
-		cv::Mat rgbTN;
-		cv::Rect2d rTN;
-
-		int iteration = 0;
-		do {
-			rTN = cv::Rect2d(randBetween(0, rgb.cols - l.getBbox().x), randBetween(0, rgb.rows - l.getBbox().y), l.getBbox().width, l.getBbox().height);
-		} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100 && (rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
-
-		//std::cout << rTN.x << " , " << rTN.y << "   " << rTN.width << " " << rTN.height << std::endl;
-
-		currentImages[0](rTN).copyTo(rgbTN);
-		cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
-
-		imshow("ElementTP", rgbTP);
-
-		imshow("ElementTN", rgbTN);
+		cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));*/
 
 
+		//// take an equivalent patch at random for a true negative
+		//cv::Mat rgbTN;
+		//cv::Rect2d rTN;
 
+		//int iteration = 0;
+		//do {
+		//	rTN = cv::Rect2d(randBetween(0, rgb.cols - l.getBbox().x), randBetween(0, rgb.rows - l.getBbox().y), l.getBbox().width, l.getBbox().height);
+		//} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100 && (rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
 
-		auto result = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, true);
-		imshow("ElementTPResult", result.hogImage);
+		////std::cout << rTN.x << " , " << rTN.y << "   " << rTN.width << " " << rTN.height << std::endl;
 
-		result = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, true);
-		imshow("ElementTNResult", result.hogImage);
+		//currentImages[0](rTN).copyTo(rgbTN);
+		//cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
+
+		//imshow("ElementTP", rgbTP);
+
+		//imshow("ElementTN", rgbTN);
 
 
 
-		float tpResult = svm->predict(result.getFeatureArray(true).toMat());
-		//	std::cout << "TP result: " << tpResult << std::endl;
 
-		result = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, true);
-		float tnResult = svm->predict(result.getFeatureArray(true).toMat());
-		//	std::cout << "TN result: " << tnResult << std::endl;
+		//auto result = getHistogramsOfOrientedGradient(rgbTP, patchSize, binSize, true);
+		//imshow("ElementTPResult", result.hogImage);
+
+		//result = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, true);
+		//imshow("ElementTNResult", result.hogImage);
+
+
+
+		//float tpResult = d.evaluate(rgbTP);// svm->predict(result.getFeatureArray(true).toMat());
+		////	std::cout << "TP result: " << tpResult << std::endl;
+
+		//result = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, true);
+		//float tnResult = d.evaluate(rgbTN);// svm->predict(result.getFeatureArray(true).toMat());
+		////	std::cout << "TN result: " << tnResult << std::endl;
 
 		waitKey(0);
 
@@ -518,7 +518,9 @@ int main()
 	std::cout << "Detector Features options:" << std::endl;
 	d.toString(std::cout);
 	//d.buildWeakHoGSVMClassifier();
+	d.loadModel(std::string("")); // TODO
 
+	/*
 	std::cout << "Training set evaluation" << std::endl;
 	ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier(true);
 	evalResult.print(std::cout);
@@ -526,9 +528,9 @@ int main()
 	std::cout << "Test set evaluation" << std::endl;
 	evalResult = d.evaluateWeakHoGSVMClassifier(false);
 	evalResult.print(std::cout);
+	*/
 
-
-	testDetection();
+	testDetection(d, 0.06);
 
 
 	std::cout << "Done" << std::endl;

@@ -223,6 +223,133 @@ void testSVM() {
 
 
 
+void testSVMEvaluation() {
+
+
+	int featureSize = 3;
+	int trainingSize = 1000;
+	int testIterations = 1000;
+
+	cv::Mat trainingMat(trainingSize, featureSize, CV_32FC1);
+	cv::Mat trainingLabels(trainingSize, 1, CV_32SC1);
+
+	for (int i = 0; i < trainingSize; i++)
+	{
+		double val0 = (rand() / (double)RAND_MAX);
+		double val1 = (rand() / (double)RAND_MAX);
+		double val2 = (rand() / (double)RAND_MAX);
+
+		trainingMat.at<float>(i, 0) = (float)val0;
+		trainingMat.at<float>(i, 1) = (float)val1;
+		trainingMat.at<float>(i, 2) = (float)val2;
+
+		bool isTrue = val0 > val1 && val1 > val2;
+		trainingLabels.at<float>(i, 0) = isTrue ? 1 : -1;
+	}
+
+	Ptr<ml::SVM> svm = ml::SVM::create();
+	svm->setType(cv::ml::SVM::C_SVC);
+	svm->setKernel(cv::ml::SVM::LINEAR);
+	svm->setC(1);
+	//svm->setDegree(2);
+
+	svm->train(trainingMat, cv::ml::ROW_SAMPLE, trainingLabels);
+
+	int nrOK = 0;
+	int nrNOK = 0;
+
+	int nrOK2 = 0;
+	int nrNOK2 = 0;
+
+	cv::Mat sv = svm->getSupportVectors();
+
+	std::cout << "SV" << std::endl;
+	for (int i = 0; i < sv.cols; i++)
+	{
+		std::cout << std::fixed << std::setprecision(2) << sv.at<float>(0, i) << " " << std::endl;
+	}
+
+
+	std::cout << "w^T" << std::endl;
+	std::vector<float> alpha;
+	std::vector<float> svidx;
+	double b = svm->getDecisionFunction(0, alpha, svidx);
+	Mat wT(1, sv.cols, CV_32F, Scalar(0));
+	for (int r = 0; r < sv.rows; ++r)
+	{
+		for (int c = 0; c < sv.cols; ++c)
+			wT.at<float>(0, c) += alpha[r] * sv.at<float>(r, c);
+	}
+//	cv::Mat wT;
+//	cv::transpose(W, wT);
+
+	for (int i = 0; i < wT.cols; i++)
+	{
+		std::cout << std::fixed << std::setprecision(2) << wT.at<float>(0, i) << " " << std::endl;
+	}
+
+
+	cv::Mat testImage(100, 100, CV_8UC3);
+
+	for (int i = 0; i < 100; i++)
+	{
+		for (int j = 0; j < 100; j++)
+		{
+
+
+			cv::Mat testMat(1, featureSize, CV_32F);
+
+
+			double val0 = i / 100.0;
+			double val1 = j / 100.0;
+			double val2 = (rand() / (double)RAND_MAX);
+
+			testMat.at<float>(0, 0) = (float)val0;
+			testMat.at<float>(0, 1) = (float)val1;
+			testMat.at<float>(0, 2) = (float)val2;
+			bool isTrue = val0 > val1 && val1 > val2;
+			//	svm->save("test.xml");
+
+			double value = -(wT.dot(testMat) - b);
+
+
+
+			if ((value > 0 && isTrue)
+				|| (value < 0 && !isTrue)) {
+				// OK
+				nrOK2++;
+			//	testImage.at<cv::Vec3b>(99 - j, i) = Vec3b(0, 255, 0);
+
+			}
+			else {
+				nrNOK2++;
+				//testImage.at<cv::Vec3b>(99 - j, i) = Vec3b(0, 0, 255);
+			}
+
+			float result = svm->predict(testMat, noArray());
+			if ((result > 0 && isTrue)
+				|| (result < 0 && !isTrue)) {
+				// OK
+				nrOK++;
+			}
+			else {
+				nrNOK++;
+			}
+
+			testImage.at<cv::Vec3b>(99 - j, i) = value > 0 ? Vec3b(0, 255, 0) : Vec3b(0, 0, 255);
+
+		}
+	}
+	namedWindow("TestSVM");
+	imshow("TestSVM", testImage);
+	std::cout << "nr OK " << nrOK << " , " << " nr NOK " << nrNOK << std::endl;
+	std::cout << "nr OK2 " << nrOK2 << " , " << " nr NOK2 " << nrNOK2 << std::endl;
+	waitKey(0);
+}
+
+
+
+
 
 struct MatchRegion {
 	cv::Rect2d region;
@@ -260,7 +387,7 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Ptr<ml::SVM> svm, fl
 
 
 						auto result = getHistogramsOfOrientedGradient(region, patchSize, binSize);
-						result = getHistogramsOfOrientedGradient(region, patchSize, binSize, false,false);
+						result = getHistogramsOfOrientedGradient(region, patchSize, binSize, false, false);
 
 						int svmClass = svm->predict(result.getFeatureArray(true).toMat(), noArray());
 						float svmResult = svm->predict(result.getFeatureArray(true).toMat(), noArray(), ml::StatModel::Flags::RAW_OUTPUT);
@@ -297,7 +424,7 @@ void testDetection() {
 
 	svm = Algorithm::load<ml::SVM>("kittitraining.xml");
 
-	KITTIDataSet dataset("D:\\PedestrianDetectionDatasets\\kitti");
+	KITTIDataSet dataset("C:\\Users\\dwight\\Downloads\\dwight\\kitti");
 
 	std::vector<DataSetLabel> labels = dataset.getLabels();
 
@@ -333,7 +460,7 @@ void testDetection() {
 
 
 		imshow("RGB", rgb);
-		imshow("DEPTH", depth);
+		//	imshow("DEPTH", depth);
 
 		cv::Mat rgbTP;
 		currentImages[0](l.getBbox()).copyTo(rgbTP);
@@ -346,7 +473,7 @@ void testDetection() {
 		int iteration = 0;
 		do {
 			rTN = cv::Rect2d(randBetween(0, rgb.cols - l.getBbox().x), randBetween(0, rgb.rows - l.getBbox().y), l.getBbox().width, l.getBbox().height);
-		} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100 && (rTN.x < 0 || rTN.y < 0 || rTN.x+rTN.width >= currentImages[0].cols || rTN.y+rTN.height >= currentImages[0].rows));
+		} while ((rTN & l.getBbox()).area() > 0 && iteration++ < 100 && (rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
 
 		//std::cout << rTN.x << " , " << rTN.y << "   " << rTN.width << " " << rTN.height << std::endl;
 
@@ -369,11 +496,11 @@ void testDetection() {
 
 
 		float tpResult = svm->predict(result.getFeatureArray(true).toMat());
-	//	std::cout << "TP result: " << tpResult << std::endl;
+		//	std::cout << "TP result: " << tpResult << std::endl;
 
 		result = getHistogramsOfOrientedGradient(rgbTN, patchSize, binSize, true);
 		float tnResult = svm->predict(result.getFeatureArray(true).toMat());
-	//	std::cout << "TN result: " << tnResult << std::endl;
+		//	std::cout << "TN result: " << tnResult << std::endl;
 
 		waitKey(0);
 
@@ -383,13 +510,14 @@ void testDetection() {
 
 int main()
 {
-	/*
+	//testSVMEvaluation();
+
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	Detector d;
 
 	std::cout << "Detector Features options:" << std::endl;
 	d.toString(std::cout);
-	d.buildWeakHoGSVMClassifier();
+	//d.buildWeakHoGSVMClassifier();
 
 	std::cout << "Training set evaluation" << std::endl;
 	ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier(true);
@@ -406,24 +534,23 @@ int main()
 	std::cout << "Done" << std::endl;
 
 	getchar();
-	*/
 
 	//testDetection();
 
-	
+
 	//auto img = imread("D:\\circle.png");
-	auto img = imread("D:\\PedestrianDetectionDatasets\\kitti\\rgb\\000000.png");
+	auto img = imread("C:\\Users\\dwight\\Downloads\\dwight\\kitti\\rgb\\000000.png");
 	namedWindow("Test");
 	imshow("Test", img);
 
 
-//	auto result = getHistogramsOfOrientedGradient(img, 8, 9, true);
+	//	auto result = getHistogramsOfOrientedGradient(img, 8, 9, true);
 
 
 	Mat hsl;
 	cvtColor(img, hsl, CV_BGR2HLS);
 
-	
+
 
 	Mat hs(hsl.rows, hsl.cols, CV_32F, Scalar(0));
 	for (int y = 0; y < hsl.rows; y++)
@@ -431,7 +558,7 @@ int main()
 		for (int x = 0; x < hsl.cols; x++)
 		{
 			cv::Vec3b v = hsl.at<cv::Vec3b>(y, x);
-			float h =  v[0]/ 180.0;
+			float h = v[0] / 180.0;
 			float s = v[1] / 255.0;
 			hs.at<float>(y, x) = h*s;
 		}
@@ -443,12 +570,12 @@ int main()
 	{
 		for (int x = 0; x < result.width; x++)
 		{
-			
+
 		}
 	}
 
 	cv::normalize(hs, hs, 0, 1, CV_MINMAX);
-	
+
 	namedWindow("HoG");
 	imshow("HoG", hs);
 

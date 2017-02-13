@@ -33,8 +33,8 @@ void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::functio
 			cv::Rect2d& r = l.getBbox();
 			if (r.x >= 0 && r.y >= 0 && r.x + r.width < currentImages[0].cols && r.y + r.height < currentImages[0].rows) {
 
-				for (auto& img : currentImages) {
-					//auto& img = currentImages[0];
+				//for (auto& img : currentImages) {
+					auto& img = currentImages[0];
 					img(l.getBbox()).copyTo(rgbTP);
 					cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
 
@@ -72,7 +72,7 @@ void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::functio
 							//trueNegativeFeatures.push_back(resultTN.getFeatureArray());
 						}
 					}
-				}
+				//}
 			}
 		}
 		idx++;
@@ -182,12 +182,12 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	svm->setKernel(cv::ml::SVM::LINEAR);
 	svm->setC(0.001);
 	svm->setDegree(2);
-
+	
+	
 	//cv::Ptr<cv::ml::TrainData> tdata = cv::ml::TrainData::create(trainingMat, cv::ml::SampleTypes::ROW_SAMPLE, trainingLabels);
 	//svm->trainAuto(tdata);
 	auto& criteria = svm->getTermCriteria();
 	//criteria.maxCount = 4000;
-
 
 	cv::Mat classWeights(2, 1, CV_32FC1);
 
@@ -195,11 +195,13 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	classWeights.at<float>(1, 0) = 0.5;
 	svm->setClassWeights(classWeights);
 
+	
 	std::cout << "Training SVM with options: " << std::endl;
 	std::cout << "Type: " << svm->getType() << std::endl;
 	std::cout << "Kernel: " << svm->getKernelType() << std::endl;
 	std::cout << "C: " << svm->getC() << std::endl;
 	std::cout << "Iterations: " << criteria.maxCount << std::endl;
+	std::cout << "Evaluating with bias (rho) shift: " << biasShift << std::endl;
 
 	if (svm->getKernelType() == cv::ml::SVM::POLY)
 		std::cout << "Degree: " << svm->getDegree() << std::endl;
@@ -224,14 +226,25 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 
 ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) {
 	cv::Ptr<cv::ml::SVM> svm = cv::Algorithm::load<cv::ml::SVM>(weakClassifierSVMFile);
+	
+	cv::Mat sv = svm->getSupportVectors();
+	std::vector<float> alpha;
+	std::vector<float> svidx;
+	double b = svm->getDecisionFunction(0, alpha, svidx);
+	cv::Mat wT(1, sv.cols, CV_32F, cv::Scalar(0));
+	for (int r = 0; r < sv.rows; ++r)
+	{
+		for (int c = 0; c < sv.cols; ++c)
+			wT.at<float>(0, c) += alpha[r] * sv.at<float>(r, c);
+	}
 
 	ClassifierEvaluation evalResult;
 
 	iterateDataset([&](cv::Mat& mat) -> void {
 		// should be positive
 		cv::Mat features = this->getFeatures(mat).toMat();
-		int svmClass = svm->predict(features, cv::noArray());
-		float svmResult = svm->predict(features, cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
+		double svmResult = evaluateSVM(svm, wT, b, this->getFeatures(mat));
+		int svmClass = svmResult < 0 ? -1 : 1;
 		if (!isnan(svmResult)) {
 			if (svmClass == 1)
 				evalResult.nrOfTruePositives++;
@@ -241,9 +254,9 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 
 	}, [&](cv::Mat& mat) -> void {
 		// should be negative
-		cv::Mat features = this->getFeatures(mat).toMat();
-		int svmClass = svm->predict(features, cv::noArray());
-		float svmResult = svm->predict(features, cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
+		
+		double svmResult = evaluateSVM(svm, wT, b, this->getFeatures(mat));
+		int svmClass = svmResult < 0 ? -1 : 1;
 		if (!isnan(svmResult)) {
 			if (svmClass == -1)
 				evalResult.nrOfTrueNegatives++;
@@ -255,6 +268,21 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 	return evalResult;
 }
 
+double Detector::evaluateSVM(cv::Ptr<cv::ml::SVM> svm, cv::Mat& wT, double b, FeatureVector& vec) {
+	if (svm->getKernelType() == cv::ml::SVM::LINEAR)
+		return -(wT.dot(vec) - (b+biasShift));
+	else
+		return svm->predict(vec.toMat());
+}
+
+
+void Detector::saveModel() {
+
+}
+
+void Detector::loadModel(std::string& path) {
+
+}
 
 //--------------------------------------------
 

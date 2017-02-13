@@ -33,8 +33,8 @@ class Detector
 private:
 
 	
-	//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-	std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+	std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+	//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
 	std::string weakClassifierSVMFile = "kittitraining.xml";
 
 	int refWidth = 64;
@@ -47,9 +47,14 @@ private:
 	int patchSize = 8;
 	int binSize = 9;
 
+	double biasShift = 0.05;
+
 	FeatureVector getFeatures(cv::Mat& mat);
 
 	void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::function<void(cv::Mat&)> tnFunc, std::function<bool(int)> includeSample);
+
+
+	double evaluateSVM(cv::Ptr<cv::ml::SVM> svm, cv::Mat& wT, double b, FeatureVector& vec);
 
 public:
 	void toString(std::ostream& o) {
@@ -70,6 +75,12 @@ public:
 	ClassifierEvaluation evaluateWeakHoGSVMClassifier(bool onTrainingSet);
 
 	
+
+	void saveModel();
+
+
+	void loadModel(std::string& path);
+
 
 	Detector()
 	{

@@ -33,6 +33,11 @@ public:
 		}
 	}
 
+	void applyMeanAndVariance(std::vector<float> meanVector, std::vector<float> sigmaVector) {
+		for (int f = 0; f < this->size(); f++)
+			at(f) = (at(f) - meanVector[f]) / sigmaVector[f];
+	}
+
 	cv::Mat toMat() {
 		cv::Mat imgSample(1, this->size(), CV_32FC1);
 		for (int i = 0; i < this->size(); i++)

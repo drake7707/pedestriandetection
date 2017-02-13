@@ -35,9 +35,6 @@ private:
 
 	std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
 	//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-	std::string weakClassifierSVMFile = "kittitraining.xml";
-
-
 
 
 	int refWidth = 64;
@@ -54,11 +51,15 @@ private:
 
 
 	bool modelReady = false;
-	cv::Ptr<cv::ml::SVM> svm;
-	cv::Mat wT;
-	double b;
 
-
+	struct DetectorModel {
+		cv::Ptr<cv::ml::SVM> svm;
+		cv::Mat weightVector; // w . x - b = 0
+		double bias;
+		std::vector<float> meanVector;
+		std::vector<float> sigmaVector;
+	};
+	DetectorModel model;
 
 
 	FeatureVector getFeatures(cv::Mat& mat);
@@ -97,7 +98,7 @@ public:
 	double evaluate(cv::Mat& mat);
 
 
-	void saveModel();
+	void saveModel(std::string& path);
 
 
 	void loadModel(std::string& path);

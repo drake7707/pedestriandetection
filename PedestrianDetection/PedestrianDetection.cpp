@@ -515,12 +515,15 @@ int main()
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	Detector d;
 
+	std::cout << "Evaluating with bias (rho) shift: " << d.biasShift << std::endl;
+
 	std::cout << "Detector Features options:" << std::endl;
 	d.toString(std::cout);
-	//d.buildWeakHoGSVMClassifier();
+	//d.buildModel();
+	//d.saveModel(std::string(""));
 	d.loadModel(std::string("")); // TODO
 
-	/*
+	
 	std::cout << "Training set evaluation" << std::endl;
 	ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier(true);
 	evalResult.print(std::cout);
@@ -528,7 +531,7 @@ int main()
 	std::cout << "Test set evaluation" << std::endl;
 	evalResult = d.evaluateWeakHoGSVMClassifier(false);
 	evalResult.print(std::cout);
-	*/
+	
 
 	testDetection(d, 0.06);
 

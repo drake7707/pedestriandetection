@@ -136,6 +136,7 @@ void Detector::saveSVMLightFiles() {
 void Detector::buildModel() {
 
 	model.svm = buildWeakHoGSVMClassifier();
+	loadSVMEvaluationParameters();
 	modelReady = true;
 }
 
@@ -255,8 +256,7 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	std::cout << "Kernel: " << svm->getKernelType() << std::endl;
 	std::cout << "C: " << svm->getC() << std::endl;
 	std::cout << "Iterations: " << criteria.maxCount << std::endl;
-	std::cout << "Evaluating with bias (rho) shift: " << biasShift << std::endl;
-
+	
 	if (svm->getKernelType() == cv::ml::SVM::POLY)
 		std::cout << "Degree: " << svm->getDegree() << std::endl;
 	if (svm->getClassWeights().rows > 0)
@@ -316,7 +316,7 @@ double Detector::evaluate(cv::Mat& mat) {
 	vec.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
 	if (model.svm->getKernelType() == cv::ml::SVM::LINEAR)
-		return -(model.weightVector.dot(vec) - (model.bias + biasShift));
+		return -(model.weightVector.dot(vec.toMat()) - (model.bias + biasShift));
 	else
 		return model.svm->predict(vec.toMat());
 }
@@ -348,7 +348,6 @@ void Detector::loadModel(std::string& path) {
 	loadSVMEvaluationParameters();
 	modelReady = true;
 
-	std::string filename = "model.xml";
 	cv::FileStorage fsRead(filename, cv::FileStorage::READ);
 	fsRead["mean"] >> model.meanVector;
 	fsRead["sigma"] >> model.sigmaVector;

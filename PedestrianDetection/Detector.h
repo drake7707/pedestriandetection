@@ -47,9 +47,9 @@ private:
 	int patchSize = 8;
 	int binSize = 9;
 
-	double biasShift = 0.02;
+public:double biasShift = 1.5;
 
-
+private:
 	bool modelReady = false;
 
 	struct DetectorModel {

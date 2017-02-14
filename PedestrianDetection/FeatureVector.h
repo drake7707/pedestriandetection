@@ -35,7 +35,7 @@ public:
 
 	void applyMeanAndVariance(std::vector<float> meanVector, std::vector<float> sigmaVector) {
 		for (int f = 0; f < this->size(); f++)
-			at(f) = (at(f) - meanVector[f]) / sigmaVector[f];
+			at(f) = sigmaVector[f] != 0 ? (at(f) - meanVector[f]) / sigmaVector[f] : 0;
 	}
 
 	cv::Mat toMat() {

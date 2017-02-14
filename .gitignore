@@ -325,3 +325,4 @@ __pycache__/
 /PedestrianDetection/result.dat
 /PedestrianDetection/model.dat
 /PedestrianDetection/test.xml
+/PedestrianDetection/model.xml

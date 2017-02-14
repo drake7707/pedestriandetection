@@ -13,8 +13,17 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Base">
+    <Filter Include="Source Files\Adaboost">
+      <UniqueIdentifier>{60a400a5-be8e-4568-a762-ae4f692458f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Dataset">
+      <UniqueIdentifier>{7e2b9d0c-50b0-4603-b033-158db78ff8e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Dataset">
       <UniqueIdentifier>{2a6bed29-31cb-4219-8622-8e4de3b878e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Adaboost">
+      <UniqueIdentifier>{e23ba498-f463-4cd0-8b57-01dd3f0e0e03}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -25,15 +34,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DataSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DataSetLabel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KITTIDataSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HistogramOfOrientedGradients.h">
@@ -51,6 +51,27 @@
     <ClInclude Include="FeatureVector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Test2DBoost.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSetLabel.h">
+      <Filter>Header Files\Dataset</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSet.h">
+      <Filter>Header Files\Dataset</Filter>
+    </ClInclude>
+    <ClInclude Include="KITTIDataSet.h">
+      <Filter>Header Files\Dataset</Filter>
+    </ClInclude>
+    <ClInclude Include="adaboost\adaboost.hpp">
+      <Filter>Header Files\Adaboost</Filter>
+    </ClInclude>
+    <ClInclude Include="adaboost\weak_classifier.hpp">
+      <Filter>Header Files\Adaboost</Filter>
+    </ClInclude>
+    <ClInclude Include="adaboost\test.h">
+      <Filter>Header Files\Adaboost</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -60,13 +81,10 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DataSetLabel.cpp">
-      <Filter>Source Files\Base</Filter>
+      <Filter>Source Files\Dataset</Filter>
     </ClCompile>
     <ClCompile Include="DataSet.cpp">
-      <Filter>Source Files\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="KITTIDataSet.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Dataset</Filter>
     </ClCompile>
     <ClCompile Include="HistogramOfOrientedGradients.cpp">
       <Filter>Source Files</Filter>
@@ -82,6 +100,18 @@
     </ClCompile>
     <ClCompile Include="FeatureVector.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Test2DBoost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KITTIDataSet.cpp">
+      <Filter>Source Files\Dataset</Filter>
+    </ClCompile>
+    <ClCompile Include="adaboost\adaboost.cpp">
+      <Filter>Source Files\Adaboost</Filter>
+    </ClCompile>
+    <ClCompile Include="adaboost\test.cpp">
+      <Filter>Source Files\Adaboost</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -158,6 +158,9 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="adaboost\adaboost.hpp" />
+    <ClInclude Include="adaboost\test.h" />
+    <ClInclude Include="adaboost\weak_classifier.hpp" />
     <ClInclude Include="DataSet.h" />
     <ClInclude Include="DataSetLabel.h" />
     <ClInclude Include="Detector.h" />
@@ -168,8 +171,11 @@
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Test2DBoost.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="adaboost\adaboost.cpp" />
+    <ClCompile Include="adaboost\test.cpp" />
     <ClCompile Include="DataSet.cpp" />
     <ClCompile Include="DataSetLabel.cpp" />
     <ClCompile Include="Detector.cpp" />
@@ -180,6 +186,7 @@
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="PedestrianDetection.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Test2DBoost.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

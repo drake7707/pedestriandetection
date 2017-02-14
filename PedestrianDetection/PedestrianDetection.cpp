@@ -15,6 +15,12 @@
 #include "Helper.h"
 #include "Detector.h"
 
+
+//#include "adaboost/test.h"
+#include "adaboost/adaboost.hpp"
+
+#include "Test2DBoost.h"
+
 #define __cplusplus
 
 
@@ -226,7 +232,7 @@ void testSVM() {
 void testSVMEvaluation() {
 
 
-	int featureSize = 3;
+	int featureSize = 2;
 	int trainingSize = 1000;
 	int testIterations = 1000;
 
@@ -237,13 +243,13 @@ void testSVMEvaluation() {
 	{
 		double val0 = (rand() / (double)RAND_MAX);
 		double val1 = (rand() / (double)RAND_MAX);
-		double val2 = (rand() / (double)RAND_MAX);
 
 		trainingMat.at<float>(i, 0) = (float)val0;
 		trainingMat.at<float>(i, 1) = (float)val1;
-		trainingMat.at<float>(i, 2) = (float)val2;
 
-		bool isTrue = val0 > val1 && val1 > val2;
+		// circle
+		bool isTrue = (val0 - 0.5)* (val0 - 0.5) + (val1 - 0.5)*(val1 - 0.5) < 0.25*0.25;
+		//bool isTrue = val0 < val1;
 		trainingLabels.at<float>(i, 0) = isTrue ? 1 : -1;
 	}
 
@@ -280,16 +286,17 @@ void testSVMEvaluation() {
 		for (int c = 0; c < sv.cols; ++c)
 			wT.at<float>(0, c) += alpha[r] * sv.at<float>(r, c);
 	}
-//	cv::Mat wT;
-//	cv::transpose(W, wT);
+	//	cv::Mat wT;
+	//	cv::transpose(W, wT);
 
 	for (int i = 0; i < wT.cols; i++)
 	{
 		std::cout << std::fixed << std::setprecision(2) << wT.at<float>(0, i) << " " << std::endl;
 	}
-
+	b += 1.0000005;
 
 	cv::Mat testImage(100, 100, CV_8UC3);
+	cv::Mat correctImage(100, 100, CV_8UC3);
 
 	for (int i = 0; i < 100; i++)
 	{
@@ -306,8 +313,9 @@ void testSVMEvaluation() {
 
 			testMat.at<float>(0, 0) = (float)val0;
 			testMat.at<float>(0, 1) = (float)val1;
-			testMat.at<float>(0, 2) = (float)val2;
-			bool isTrue = val0 > val1 && val1 > val2;
+
+			//bool isTrue = val0 < val1;
+			bool isTrue = (val0 - 0.5)* (val0 - 0.5) + (val1 - 0.5)*(val1 - 0.5) < 0.25*0.25;
 			//	svm->save("test.xml");
 
 			double value = -(wT.dot(testMat) - b);
@@ -318,7 +326,7 @@ void testSVMEvaluation() {
 				|| (value < 0 && !isTrue)) {
 				// OK
 				nrOK2++;
-			//	testImage.at<cv::Vec3b>(99 - j, i) = Vec3b(0, 255, 0);
+				//	testImage.at<cv::Vec3b>(99 - j, i) = Vec3b(0, 255, 0);
 
 			}
 			else {
@@ -335,17 +343,183 @@ void testSVMEvaluation() {
 			else {
 				nrNOK++;
 			}
-
 			testImage.at<cv::Vec3b>(99 - j, i) = value > 0 ? Vec3b(0, 255, 0) : Vec3b(0, 0, 255);
+			correctImage.at<cv::Vec3b>(99 - j, i) = isTrue > 0 ? Vec3b(0, 255, 0) : Vec3b(0, 0, 255);
 
 		}
 	}
+
+	float wx = wT.at<float>(0, 0);
+	float wy = wT.at<float>(0, 1);
+
+	float x0 = 0;
+	float y0 = (b - wx*x0) / wy;
+
+	float x1 = 1;
+	float y1 = (b - wx*x1) / wy;
+
+
+	cv::line(testImage, Point(x0 * 100, 100 - y0 * 100), Point(x1 * 100, 100 - y1 * 100), Scalar(255, 0, 0), 2);
+
 	namedWindow("TestSVM");
 	imshow("TestSVM", testImage);
+	namedWindow("Correct");
+	imshow("Correct", correctImage);
+
 	std::cout << "nr OK " << nrOK << " , " << " nr NOK " << nrNOK << std::endl;
 	std::cout << "nr OK2 " << nrOK2 << " , " << " nr NOK2 " << nrNOK2 << std::endl;
+
+
 	waitKey(0);
 }
+
+
+
+
+void testBoosting() {
+
+
+	int featureSize = 2;
+	int trainingSize = 1000;
+	int testIterations = 1000;
+
+	cv::Mat trainingMat(trainingSize, featureSize, CV_32FC1);
+	cv::Mat trainingLabels(trainingSize, 1, CV_32SC1);
+
+	for (int i = 0; i < trainingSize; i++)
+	{
+		double val0 = (rand() / (double)RAND_MAX);
+		double val1 = (rand() / (double)RAND_MAX);
+
+		trainingMat.at<float>(i, 0) = (float)val0;
+		trainingMat.at<float>(i, 1) = (float)val1;
+
+		// circle
+		bool isTrue = (val0 - 0.5)* (val0 - 0.5) + (val1 - 0.5)*(val1 - 0.5) < 0.25*0.25;
+		//bool isTrue = val0 < val1;
+		trainingLabels.at<float>(i, 0) = isTrue ? 1 : -1;
+	}
+
+	Ptr<ml::SVM> svm = ml::SVM::create();
+	svm->setType(cv::ml::SVM::C_SVC);
+	svm->setKernel(cv::ml::SVM::LINEAR);
+	svm->setC(1);
+	//svm->setDegree(2);
+
+	svm->train(trainingMat, cv::ml::ROW_SAMPLE, trainingLabels);
+
+	int nrOK = 0;
+	int nrNOK = 0;
+
+	int nrOK2 = 0;
+	int nrNOK2 = 0;
+
+	cv::Mat sv = svm->getSupportVectors();
+
+	std::cout << "SV" << std::endl;
+	for (int i = 0; i < sv.cols; i++)
+	{
+		std::cout << std::fixed << std::setprecision(2) << sv.at<float>(0, i) << " " << std::endl;
+	}
+
+
+	std::cout << "w^T" << std::endl;
+	std::vector<float> alpha;
+	std::vector<float> svidx;
+	double b = svm->getDecisionFunction(0, alpha, svidx);
+	Mat wT(1, sv.cols, CV_32F, Scalar(0));
+	for (int r = 0; r < sv.rows; ++r)
+	{
+		for (int c = 0; c < sv.cols; ++c)
+			wT.at<float>(0, c) += alpha[r] * sv.at<float>(r, c);
+	}
+	//	cv::Mat wT;
+	//	cv::transpose(W, wT);
+
+	for (int i = 0; i < wT.cols; i++)
+	{
+		std::cout << std::fixed << std::setprecision(2) << wT.at<float>(0, i) << " " << std::endl;
+	}
+	b += 1.0000005;
+
+	cv::Mat testImage(100, 100, CV_8UC3);
+	cv::Mat correctImage(100, 100, CV_8UC3);
+
+	for (int i = 0; i < 100; i++)
+	{
+		for (int j = 0; j < 100; j++)
+		{
+
+
+			cv::Mat testMat(1, featureSize, CV_32F);
+
+
+			double val0 = i / 100.0;
+			double val1 = j / 100.0;
+			double val2 = (rand() / (double)RAND_MAX);
+
+			testMat.at<float>(0, 0) = (float)val0;
+			testMat.at<float>(0, 1) = (float)val1;
+
+			//bool isTrue = val0 < val1;
+			bool isTrue = (val0 - 0.5)* (val0 - 0.5) + (val1 - 0.5)*(val1 - 0.5) < 0.25*0.25;
+			//	svm->save("test.xml");
+
+			double value = -(wT.dot(testMat) - b);
+
+
+
+			if ((value > 0 && isTrue)
+				|| (value < 0 && !isTrue)) {
+				// OK
+				nrOK2++;
+				//	testImage.at<cv::Vec3b>(99 - j, i) = Vec3b(0, 255, 0);
+
+			}
+			else {
+				nrNOK2++;
+				//testImage.at<cv::Vec3b>(99 - j, i) = Vec3b(0, 0, 255);
+			}
+
+			float result = svm->predict(testMat, noArray());
+			if ((result > 0 && isTrue)
+				|| (result < 0 && !isTrue)) {
+				// OK
+				nrOK++;
+			}
+			else {
+				nrNOK++;
+			}
+			testImage.at<cv::Vec3b>(99 - j, i) = value > 0 ? Vec3b(0, 255, 0) : Vec3b(0, 0, 255);
+			correctImage.at<cv::Vec3b>(99 - j, i) = isTrue > 0 ? Vec3b(0, 255, 0) : Vec3b(0, 0, 255);
+
+		}
+	}
+
+	float wx = wT.at<float>(0, 0);
+	float wy = wT.at<float>(0, 1);
+
+	float x0 = 0;
+	float y0 = (b - wx*x0) / wy;
+
+	float x1 = 1;
+	float y1 = (b - wx*x1) / wy;
+
+
+	cv::line(testImage, Point(x0 * 100, 100 - y0 * 100), Point(x1 * 100, 100 - y1 * 100), Scalar(255, 0, 0), 2);
+
+	namedWindow("TestSVM");
+	imshow("TestSVM", testImage);
+	namedWindow("Correct");
+	imshow("Correct", correctImage);
+
+	std::cout << "nr OK " << nrOK << " , " << " nr NOK " << nrNOK << std::endl;
+	std::cout << "nr OK2 " << nrOK2 << " , " << " nr NOK2 " << nrNOK2 << std::endl;
+
+
+	waitKey(0);
+}
+
 
 
 
@@ -374,12 +548,12 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Detector& d, double 
 
 		for (int j = 0; j < imgToTest.rows / slidingWindowHeight - 1; j++)
 		{
-			for (float verticalStep = 0; verticalStep < slidingWindowWidth; verticalStep += slidingWindowStep/invscale)
+			for (float verticalStep = 0; verticalStep < slidingWindowWidth; verticalStep += slidingWindowStep / invscale)
 			{
 				for (int i = 0; i < imgToTest.cols / slidingWindowWidth - 1; i++)
 				{
 
-					for (float horizontalStep = 0; horizontalStep < slidingWindowWidth; horizontalStep += slidingWindowStep/invscale)
+					for (float horizontalStep = 0; horizontalStep < slidingWindowWidth; horizontalStep += slidingWindowStep / invscale)
 					{
 						cv::Rect windowRect(i * slidingWindowWidth + horizontalStep, j * slidingWindowHeight + verticalStep, slidingWindowWidth, slidingWindowHeight);
 						cv::Mat region;
@@ -510,7 +684,13 @@ void testDetection(Detector& d, double threshold) {
 
 int main()
 {
+
+	Test2DBoost testBoost(200, 200);
+	testBoost.run(10000);
+
 	//testSVMEvaluation();
+
+	//mainAdaBoostTest();
 
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	Detector d;
@@ -523,7 +703,7 @@ int main()
 	//d.saveModel(std::string(""));
 	d.loadModel(std::string("")); // TODO
 
-	
+
 	std::cout << "Training set evaluation" << std::endl;
 	ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier(true);
 	evalResult.print(std::cout);
@@ -531,7 +711,7 @@ int main()
 	std::cout << "Test set evaluation" << std::endl;
 	evalResult = d.evaluateWeakHoGSVMClassifier(false);
 	evalResult.print(std::cout);
-	
+
 
 	testDetection(d, 0.06);
 

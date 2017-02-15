@@ -5,29 +5,6 @@
 #include "adaboost\adaboost.hpp"
 
 
-struct Point2D {
-	float x;
-	float y;
-	Point2D(float x, float y) : x(x), y(y) { }
-
-	bool operator<(const Point2D& p) const {
-		if (x < p.x)
-			return true;
-		else if (x > p.x)
-			return false;
-		else
-		{
-			if (y < p.y)
-				return true;
-			else
-				return false;
-		}
-	}
-
-	bool operator==(const Point2D& p) const {
-		return p.x == x && p.y == y;
-	}
-};
 
 class SVMClassifier : public DM_AG::Classifier<Point2D> {
 
@@ -52,10 +29,38 @@ public:
 	void drawHyperPlane(const cv::Mat& m, const cv::Scalar& color);
 
 	static int getActualClass(const Point2D p) {
-		if ((p.x - 0.5)* (p.x - 0.5) + (p.y - 0.5)*(p.y - 0.5) < 0.25*0.25)
+		if ((p.x - 0.5)* (p.x - 0.5) + (p.y - 0.5)*(p.y - 0.5) < 0.3*0.3)
 			return 1;
 		else
 			return -1;
+	}
+};
+
+class SplitClassifier : public DM_AG::Classifier<Point2D> {
+
+public:
+	SplitClassifier(bool splitHorizontally, float value, bool flipped) : splitHorizontally(splitHorizontally), value(value), flipped(flipped) {
+
+	}
+private:
+	bool splitHorizontally;
+	bool flipped;
+	float value;
+
+
+	int analyze(const Point2D& p) const {
+		if (flipped) {
+			if (splitHorizontally)
+				return p.y < value ? 1 : -1;
+			else
+				return p.x < value ? 1 : -1;
+		}
+		else {
+			if (splitHorizontally)
+				return p.y < value ? -1 : 1;
+			else
+				return p.x < value ? -1 : 1;
+		}
 	}
 };
 
@@ -74,7 +79,7 @@ class Test2DBoost
 	int width;
 	int height;
 
-	
+
 private:
 
 	void buildTrainingSet(int trainingSize);

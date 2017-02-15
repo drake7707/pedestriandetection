@@ -6,12 +6,41 @@
 #include <iostream>
 #include "opencv2\opencv.hpp"
 
-
 /*
 
 Source code from: http://codingplayground.blogspot.be/2009/03/adaboost-improve-your-performance.html
 
 */
+
+
+struct Point2D {
+	float x;
+	float y;
+	Point2D(float x, float y) : x(x), y(y) { }
+
+	bool operator<(const Point2D& p) const {
+		if (x < p.x)
+			return true;
+		else if (x > p.x)
+			return false;
+		else
+		{
+			if (y < p.y)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	bool operator==(const Point2D& p) const {
+		return p.x == x && p.y == y;
+	}
+
+private:
+	friend std::ostream & operator<<(std::ostream &os, const Point2D& p);
+};
+
+
 namespace DM_AG {
 
 	typedef std::vector<float> ClassificationResults;
@@ -97,6 +126,33 @@ namespace DM_AG {
 			for (unsigned int round = 0; round < num_iterations; round++) {
 
 				std::cout << "Iteration" << round << std::endl;
+				for (int i = 0; i < classifiers_size; i++)
+				{
+					std::cout << " " << i << " : " << alpha[i] << std::endl;
+				}
+				std::cout << "Sample weights" << std::endl;
+
+				cv::Mat weightMat(200, 200, CV_8UC1, cv::Scalar(0));
+
+				for (int i = 0; i < labels_size; i++)
+				{
+			/*		std::string type;
+					if (deltaWeights[i] > 0)
+						type = "+";
+					else if (deltaWeights[i] < 0)
+						type = "-";
+					else
+						type = "=";
+					if (type != "=")
+						std::cout << " " << i << " : " << D[i] << " (" << type << ") " << data[i] << " result of classifier: " << weak_classifiers_results.at<float>(best_classifier, i) << ", actual label: " << labels[i] << std::endl;*/
+
+					auto p = (Point2D)data[i];
+					cv::circle(weightMat, cv::Point((p.x * 200), 200-(p.y * 200)), 3, cv::Scalar(D[i] * 255), -1);
+
+				}
+				cv::normalize(weightMat, weightMat, 0, 255, cv::NormTypes::NORM_MINMAX);
+				imshow("Weights at round " + std::to_string(round), weightMat);
+
 
 				float min_error = labels_size;
 				unsigned int best_classifier = 0;
@@ -111,7 +167,7 @@ namespace DM_AG {
 						if (weak_classifiers_results.at<float>(num_current_classifier, j) != labels[j])
 							error += D[j];
 
-					std::cout << "Error for classifier " << num_current_classifier << " : " << std::fixed << error << std::endl;
+					//	std::cout << "Error for classifier " << num_current_classifier << " : " << std::fixed << error << std::endl;
 					if (error < min_error) {
 						min_error = error; // this is the best observed 
 						best_classifier = num_current_classifier;
@@ -124,16 +180,19 @@ namespace DM_AG {
 					break;                 // condition  
 
 				  // a_t 
-				alpha[best_classifier] = log((1.0f - min_error) / min_error) / 2;
+				alpha[best_classifier] = log((1.0f + min_error) / (1.0f - min_error)) / 2;
 
 				// D_{t+1}
 				ClassificationResults D_1(D);
+
+
+				std::vector<float> deltaWeights;
 
 				// update D_{t+1}
 				float z = 0;
 				for (unsigned int j = 0; j < labels_size; j++) {
 
-					D_1[j] *=
+					D_1[j] = D[j] *
 						exp(-alpha[best_classifier] *
 							labels[j] *
 							weak_classifiers_results.at<float>(best_classifier, j));
@@ -141,8 +200,12 @@ namespace DM_AG {
 				}
 
 				// normalize so that it is a prob distribution
-				for (unsigned int j = 0; j < labels_size; j++)
+				for (unsigned int j = 0; j < labels_size; j++) {
+					deltaWeights.push_back(D_1[j] / z - D[j]);
 					D[j] = D_1[j] / z;
+				}
+			
+
 
 			} // all the rounds.
 

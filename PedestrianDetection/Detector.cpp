@@ -313,7 +313,7 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 double Detector::evaluate(cv::Mat& mat) {
 
 	FeatureVector vec = getFeatures(mat);
-	vec.applyMeanAndVariance(model.meanVector, model.sigmaVector);
+//	vec.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
 	if (model.svm->getKernelType() == cv::ml::SVM::LINEAR)
 		return -(model.weightVector.dot(vec.toMat()) - (model.bias + biasShift));
@@ -362,7 +362,6 @@ void Detector::loadModel(std::string& path) {
 FeatureVector Detector::getFeatures(cv::Mat& mat) {
 	auto result = getHistogramsOfOrientedGradient(mat, patchSize, binSize, false, true);
 	FeatureVector vector = result.getFeatureArray(addS2);
-	//vector.normalize();
 	return vector;
 }
 

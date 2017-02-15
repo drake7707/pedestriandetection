@@ -47,7 +47,7 @@ private:
 	int patchSize = 8;
 	int binSize = 9;
 
-public:double biasShift = 1.5;
+public:double biasShift = 0.003;
 
 private:
 	bool modelReady = false;

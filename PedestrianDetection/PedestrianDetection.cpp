@@ -16,7 +16,7 @@
 #include "Detector.h"
 
 
-//#include "adaboost/test.h"
+#include "adaboost/test.h"
 #include "adaboost/adaboost.hpp"
 
 #include "Test2DBoost.h"
@@ -685,9 +685,11 @@ void testDetection(Detector& d, double threshold) {
 int main()
 {
 
+	//mainAdaBoostTest();
 	Test2DBoost testBoost(200, 200);
-	testBoost.run(10000);
+	testBoost.run(500);
 
+	getchar();
 	//testSVMEvaluation();
 
 	//mainAdaBoostTest();

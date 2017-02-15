@@ -1,4 +1,4 @@
 #pragma once
 
 
-int mainAdaBoostTest();
+//int mainAdaBoostTest();

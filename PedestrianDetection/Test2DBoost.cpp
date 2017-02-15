@@ -3,6 +3,13 @@
 #include "Detector.h"
 
 
+std::ostream & operator<<(std::ostream &os, const Point2D& p)
+{
+	return os << "<" << p.x << "," << p.y << ">";
+}
+
+
+
 Test2DBoost::~Test2DBoost()
 {
 	if (sc != nullptr)
@@ -60,9 +67,9 @@ void SVMClassifier::train(const std::set<Point2D>& tpSet, const std::set<Point2D
 			wT.at<float>(0, c) += alpha[r] * sv.at<float>(r, c);
 	}
 
-	double svPointingTo = (wT.dot(sv) - b);
+	/*double svPointingTo = (wT.dot(sv) - b);
 
-	std::cout << svPointingTo << std::endl;
+	std::cout << svPointingTo << std::endl;*/
 	//if (svPointingTo < 0) {
 	//	// flipping required
 	//	wT = wT * (-1);
@@ -78,7 +85,7 @@ int SVMClassifier::evaluate(const Point2D& p) const {
 
 	testMat.at<float>(0, 0) = (float)p.x;
 	testMat.at<float>(0, 1) = (float)p.y;
-	double value = (wT.dot(testMat) - b);
+	double value = -(wT.dot(testMat) - b);
 
 	//	double value = svm->predict(testMat);// (wT.dot(testMat) - b);
 
@@ -117,6 +124,18 @@ void Test2DBoost::buildTrainingSet(int trainingSize) {
 	tpSet.clear();
 	tnSet.clear();
 
+	/*for (int j = 0; j < height; j++)
+	{
+		for (int i = 0; i < width; i++)
+		{
+			Point2D p(1.0 * i / width, 1.0 * j / height);
+			if (SVMClassifier::getActualClass(p) == 1)
+				tpSet.emplace(p);
+			else
+				tnSet.emplace(p);
+		}
+	}
+	*/
 	for (int i = 0; i < trainingSize; i++)
 	{
 		double val0 = (rand() / (double)RAND_MAX);
@@ -148,6 +167,7 @@ void Test2DBoost::buildTrainingSet(int trainingSize) {
 		int pClass = SVMClassifier::getActualClass(p);
 		if (pClass == -1) 			tnSet.emplace(p);
 	}
+	
 }
 
 void Test2DBoost::buildModel() {
@@ -165,17 +185,30 @@ void Test2DBoost::buildModel() {
 		labels.push_back(-1);
 	}
 
+
+	classifiers.push_back(new SplitClassifier(false, 0.25, false));
+	classifiers.push_back(new SplitClassifier(false, 0.75, true));
+	classifiers.push_back(new SplitClassifier(true, 0.25, false));
+	classifiers.push_back(new SplitClassifier(true, 0.75, true));
+
+	/*classifiers.push_back(new SplitClassifier(false, 0.25, true));
+	classifiers.push_back(new SplitClassifier(false, 0.75, true));
+	classifiers.push_back(new SplitClassifier(true, 0.25, true));
+	classifiers.push_back(new SplitClassifier(true, 0.75, true));*/
+
+	
 	int oldSizeTN = -1;
 	int oldSizeTP = -1;
 	int iteration = 0;
-	while (tnSet.size() > 0 && tpSet.size() > 0 && (oldSizeTN != tnSet.size() || oldSizeTP != tpSet.size()) && iteration < 10) {
+	while (iteration < 10) {
+		//while (tnSet.size() > 0 && tpSet.size() > 0 && (oldSizeTN != tnSet.size() || oldSizeTP != tpSet.size()) && iteration < 10) {
 		oldSizeTN = tnSet.size();
 		oldSizeTP = tpSet.size();
 
 		SVMClassifier*  c1 = new SVMClassifier();
 		c1->train(tpSet, tnSet);
 		classifiers.push_back(c1);
-		evaluateAndRemoveTN(c1);
+		//evaluateAndRemoveTN(c1);
 
 		buildTrainingSet(1000);
 		/*	cv::Mat testImage(width, height, CV_8UC3, cv::Scalar(0));
@@ -243,11 +276,12 @@ void Test2DBoost::evaluateBoost() {
 		}
 	}
 
-	for (auto& c : classifiers) {
+
+	/*for (auto& c : classifiers) {
 		((SVMClassifier*)c)->drawHyperPlane(testImage, cv::Scalar(255, 0, 0));
 		((SVMClassifier*)c)->drawHyperPlane(correctImage, cv::Scalar(255, 0, 0));
-	}
-
+	}*/
+	
 	int cIdx = 0;
 	for (auto& c : classifiers) {
 
@@ -286,7 +320,7 @@ void Test2DBoost::evaluateBoost() {
 		std::cout << "Classifier " + std::to_string(cIdx) << std::endl;
 		eval.print(std::cout);
 
-		((SVMClassifier*)c)->drawHyperPlane(cMat, cv::Scalar(255, 0, 0));
+		//((SVMClassifier*)c)->drawHyperPlane(cMat, cv::Scalar(255, 0, 0));
 		cIdx++;
 
 		cv::namedWindow("Classifier " + std::to_string(cIdx));

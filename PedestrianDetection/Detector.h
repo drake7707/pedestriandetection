@@ -33,8 +33,8 @@ class Detector
 private:
 
 
-	std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-	//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+	//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+	std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
 
 
 	int refWidth = 64;
@@ -58,6 +58,8 @@ private:
 		double bias;
 		std::vector<float> meanVector;
 		std::vector<float> sigmaVector;
+
+		cv::Ptr<cv::ml::Boost> boost;
 	};
 	DetectorModel model;
 
@@ -66,7 +68,7 @@ private:
 
 	void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::function<void(cv::Mat&)> tnFunc, std::function<bool(int)> includeSample);
 
-	cv::Ptr<cv::ml::SVM> buildWeakHoGSVMClassifier();
+	void buildWeakHoGSVMClassifier();
 
 
 	bool hasModel() const {

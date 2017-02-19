@@ -326,3 +326,5 @@ __pycache__/
 /PedestrianDetection/model.dat
 /PedestrianDetection/test.xml
 /PedestrianDetection/model.xml
+/PedestrianDetection/kittitrainingsvm.xml
+/PedestrianDetection/kittitrainingboost.xml

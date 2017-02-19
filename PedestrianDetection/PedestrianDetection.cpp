@@ -590,12 +590,9 @@ std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Detector& d, double 
 
 
 void testDetection(Detector& d, double threshold) {
-	//Ptr<ml::SVM> svm;
-	//svm = buildModel();
-
-	//svm = Algorithm::load<ml::SVM>("kittitraining.xml");
-
-	KITTIDataSet dataset("C:\\Users\\dwight\\Downloads\\dwight\\kitti");
+	
+	std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+	KITTIDataSet dataset(kittiDatasetPath);
 
 	std::vector<DataSetLabel> labels = dataset.getLabels();
 
@@ -686,10 +683,10 @@ int main()
 {
 
 	//mainAdaBoostTest();
-	Test2DBoost testBoost(200, 200);
-	testBoost.run(500);
+//	Test2DBoost testBoost(200, 200);
+//	testBoost.run(500);
 
-	getchar();
+//	getchar();
 	//testSVMEvaluation();
 
 	//mainAdaBoostTest();
@@ -697,12 +694,12 @@ int main()
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	Detector d;
 
-	std::cout << "Evaluating with bias (rho) shift: " << d.biasShift << std::endl;
+	//std::cout << "Evaluating with bias (rho) shift: " << d.biasShift << std::endl;
 
 	std::cout << "Detector Features options:" << std::endl;
 	d.toString(std::cout);
-	//d.buildModel();
-	//d.saveModel(std::string(""));
+	d.buildModel();
+	d.saveModel(std::string(""));
 	d.loadModel(std::string("")); // TODO
 
 

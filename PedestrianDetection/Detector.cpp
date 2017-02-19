@@ -47,8 +47,7 @@ void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::functio
 				cv::flip(rgbTP, rgbTPFlip, 1);
 
 				tpFunc(rgbTPFlip);
-				//truePositiveFeatures.push_back(resultTPFlip.getFeatureArray());
-
+			
 				// take a number of true negative patches that don't overlap
 				for (int k = 0; k < nrOfTN; k++)
 				{
@@ -68,8 +67,6 @@ void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::functio
 						img(rTN).copyTo(rgbTN);
 						cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
 						tnFunc(rgbTN);
-
-						//trueNegativeFeatures.push_back(resultTN.getFeatureArray());
 					}
 				}
 				//}
@@ -135,7 +132,7 @@ void Detector::saveSVMLightFiles() {
 
 void Detector::buildModel() {
 
-	model.svm = buildWeakHoGSVMClassifier();
+	buildWeakHoGSVMClassifier();
 	loadSVMEvaluationParameters();
 	modelReady = true;
 }
@@ -153,7 +150,7 @@ void Detector::loadSVMEvaluationParameters() {
 	}
 }
 
-cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
+void Detector::buildWeakHoGSVMClassifier() {
 
 	std::vector<FeatureVector> truePositiveFeatures;
 	std::vector<FeatureVector> trueNegativeFeatures;
@@ -167,13 +164,14 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 
 	featureSize = truePositiveFeatures[0].size();
 
+	// + 1 for the responses
 	cv::Mat trainingMat(truePositiveFeatures.size() + trueNegativeFeatures.size(), featureSize, CV_32FC1);
 	cv::Mat trainingLabels(truePositiveFeatures.size() + trueNegativeFeatures.size(), 1, CV_32SC1);
 
 	int idx = 0;
 	for (int i = 0; i < truePositiveFeatures.size(); i++)
 	{
-		for (int f = 0; f < trainingMat.cols; f++) {
+		for (int f = 0; f < featureSize; f++) {
 
 			if (isnan(truePositiveFeatures[i][f]))
 				throw std::exception("HoG feature contains NaN");
@@ -186,7 +184,7 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	}
 
 	for (int i = 0; i < trueNegativeFeatures.size(); i++) {
-		for (int f = 0; f < trainingMat.cols; f++) {
+		for (int f = 0; f < featureSize; f++) {
 			if (isnan(trueNegativeFeatures[i][f]))
 				throw std::exception("HoG feature contains NaN");
 
@@ -227,12 +225,40 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 		model.sigmaVector[f] = sigmaSum[f] / (N - 1);
 
 	// now correct the feature arrays
-	for (auto& featureVector : truePositiveFeatures)
-		featureVector.applyMeanAndVariance(model.meanVector, model.sigmaVector);
+	//for (auto& featureVector : truePositiveFeatures)
+	//	featureVector.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
-	for (auto& featureVector : trueNegativeFeatures)
-		featureVector.applyMeanAndVariance(model.meanVector, model.sigmaVector);
+	//for (auto& featureVector : trueNegativeFeatures)
+	//	featureVector.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
+
+	/*cv::Mat var_type(1, featureSize, CV_8U);
+	var_type.setTo(cv::Scalar::all(cv::ml::VariableTypes::VAR_ORDERED));
+	var_type.at<uchar>(featureSize) = var_type.at<uchar>(featureSize + 1) = cv::ml::VariableTypes::VAR_CATEGORICAL;
+*/
+
+	cv::Ptr<cv::ml::Boost> boost = cv::ml::Boost::create();
+	cv::Ptr<cv::ml::TrainData> tdata = cv::ml::TrainData::create(trainingMat, cv::ml::SampleTypes::ROW_SAMPLE, trainingLabels,
+		cv::noArray(), cv::noArray(), cv::noArray(), cv::noArray());
+	
+	
+	//boost->setBoostType(cv::ml::Boost::GENTLE);
+
+	std::vector<double>	priors(2);
+	priors[0] = trueNegativeFeatures.size();
+	priors[1] = truePositiveFeatures.size();
+	boost->setPriors(cv::Mat(priors));
+	//boost->setWeakCount(10);
+	//boost->setWeightTrimRate(0.95);
+	//boost->setMaxDepth(5);
+	//boost->setUseSurrogates(false);
+	boost->train(tdata);
+	
+	if (!boost->isTrained())
+		throw std::exception("Boost training failed");
+
+	model.boost = boost;
+	
 	cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 	svm->setType(cv::ml::SVM::C_SVC);
 	svm->setKernel(cv::ml::SVM::LINEAR);
@@ -273,7 +299,7 @@ cv::Ptr<cv::ml::SVM> Detector::buildWeakHoGSVMClassifier() {
 	if (!success || !svm->isTrained())
 		throw std::exception("SVM training failed");
 
-	return svm;
+	model.svm = svm;
 }
 
 
@@ -313,25 +339,40 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 double Detector::evaluate(cv::Mat& mat) {
 
 	FeatureVector vec = getFeatures(mat);
-//	vec.applyMeanAndVariance(model.meanVector, model.sigmaVector);
+	//vec.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
-	if (model.svm->getKernelType() == cv::ml::SVM::LINEAR)
-		return -(model.weightVector.dot(vec.toMat()) - (model.bias + biasShift));
+	int resultClass = model.boost->predict(vec.toMat(), cv::noArray());
+	double result =  model.boost->predict(vec.toMat(), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
+	//std::cout << resultClass << " " << std::fixed << result << std::endl;
+	
+	int svmResult = model.svm->predict(vec.toMat());
+	
+	if (resultClass == svmResult && resultClass == 1)
+		return 1;
 	else
-		return model.svm->predict(vec.toMat());
+		return -1;
+
+		/*if (model.svm->getKernelType() == cv::ml::SVM::LINEAR)
+			return -(model.weightVector.dot(vec.toMat()) - (model.bias + biasShift));
+		else
+			return model.svm->predict(vec.toMat());*/
 }
 
 
 void Detector::saveModel(std::string& path) {
+
 	if (!modelReady)
 		throw std::exception("Detector does not contain a model");
-	if (!model.svm->isTrained())
-		throw std::exception("SVM is not trained");
+	if (!model.boost->isTrained())
+		throw std::exception("Boost is not trained");
 
-	std::string weakClassifierSVMFile = "kittitraining.xml";
+	std::string weakClassifierSVMFile = "kittitrainingsvm.xml";
+	std::string weakClassifierBoostFile = "kittitrainingboost.xml";
 	std::string filename = "model.xml";
 
-	model.svm->save(weakClassifierSVMFile);	
+	model.boost->save(weakClassifierBoostFile);
+	model.svm->save(weakClassifierSVMFile);
+
 	cv::FileStorage fs(filename, cv::FileStorage::WRITE);
 	fs << "mean" << model.meanVector;
 	fs << "sigma" << model.sigmaVector;
@@ -341,9 +382,11 @@ void Detector::saveModel(std::string& path) {
 
 void Detector::loadModel(std::string& path) {
 
-	std::string weakClassifierSVMFile = "kittitraining.xml";
+	std::string weakClassifierSVMFile = "kittitrainingsvm.xml";
+	std::string weakClassifierBoostFile = "kittitrainingboost.xml";
 	std::string filename = "model.xml";
 
+	model.boost = cv::Algorithm::load<cv::ml::Boost>(weakClassifierBoostFile);
 	model.svm = cv::Algorithm::load<cv::ml::SVM>(weakClassifierSVMFile);
 	loadSVMEvaluationParameters();
 	modelReady = true;

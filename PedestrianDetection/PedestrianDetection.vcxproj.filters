@@ -72,6 +72,9 @@
     <ClInclude Include="adaboost\test.h">
       <Filter>Header Files\Adaboost</Filter>
     </ClInclude>
+    <ClInclude Include="DetectorCascade.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -112,6 +115,9 @@
     </ClCompile>
     <ClCompile Include="adaboost\test.cpp">
       <Filter>Source Files\Adaboost</Filter>
+    </ClCompile>
+    <ClCompile Include="DetectorCascade.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -164,6 +164,7 @@
     <ClInclude Include="DataSet.h" />
     <ClInclude Include="DataSetLabel.h" />
     <ClInclude Include="Detector.h" />
+    <ClInclude Include="DetectorCascade.h" />
     <ClInclude Include="FeatureVector.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Histogram.h" />
@@ -179,6 +180,7 @@
     <ClCompile Include="DataSet.cpp" />
     <ClCompile Include="DataSetLabel.cpp" />
     <ClCompile Include="Detector.cpp" />
+    <ClCompile Include="DetectorCascade.cpp" />
     <ClCompile Include="FeatureVector.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Histogram.cpp" />

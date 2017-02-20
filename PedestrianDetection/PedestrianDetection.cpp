@@ -14,6 +14,8 @@
 #include "HistogramOfOrientedGradients.h"
 #include "Helper.h"
 #include "Detector.h"
+#include "DetectorCascade.h"
+
 
 
 #include "adaboost/test.h"
@@ -528,7 +530,7 @@ void testBoosting() {
 
 
 
-void testDetection(Detector& d, Detector& d2, double threshold) {
+void testDetection(DetectorCascade& cascade) {
 
 
 	KITTIDataSet dataset(kittiDatasetPath);
@@ -560,9 +562,8 @@ void testDetection(Detector& d, Detector& d2, double threshold) {
 		//	cv::rectangle(rgb, l.getBbox(), Scalar(0, 0, 255), 2);
 		//	cv::rectangle(depth, l.getBbox(), Scalar(0, 0, 255), 2);
 
-		std::vector<MatchRegion> matchingRegions = d.evaluateModelOnImage(currentImages[0], threshold);
-		std::vector<MatchRegion> matchingRegions2 = d2.evaluateModelOnImage(currentImages[0], threshold);
-
+		std::vector<MatchRegion> matchingRegions = cascade.evaluateImage(currentImages[0]);
+	
 		double maxResult = 0;
 		for (auto& region : matchingRegions) {
 			if (maxResult < region.result)
@@ -574,14 +575,6 @@ void testDetection(Detector& d, Detector& d2, double threshold) {
 			//std::cout << region.svmResult << std::endl;
 			cv::rectangle(rgb, region.region, Scalar(0, region.result / maxResult * 255, 0), 1);
 		}
-
-		for (auto& region : matchingRegions2) {
-
-			//std::cout << region.svmResult << std::endl;
-			cv::rectangle(rgb, region.region, Scalar(255, 0, 0), 1);
-		}
-		//	std::cout << "Found " << matchingRegions.size() << " nr of matching regions " << std::endl;
-
 
 		imshow("RGB", rgb);
 		//	imshow("DEPTH", depth);
@@ -635,6 +628,13 @@ void testDetection(Detector& d, Detector& d2, double threshold) {
 
 int main()
 {
+	KITTIDataSet dataset(kittiDatasetPath);
+	DetectorCascade cascade(&dataset);
+
+	cascade.buildCascade();
+	cascade.saveCascade(std::string("C:\\Custom\\Temp\\cvmodel"));
+
+	testDetection(cascade);
 
 	//mainAdaBoostTest();
 //	Test2DBoost testBoost(200, 200);
@@ -646,90 +646,88 @@ int main()
 	//mainAdaBoostTest();
 
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
-	Detector d;
+	//Detector d;
 
-	//std::cout << "Evaluating with bias (rho) shift: " << d.biasShift << std::endl;
+	////std::cout << "Evaluating with bias (rho) shift: " << d.biasShift << std::endl;
 
-	std::cout << "Detector Features options:" << std::endl;
-	d.toString(std::cout);
+	//std::cout << "Detector Features options:" << std::endl;
+	//d.toString(std::cout);
 
-	std::vector<FeatureVector> truePositiveFeatures;
-	std::vector<FeatureVector> trueNegativeFeatures;
-	d.getFeatureVectorsFromDataSet(truePositiveFeatures, trueNegativeFeatures);
+	//std::vector<FeatureVector> truePositiveFeatures;
+	//std::vector<FeatureVector> trueNegativeFeatures;
+	//d.getFeatureVectorsFromDataSet(truePositiveFeatures, trueNegativeFeatures);
 
-	//d.buildModel(truePositiveFeatures, trueNegativeFeatures);
-	//d.saveModel(std::string("C:\\Custom\\Temp\\cvmodel\\model1"));
-	d.loadModel(std::string("C:\\Custom\\Temp\\cvmodel\\model1")); // TODO
-
-
-	std::cout << "Training set evaluation" << std::endl;
-	ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier(true);
-	evalResult.print(std::cout);
-
-	std::cout << "Test set evaluation" << std::endl;
-	evalResult = d.evaluateWeakHoGSVMClassifier(false);
-	evalResult.print(std::cout);
+	////d.buildModel(truePositiveFeatures, trueNegativeFeatures);
+	////d.saveModel(std::string("C:\\Custom\\Temp\\cvmodel\\model1"));
+	//d.loadModel(std::string("C:\\Custom\\Temp\\cvmodel\\model1")); // TODO
 
 
-	// now create a second detector that focusses on the hard negatives detected
-	double threshold = 0.06;
-	KITTIDataSet dataset(kittiDatasetPath);
+	//std::cout << "Training set evaluation" << std::endl;
+	//ClassifierEvaluation evalResult = d.evaluateWeakHoGSVMClassifier(true);
+	//evalResult.print(std::cout);
 
-	std::vector<DataSetLabel> labels = dataset.getLabels();
+	//std::cout << "Test set evaluation" << std::endl;
+	//evalResult = d.evaluateWeakHoGSVMClassifier(false);
+	//evalResult.print(std::cout);
 
-	std::map<std::string, std::vector<DataSetLabel>> labelsPerNumber;
 
+	//// now create a second detector that focusses on the hard negatives detected
+	//double threshold = 0.06;
+	//KITTIDataSet dataset(kittiDatasetPath);
 
-	//for (auto& l : labels)
-	//	labelsPerNumber[l.getNumber()].push_back(l);
-	//for (auto& pair : labelsPerNumber) {
-	//	std::vector<cv::Mat> currentImages = dataset.getImagesForNumber(pair.first);
-	//	std::vector<MatchRegion> matchingRegions = d.evaluateModelOnImage(currentImages[0], threshold);
+	//std::vector<DataSetLabel> labels = dataset.getLabels();
 
-	//	// sort by distance. The hardest false positives need to used as a second model
-	//	std::sort(matchingRegions.begin(), matchingRegions.end(),
-	//		[](const MatchRegion & a, const MatchRegion & b) -> bool
-	//	{
-	//		return a.result > b.result;
-	//	});
+	//std::map<std::string, std::vector<DataSetLabel>> labelsPerNumber;
+	////for (auto& l : labels)
+	////	labelsPerNumber[l.getNumber()].push_back(l);
+	////for (auto& pair : labelsPerNumber) {
+	////	std::vector<cv::Mat> currentImages = dataset.getImagesForNumber(pair.first);
+	////	std::vector<MatchRegion> matchingRegions = d.evaluateModelOnImage(currentImages[0], threshold);
 
-	//	int nrOfnNegativesAdded = 0;
-	//	for (auto& r : matchingRegions) {
+	////	// sort by distance. The hardest false positives need to used as a second model
+	////	std::sort(matchingRegions.begin(), matchingRegions.end(),
+	////		[](const MatchRegion & a, const MatchRegion & b) -> bool
+	////	{
+	////		return a.result > b.result;
+	////	});
 
-	//		// check all labels and see if they don't overlap
-	//		for (auto& l : pair.second) {
-	//			if ((r.region & l.getBbox()).area() > 0) {
-	//				// it overlaps with a true positive
-	//			}
-	//			else {
-	//				trueNegativeFeatures.push_back(r.featureVector);
-	//				nrOfnNegativesAdded++;
-	//			}
-	//		}
-	//	}
-	//	if (trueNegativeFeatures.size() > truePositiveFeatures.size())
-	//		break;
-	//}
+	////	int nrOfnNegativesAdded = 0;
+	////	for (auto& r : matchingRegions) {
 
-	Detector d2;
-	//d2.buildModel(truePositiveFeatures, trueNegativeFeatures);
-	//d2.saveModel(std::string("C:\\Custom\\Temp\\cvmodel\\model2"));
-	d2.loadModel(std::string("C:\\Custom\\Temp\\cvmodel\\model2")); // TODO
+	////		// check all labels and see if they don't overlap
+	////		for (auto& l : pair.second) {
+	////			if ((r.region & l.getBbox()).area() > 0) {
+	////				// it overlaps with a true positive
+	////			}
+	////			else {
+	////				trueNegativeFeatures.push_back(r.featureVector);
+	////				nrOfnNegativesAdded++;
+	////			}
+	////		}
+	////	}
+	////	if (trueNegativeFeatures.size() > truePositiveFeatures.size())
+	////		break;
+	////}
+
+	//Detector d2;
+	////d2.buildModel(truePositiveFeatures, trueNegativeFeatures);
+	////d2.saveModel(std::string("C:\\Custom\\Temp\\cvmodel\\model2"));
+	//d2.loadModel(std::string("C:\\Custom\\Temp\\cvmodel\\model2")); // TODO
 
 
 
-	std::cout << "Training set evaluation" << std::endl;
-	evalResult = d2.evaluateWeakHoGSVMClassifier(true);
-	evalResult.print(std::cout);
+	//std::cout << "Training set evaluation" << std::endl;
+	//evalResult = d2.evaluateWeakHoGSVMClassifier(true);
+	//evalResult.print(std::cout);
 
-	std::cout << "Test set evaluation" << std::endl;
-	evalResult = d2.evaluateWeakHoGSVMClassifier(false);
-	evalResult.print(std::cout);
+	//std::cout << "Test set evaluation" << std::endl;
+	//evalResult = d2.evaluateWeakHoGSVMClassifier(false);
+	//evalResult.print(std::cout);
 
 
 
-	testDetection(d, d2, 0.06);
-
+	/*testDetection(d, d2, 0.06);
+*/
 
 	std::cout << "Done" << std::endl;
 

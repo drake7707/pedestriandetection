@@ -1,6 +1,7 @@
 #include "Test2DBoost.h"
 #include "opencv2\opencv.hpp"
 #include "Detector.h"
+#include "DetectorCascade.h"
 
 
 std::ostream & operator<<(std::ostream &os, const Point2D& p)

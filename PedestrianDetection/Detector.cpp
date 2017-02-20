@@ -2,131 +2,9 @@
 #include "KITTIDataSet.h"
 #include <fstream>
 #include <string>
+#include "HistogramOfOrientedGradients.h"
+#include "FeatureVector.h"
 
-
-
-int sizeVariance = 4;
-
-void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::function<void(cv::Mat&)> tnFunc, std::function<bool(int)> includeSample) {
-	KITTIDataSet dataset(kittiDatasetPath);
-	srand(7707);
-
-
-	std::vector<DataSetLabel> labels = dataset.getLabels();
-
-	std::string currentNumber = "";
-	std::vector<cv::Mat> currentImages;
-
-	int idx = 0;
-	for (auto& l : labels) {
-
-		if (includeSample(idx)) {
-			if (currentNumber != l.getNumber()) {
-				currentNumber = l.getNumber();
-				currentImages = dataset.getImagesForNumber(currentNumber);
-			}
-
-			// get true positive and true negative image
-			// -----------------------------------------
-
-			cv::Mat rgbTP;
-			cv::Rect2d& r = l.getBbox();
-			if (r.x >= 0 && r.y >= 0 && r.x + r.width < currentImages[0].cols && r.y + r.height < currentImages[0].rows) {
-
-				//for (auto& img : currentImages) {
-				auto& img = currentImages[0];
-				img(l.getBbox()).copyTo(rgbTP);
-				cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
-
-				// build training mat
-
-				tpFunc(rgbTP);
-				//truePositiveFeatures.push_back(resultTP.getFeatureArray());
-
-				cv::Mat rgbTPFlip;
-				cv::flip(rgbTP, rgbTPFlip, 1);
-
-				tpFunc(rgbTPFlip);
-			
-				// take a number of true negative patches that don't overlap
-				for (int k = 0; k < nrOfTN; k++)
-				{
-					// take an equivalent patch at random for a true negative
-					cv::Mat rgbTN;
-					cv::Rect2d rTN;
-
-					int iteration = 0;
-					do {
-						double width = l.getBbox().width * (1 + rand() * 1.0 / RAND_MAX * sizeVariance);
-						double height = l.getBbox().height * (1 + rand() * 1.0 / RAND_MAX * sizeVariance);
-						rTN = cv::Rect2d(randBetween(0, img.cols - width), randBetween(0, img.rows - height), width, height);
-					} while (iteration++ < 100 && ((rTN & l.getBbox()).area() > 0 || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= img.cols || rTN.y + rTN.height >= img.rows));
-
-
-					if (iteration < 100) {
-						img(rTN).copyTo(rgbTN);
-						cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
-						tnFunc(rgbTN);
-					}
-				}
-				//}
-			}
-		}
-		idx++;
-	}
-}
-
-
-void Detector::saveSVMLightFiles() {
-
-	std::ofstream trainingFile("training.dat");
-	if (!trainingFile.is_open())
-		throw std::exception("Unable to create training file");
-
-
-	iterateDataset([&](cv::Mat& mat) -> void {
-		cv::Mat features = this->getFeatures(mat).toMat();
-
-		trainingFile << "+1 ";
-		for (int i = 0; i < features.cols; i++)
-			trainingFile << (i + 1) << ":" << features.at<float>(0, i) << " ";
-		trainingFile << "#";
-		trainingFile << std::endl;
-
-	}, [&](cv::Mat& mat) -> void {
-		cv::Mat features = this->getFeatures(mat).toMat();
-
-		trainingFile << "-1 ";
-		for (int i = 0; i < features.cols; i++)
-			trainingFile << (i + 1) << ":" << features.at<float>(0, i) << " ";
-		trainingFile << "#";
-		trainingFile << std::endl;
-	}, [&](int idx) -> bool { return (idx % testSampleEvery != 0); });
-
-
-	std::ofstream testFile("test.dat");
-	if (!testFile.is_open())
-		throw std::exception("Unable to create training file");
-
-	iterateDataset([&](cv::Mat& mat) -> void {
-		cv::Mat features = this->getFeatures(mat).toMat();
-
-		testFile << "+1 ";
-		for (int i = 0; i < features.cols; i++)
-			trainingFile << (i + 1) << ":" << features.at<float>(0, i) << " ";
-		testFile << "#";
-		testFile << std::endl;
-
-	}, [&](cv::Mat& mat) -> void {
-		cv::Mat features = this->getFeatures(mat).toMat();
-		testFile << "-1 ";
-		for (int i = 0; i < features.cols; i++)
-			trainingFile << (i + 1) << ":" << features.at<float>(0, i) << " ";
-		testFile << "#";
-		testFile << std::endl;
-	}, [&](int idx) -> bool { return (idx % testSampleEvery == 0); });
-
-}
 
 
 
@@ -148,16 +26,6 @@ void Detector::loadSVMEvaluationParameters() {
 		for (int c = 0; c < sv.cols; ++c)
 			model.weightVector.at<float>(0, c) += alpha[r] * sv.at<float>(r, c);
 	}
-}
-
-void  Detector::getFeatureVectorsFromDataSet(std::vector<FeatureVector>& truePositiveFeatures, std::vector<FeatureVector>& trueNegativeFeatures) {
-	
-	iterateDataset([&](cv::Mat& mat) -> void {
-		truePositiveFeatures.push_back(this->getFeatures(mat));
-	}, [&](cv::Mat& mat) -> void {
-		trueNegativeFeatures.push_back(this->getFeatures(mat));
-	}, [&](int idx) -> bool { return idx % testSampleEvery != 0; });
-
 }
 
 
@@ -241,8 +109,8 @@ void Detector::buildWeakHoGSVMClassifier(std::vector<FeatureVector>& truePositiv
 	cv::Ptr<cv::ml::Boost> boost = cv::ml::Boost::create();
 	cv::Ptr<cv::ml::TrainData> tdata = cv::ml::TrainData::create(trainingMat, cv::ml::SampleTypes::ROW_SAMPLE, trainingLabels,
 		cv::noArray(), cv::noArray(), cv::noArray(), cv::noArray());
-	
-	
+
+
 	//boost->setBoostType(cv::ml::Boost::GENTLE);
 
 	std::vector<double>	priors(2);
@@ -255,12 +123,12 @@ void Detector::buildWeakHoGSVMClassifier(std::vector<FeatureVector>& truePositiv
 	//boost->setMaxDepth(5);
 	//boost->setUseSurrogates(false);
 	/*boost->train(tdata);
-	
+
 	if (!boost->isTrained())
 		throw std::exception("Boost training failed");*/
 
 	model.boost = boost;
-	
+
 	cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 	svm->setType(cv::ml::SVM::C_SVC);
 	svm->setKernel(cv::ml::SVM::LINEAR);
@@ -284,7 +152,7 @@ void Detector::buildWeakHoGSVMClassifier(std::vector<FeatureVector>& truePositiv
 	std::cout << "Kernel: " << svm->getKernelType() << std::endl;
 	std::cout << "C: " << svm->getC() << std::endl;
 	std::cout << "Iterations: " << criteria.maxCount << std::endl;
-	
+
 	if (svm->getKernelType() == cv::ml::SVM::POLY)
 		std::cout << "Degree: " << svm->getDegree() << std::endl;
 	if (svm->getClassWeights().rows > 0)
@@ -305,59 +173,24 @@ void Detector::buildWeakHoGSVMClassifier(std::vector<FeatureVector>& truePositiv
 }
 
 
-
-
-ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) {
-
-
-	ClassifierEvaluation evalResult;
-
-	iterateDataset([&](cv::Mat& mat) -> void {
-		// should be positive
-		double result = evaluate(mat);
-		int resultClass = result < 0 ? -1 : 1;
-		if (!isnan(result)) {
-			if (resultClass == 1)
-				evalResult.nrOfTruePositives++;
-			else
-				evalResult.nrOfFalsePositives++;
-		}
-
-	}, [&](cv::Mat& mat) -> void {
-		// should be negative
-		double result = evaluate(mat);
-		int resultClass = result < 0 ? -1 : 1;
-		if (!isnan(result)) {
-			if (resultClass == -1)
-				evalResult.nrOfTrueNegatives++;
-			else
-				evalResult.nrOfFalseNegatives++;
-		}
-	}, [&](int idx) -> bool { return onTrainingSet ? (idx % testSampleEvery != 0) : (idx % testSampleEvery == 0); });
-
-	return evalResult;
-}
-
-double Detector::evaluate(cv::Mat& mat) {
-
-	FeatureVector vec = getFeatures(mat);
+double Detector::evaluate(FeatureVector& vec) const {
 	//vec.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
 	/*int resultClass = model.boost->predict(vec.toMat(), cv::noArray());
 	double result =  model.boost->predict(vec.toMat(), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
 	*///std::cout << resultClass << " " << std::fixed << result << std::endl;
-	
-//	int svmResult = model.svm->predict(vec.toMat());
-	//return svmResult;
-	//if (resultClass == svmResult && resultClass == 1)
-	//	return 1;
-	//else
-	//	return -1;
 
-		if (model.svm->getKernelType() == cv::ml::SVM::LINEAR)
-			return -(model.weightVector.dot(vec.toMat()) - (model.bias + biasShift));
-		else
-			return model.svm->predict(vec.toMat());
+	//	int svmResult = model.svm->predict(vec.toMat());
+		//return svmResult;
+		//if (resultClass == svmResult && resultClass == 1)
+		//	return 1;
+		//else
+		//	return -1;
+
+	if (model.svm->getKernelType() == cv::ml::SVM::LINEAR)
+		return -(model.weightVector.dot(vec.toMat()) - (model.bias + biasShift));
+	else
+		return model.svm->predict(vec.toMat());
 }
 
 
@@ -402,73 +235,8 @@ void Detector::loadModel(std::string& path) {
 //--------------------------------------------
 
 
-std::vector<MatchRegion> Detector::evaluateModelOnImage(cv::Mat& img, double threshold) {
-
-	int slidingWindowWidth = 32;
-	int slidingWindowHeight = 64;
-	int slidingWindowStep = 8;
-	int maxScaleReduction = 6; // 4 times reduction
-
-
-							   //namedWindow("Test2");
-	std::vector<MatchRegion> matchingRegions;
-
-	for (float invscale = 1; invscale <= maxScaleReduction; invscale += 0.3)
-	{
-		cv::Mat imgToTest;
-		cv::resize(img, imgToTest, cv::Size2d(ceilTo(img.cols / invscale, slidingWindowWidth), ceilTo(img.rows / invscale, slidingWindowHeight)));
-
-		for (int j = 0; j < imgToTest.rows / slidingWindowHeight - 1; j++)
-		{
-			for (float verticalStep = 0; verticalStep < slidingWindowWidth; verticalStep += slidingWindowStep / invscale)
-			{
-				for (int i = 0; i < imgToTest.cols / slidingWindowWidth - 1; i++)
-				{
-
-					for (float horizontalStep = 0; horizontalStep < slidingWindowWidth; horizontalStep += slidingWindowStep / invscale)
-					{
-						cv::Rect windowRect(i * slidingWindowWidth + horizontalStep, j * slidingWindowHeight + verticalStep, slidingWindowWidth, slidingWindowHeight);
-						cv::Mat region;
-						cv::resize(imgToTest(windowRect), region, cv::Size2d(refWidth, refHeight));
-
-
-						float result = evaluate(region);
-						int resultClass = result < 0 ? -1 : 1;
-						if (resultClass == 1 && abs(result) > threshold) {
-
-							double scaleX = img.cols / (double)imgToTest.cols;
-							double scaleY = img.rows / (double)imgToTest.rows;
-
-							MatchRegion mr;
-							mr.region = cv::Rect2d(windowRect.x * scaleX, windowRect.y * scaleY, windowRect.width * scaleX, windowRect.height * scaleY);
-							mr.result = abs(result);
-							mr.featureVector = getFeatures(region);
-							matchingRegions.push_back(mr);
-						}
-
-						//cv::Mat tmp = imgToTest.clone();
-						//cv::rectangle(tmp, windowRect, Scalar(0, 255, 0), 2);
-						//cv::imshow("Test2", tmp);
-						//waitKey(0);
-						//std::cout << "TN result: " << tnResult << std::endl;
-
-
-					}
-				}
-			}
-		}
-	}
-	return matchingRegions;
-}
 
 
 
-
-
-FeatureVector Detector::getFeatures(cv::Mat& mat) {
-	auto result = getHistogramsOfOrientedGradient(mat, patchSize, binSize, false, true);
-	FeatureVector vector = result.getFeatureArray(addS2);
-	return vector;
-}
 
 

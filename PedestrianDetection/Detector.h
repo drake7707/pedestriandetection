@@ -27,14 +27,21 @@ struct ClassifierEvaluation {
 	}
 };
 
+
+struct MatchRegion {
+	cv::Rect2d region;
+	float result;
+	FeatureVector featureVector;
+};
+
 class Detector
 {
 
 private:
 
 
-	//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-	std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+	std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+	//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
 
 
 	int refWidth = 64;
@@ -68,8 +75,7 @@ private:
 
 	void Detector::iterateDataset(std::function<void(cv::Mat&)> tpFunc, std::function<void(cv::Mat&)> tnFunc, std::function<bool(int)> includeSample);
 
-	void buildWeakHoGSVMClassifier();
-
+	void buildWeakHoGSVMClassifier(std::vector<FeatureVector>& truePositiveFeatures, std::vector<FeatureVector>& trueNegativeFeatures);
 
 	bool hasModel() const {
 		return this->modelReady;
@@ -89,7 +95,9 @@ public:
 
 
 	void loadSVMEvaluationParameters();
-	void buildModel();
+	void buildModel(std::vector<FeatureVector>& truePositiveFeatures, std::vector<FeatureVector>& trueNegativeFeatures);
+	void getFeatureVectorsFromDataSet(std::vector<FeatureVector>& truePositiveFeatures, std::vector<FeatureVector>& trueNegativeFeatures);
+
 
 
 	void saveSVMLightFiles();
@@ -105,6 +113,7 @@ public:
 
 	void loadModel(std::string& path);
 
+	std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, double threshold);
 
 	Detector()
 	{

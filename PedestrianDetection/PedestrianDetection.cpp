@@ -32,6 +32,10 @@ int refHeight = 128;
 int patchSize = 8;
 int binSize = 9;
 
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+
+
 
 
 
@@ -524,74 +528,9 @@ void testBoosting() {
 
 
 
-
-struct MatchRegion {
-	cv::Rect2d region;
-	float svmResult;
-};
-
-std::vector<MatchRegion> evaluateModelOnImage(cv::Mat& img, Detector& d, double threshold) {
-
-	int slidingWindowWidth = 32;
-	int slidingWindowHeight = 64;
-	int slidingWindowStep = 8;
-	int maxScaleReduction = 6; // 4 times reduction
+void testDetection(Detector& d, Detector& d2, double threshold) {
 
 
-	//namedWindow("Test2");
-	std::vector<MatchRegion> matchingRegions;
-
-	for (float invscale = 1; invscale <= maxScaleReduction; invscale += 0.3)
-	{
-		cv::Mat imgToTest;
-		cv::resize(img, imgToTest, cv::Size2d(ceilTo(img.cols / invscale, slidingWindowWidth), ceilTo(img.rows / invscale, slidingWindowHeight)));
-
-		for (int j = 0; j < imgToTest.rows / slidingWindowHeight - 1; j++)
-		{
-			for (float verticalStep = 0; verticalStep < slidingWindowWidth; verticalStep += slidingWindowStep / invscale)
-			{
-				for (int i = 0; i < imgToTest.cols / slidingWindowWidth - 1; i++)
-				{
-
-					for (float horizontalStep = 0; horizontalStep < slidingWindowWidth; horizontalStep += slidingWindowStep / invscale)
-					{
-						cv::Rect windowRect(i * slidingWindowWidth + horizontalStep, j * slidingWindowHeight + verticalStep, slidingWindowWidth, slidingWindowHeight);
-						cv::Mat region;
-						cv::resize(imgToTest(windowRect), region, Size2d(refWidth, refHeight));
-
-
-						float svmResult = d.evaluate(region);
-						int svmClass = svmResult < 0 ? -1 : 1;
-						if (svmClass == 1 && abs(svmResult) > threshold) {
-
-							double scaleX = img.cols / (double)imgToTest.cols;
-							double scaleY = img.rows / (double)imgToTest.rows;
-
-							MatchRegion mr;
-							mr.region = Rect2d(windowRect.x * scaleX, windowRect.y * scaleY, windowRect.width * scaleX, windowRect.height * scaleY);
-							mr.svmResult = abs(svmResult);
-							matchingRegions.push_back(mr);
-						}
-
-						//cv::Mat tmp = imgToTest.clone();
-						//cv::rectangle(tmp, windowRect, Scalar(0, 255, 0), 2);
-						//cv::imshow("Test2", tmp);
-						//waitKey(0);
-						//std::cout << "TN result: " << tnResult << std::endl;
-
-
-					}
-				}
-			}
-		}
-	}
-	return matchingRegions;
-}
-
-
-void testDetection(Detector& d, double threshold) {
-	
-	std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
 	KITTIDataSet dataset(kittiDatasetPath);
 
 	std::vector<DataSetLabel> labels = dataset.getLabels();
@@ -621,12 +560,27 @@ void testDetection(Detector& d, double threshold) {
 		//	cv::rectangle(rgb, l.getBbox(), Scalar(0, 0, 255), 2);
 		//	cv::rectangle(depth, l.getBbox(), Scalar(0, 0, 255), 2);
 
-		std::vector<MatchRegion> matchingRegions = evaluateModelOnImage(currentImages[0], d, threshold);
+		std::vector<MatchRegion> matchingRegions = d.evaluateModelOnImage(currentImages[0], threshold);
+		std::vector<MatchRegion> matchingRegions2 = d2.evaluateModelOnImage(currentImages[0], threshold);
+
+		double maxResult = 0;
+		for (auto& region : matchingRegions) {
+			if (maxResult < region.result)
+				maxResult = region.result;
+		}
 
 		for (auto& region : matchingRegions) {
-			cv::rectangle(rgb, region.region, Scalar(0, 255, 0), 1);
+
+			//std::cout << region.svmResult << std::endl;
+			cv::rectangle(rgb, region.region, Scalar(0, region.result / maxResult * 255, 0), 1);
 		}
-		std::cout << "Found " << matchingRegions.size() << " nr of matching regions " << std::endl;
+
+		for (auto& region : matchingRegions2) {
+
+			//std::cout << region.svmResult << std::endl;
+			cv::rectangle(rgb, region.region, Scalar(255, 0, 0), 1);
+		}
+		//	std::cout << "Found " << matchingRegions.size() << " nr of matching regions " << std::endl;
 
 
 		imshow("RGB", rgb);
@@ -698,9 +652,14 @@ int main()
 
 	std::cout << "Detector Features options:" << std::endl;
 	d.toString(std::cout);
-	d.buildModel();
-	d.saveModel(std::string(""));
-	d.loadModel(std::string("")); // TODO
+
+	std::vector<FeatureVector> truePositiveFeatures;
+	std::vector<FeatureVector> trueNegativeFeatures;
+	d.getFeatureVectorsFromDataSet(truePositiveFeatures, trueNegativeFeatures);
+
+	//d.buildModel(truePositiveFeatures, trueNegativeFeatures);
+	//d.saveModel(std::string("C:\\Custom\\Temp\\cvmodel\\model1"));
+	d.loadModel(std::string("C:\\Custom\\Temp\\cvmodel\\model1")); // TODO
 
 
 	std::cout << "Training set evaluation" << std::endl;
@@ -712,7 +671,64 @@ int main()
 	evalResult.print(std::cout);
 
 
-	testDetection(d, 0.06);
+	// now create a second detector that focusses on the hard negatives detected
+	double threshold = 0.06;
+	KITTIDataSet dataset(kittiDatasetPath);
+
+	std::vector<DataSetLabel> labels = dataset.getLabels();
+
+	std::map<std::string, std::vector<DataSetLabel>> labelsPerNumber;
+
+
+	//for (auto& l : labels)
+	//	labelsPerNumber[l.getNumber()].push_back(l);
+	//for (auto& pair : labelsPerNumber) {
+	//	std::vector<cv::Mat> currentImages = dataset.getImagesForNumber(pair.first);
+	//	std::vector<MatchRegion> matchingRegions = d.evaluateModelOnImage(currentImages[0], threshold);
+
+	//	// sort by distance. The hardest false positives need to used as a second model
+	//	std::sort(matchingRegions.begin(), matchingRegions.end(),
+	//		[](const MatchRegion & a, const MatchRegion & b) -> bool
+	//	{
+	//		return a.result > b.result;
+	//	});
+
+	//	int nrOfnNegativesAdded = 0;
+	//	for (auto& r : matchingRegions) {
+
+	//		// check all labels and see if they don't overlap
+	//		for (auto& l : pair.second) {
+	//			if ((r.region & l.getBbox()).area() > 0) {
+	//				// it overlaps with a true positive
+	//			}
+	//			else {
+	//				trueNegativeFeatures.push_back(r.featureVector);
+	//				nrOfnNegativesAdded++;
+	//			}
+	//		}
+	//	}
+	//	if (trueNegativeFeatures.size() > truePositiveFeatures.size())
+	//		break;
+	//}
+
+	Detector d2;
+	//d2.buildModel(truePositiveFeatures, trueNegativeFeatures);
+	//d2.saveModel(std::string("C:\\Custom\\Temp\\cvmodel\\model2"));
+	d2.loadModel(std::string("C:\\Custom\\Temp\\cvmodel\\model2")); // TODO
+
+
+
+	std::cout << "Training set evaluation" << std::endl;
+	evalResult = d2.evaluateWeakHoGSVMClassifier(true);
+	evalResult.print(std::cout);
+
+	std::cout << "Test set evaluation" << std::endl;
+	evalResult = d2.evaluateWeakHoGSVMClassifier(false);
+	evalResult.print(std::cout);
+
+
+
+	testDetection(d, d2, 0.06);
 
 
 	std::cout << "Done" << std::endl;

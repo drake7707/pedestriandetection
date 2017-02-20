@@ -130,9 +130,9 @@ void Detector::saveSVMLightFiles() {
 
 
 
-void Detector::buildModel() {
+void Detector::buildModel(std::vector<FeatureVector>& truePositiveFeatures, std::vector<FeatureVector>& trueNegativeFeatures) {
 
-	buildWeakHoGSVMClassifier();
+	buildWeakHoGSVMClassifier(truePositiveFeatures, trueNegativeFeatures);
 	loadSVMEvaluationParameters();
 	modelReady = true;
 }
@@ -150,19 +150,20 @@ void Detector::loadSVMEvaluationParameters() {
 	}
 }
 
-void Detector::buildWeakHoGSVMClassifier() {
-
-	std::vector<FeatureVector> truePositiveFeatures;
-	std::vector<FeatureVector> trueNegativeFeatures;
-	int featureSize;
-
+void  Detector::getFeatureVectorsFromDataSet(std::vector<FeatureVector>& truePositiveFeatures, std::vector<FeatureVector>& trueNegativeFeatures) {
+	
 	iterateDataset([&](cv::Mat& mat) -> void {
 		truePositiveFeatures.push_back(this->getFeatures(mat));
 	}, [&](cv::Mat& mat) -> void {
 		trueNegativeFeatures.push_back(this->getFeatures(mat));
 	}, [&](int idx) -> bool { return idx % testSampleEvery != 0; });
 
-	featureSize = truePositiveFeatures[0].size();
+}
+
+
+void Detector::buildWeakHoGSVMClassifier(std::vector<FeatureVector>& truePositiveFeatures, std::vector<FeatureVector>& trueNegativeFeatures) {
+
+	int featureSize = truePositiveFeatures[0].size();
 
 	// + 1 for the responses
 	cv::Mat trainingMat(truePositiveFeatures.size() + trueNegativeFeatures.size(), featureSize, CV_32FC1);
@@ -246,16 +247,17 @@ void Detector::buildWeakHoGSVMClassifier() {
 
 	std::vector<double>	priors(2);
 	priors[0] = trueNegativeFeatures.size();
-	priors[1] = truePositiveFeatures.size();
+	priors[1] = truePositiveFeatures.size();
+
 	boost->setPriors(cv::Mat(priors));
 	//boost->setWeakCount(10);
 	//boost->setWeightTrimRate(0.95);
 	//boost->setMaxDepth(5);
 	//boost->setUseSurrogates(false);
-	boost->train(tdata);
+	/*boost->train(tdata);
 	
 	if (!boost->isTrained())
-		throw std::exception("Boost training failed");
+		throw std::exception("Boost training failed");*/
 
 	model.boost = boost;
 	
@@ -312,10 +314,10 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 
 	iterateDataset([&](cv::Mat& mat) -> void {
 		// should be positive
-		double svmResult = evaluate(mat);
-		int svmClass = svmResult < 0 ? -1 : 1;
-		if (!isnan(svmResult)) {
-			if (svmClass == 1)
+		double result = evaluate(mat);
+		int resultClass = result < 0 ? -1 : 1;
+		if (!isnan(result)) {
+			if (resultClass == 1)
 				evalResult.nrOfTruePositives++;
 			else
 				evalResult.nrOfFalsePositives++;
@@ -323,10 +325,10 @@ ClassifierEvaluation Detector::evaluateWeakHoGSVMClassifier(bool onTrainingSet) 
 
 	}, [&](cv::Mat& mat) -> void {
 		// should be negative
-		double svmResult = evaluate(mat);
-		int svmClass = svmResult < 0 ? -1 : 1;
-		if (!isnan(svmResult)) {
-			if (svmClass == -1)
+		double result = evaluate(mat);
+		int resultClass = result < 0 ? -1 : 1;
+		if (!isnan(result)) {
+			if (resultClass == -1)
 				evalResult.nrOfTrueNegatives++;
 			else
 				evalResult.nrOfFalseNegatives++;
@@ -341,21 +343,21 @@ double Detector::evaluate(cv::Mat& mat) {
 	FeatureVector vec = getFeatures(mat);
 	//vec.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
-	int resultClass = model.boost->predict(vec.toMat(), cv::noArray());
+	/*int resultClass = model.boost->predict(vec.toMat(), cv::noArray());
 	double result =  model.boost->predict(vec.toMat(), cv::noArray(), cv::ml::StatModel::Flags::RAW_OUTPUT);
-	//std::cout << resultClass << " " << std::fixed << result << std::endl;
+	*///std::cout << resultClass << " " << std::fixed << result << std::endl;
 	
-	int svmResult = model.svm->predict(vec.toMat());
-	
-	if (resultClass == svmResult && resultClass == 1)
-		return 1;
-	else
-		return -1;
+//	int svmResult = model.svm->predict(vec.toMat());
+	//return svmResult;
+	//if (resultClass == svmResult && resultClass == 1)
+	//	return 1;
+	//else
+	//	return -1;
 
-		/*if (model.svm->getKernelType() == cv::ml::SVM::LINEAR)
+		if (model.svm->getKernelType() == cv::ml::SVM::LINEAR)
 			return -(model.weightVector.dot(vec.toMat()) - (model.bias + biasShift));
 		else
-			return model.svm->predict(vec.toMat());*/
+			return model.svm->predict(vec.toMat());
 }
 
 
@@ -363,14 +365,14 @@ void Detector::saveModel(std::string& path) {
 
 	if (!modelReady)
 		throw std::exception("Detector does not contain a model");
-	if (!model.boost->isTrained())
-		throw std::exception("Boost is not trained");
+	//if (!model.boost->isTrained())
+	//	throw std::exception("Boost is not trained");
 
-	std::string weakClassifierSVMFile = "kittitrainingsvm.xml";
-	std::string weakClassifierBoostFile = "kittitrainingboost.xml";
-	std::string filename = "model.xml";
+	std::string weakClassifierSVMFile = path + PATH_SEPARATOR + "kittitrainingsvm.xml";
+	std::string weakClassifierBoostFile = path + PATH_SEPARATOR + "kittitrainingboost.xml";
+	std::string filename = path + PATH_SEPARATOR + "model.xml";
 
-	model.boost->save(weakClassifierBoostFile);
+	//model.boost->save(weakClassifierBoostFile);
 	model.svm->save(weakClassifierSVMFile);
 
 	cv::FileStorage fs(filename, cv::FileStorage::WRITE);
@@ -382,11 +384,11 @@ void Detector::saveModel(std::string& path) {
 
 void Detector::loadModel(std::string& path) {
 
-	std::string weakClassifierSVMFile = "kittitrainingsvm.xml";
-	std::string weakClassifierBoostFile = "kittitrainingboost.xml";
-	std::string filename = "model.xml";
+	std::string weakClassifierSVMFile = path + PATH_SEPARATOR + "kittitrainingsvm.xml";
+	std::string weakClassifierBoostFile = path + PATH_SEPARATOR + "kittitrainingboost.xml";
+	std::string filename = path + PATH_SEPARATOR + "model.xml";
 
-	model.boost = cv::Algorithm::load<cv::ml::Boost>(weakClassifierBoostFile);
+	//model.boost = cv::Algorithm::load<cv::ml::Boost>(weakClassifierBoostFile);
 	model.svm = cv::Algorithm::load<cv::ml::SVM>(weakClassifierSVMFile);
 	loadSVMEvaluationParameters();
 	modelReady = true;
@@ -398,6 +400,67 @@ void Detector::loadModel(std::string& path) {
 }
 
 //--------------------------------------------
+
+
+std::vector<MatchRegion> Detector::evaluateModelOnImage(cv::Mat& img, double threshold) {
+
+	int slidingWindowWidth = 32;
+	int slidingWindowHeight = 64;
+	int slidingWindowStep = 8;
+	int maxScaleReduction = 6; // 4 times reduction
+
+
+							   //namedWindow("Test2");
+	std::vector<MatchRegion> matchingRegions;
+
+	for (float invscale = 1; invscale <= maxScaleReduction; invscale += 0.3)
+	{
+		cv::Mat imgToTest;
+		cv::resize(img, imgToTest, cv::Size2d(ceilTo(img.cols / invscale, slidingWindowWidth), ceilTo(img.rows / invscale, slidingWindowHeight)));
+
+		for (int j = 0; j < imgToTest.rows / slidingWindowHeight - 1; j++)
+		{
+			for (float verticalStep = 0; verticalStep < slidingWindowWidth; verticalStep += slidingWindowStep / invscale)
+			{
+				for (int i = 0; i < imgToTest.cols / slidingWindowWidth - 1; i++)
+				{
+
+					for (float horizontalStep = 0; horizontalStep < slidingWindowWidth; horizontalStep += slidingWindowStep / invscale)
+					{
+						cv::Rect windowRect(i * slidingWindowWidth + horizontalStep, j * slidingWindowHeight + verticalStep, slidingWindowWidth, slidingWindowHeight);
+						cv::Mat region;
+						cv::resize(imgToTest(windowRect), region, cv::Size2d(refWidth, refHeight));
+
+
+						float result = evaluate(region);
+						int resultClass = result < 0 ? -1 : 1;
+						if (resultClass == 1 && abs(result) > threshold) {
+
+							double scaleX = img.cols / (double)imgToTest.cols;
+							double scaleY = img.rows / (double)imgToTest.rows;
+
+							MatchRegion mr;
+							mr.region = cv::Rect2d(windowRect.x * scaleX, windowRect.y * scaleY, windowRect.width * scaleX, windowRect.height * scaleY);
+							mr.result = abs(result);
+							mr.featureVector = getFeatures(region);
+							matchingRegions.push_back(mr);
+						}
+
+						//cv::Mat tmp = imgToTest.clone();
+						//cv::rectangle(tmp, windowRect, Scalar(0, 255, 0), 2);
+						//cv::imshow("Test2", tmp);
+						//waitKey(0);
+						//std::cout << "TN result: " << tnResult << std::endl;
+
+
+					}
+				}
+			}
+		}
+	}
+	return matchingRegions;
+}
+
 
 
 

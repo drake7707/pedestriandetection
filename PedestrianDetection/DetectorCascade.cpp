@@ -86,7 +86,6 @@ void DetectorCascade::saveSVMLightFiles() {
 	if (!trainingFile.is_open())
 		throw std::exception("Unable to create training file");
 
-
 	iterateDataset([&](cv::Mat& mat) -> void {
 		cv::Mat features = this->getFeatures(mat).toMat();
 
@@ -95,7 +94,7 @@ void DetectorCascade::saveSVMLightFiles() {
 			trainingFile << (i + 1) << ":" << features.at<float>(0, i) << " ";
 		trainingFile << "#";
 		trainingFile << std::endl;
-
+		
 	}, [&](cv::Mat& mat) -> void {
 		cv::Mat features = this->getFeatures(mat).toMat();
 

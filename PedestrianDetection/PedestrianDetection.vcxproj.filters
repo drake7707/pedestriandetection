@@ -13,110 +13,83 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Adaboost">
-      <UniqueIdentifier>{60a400a5-be8e-4568-a762-ae4f692458f1}</UniqueIdentifier>
+    <Filter Include="Source Files\Base">
+      <UniqueIdentifier>{d077a2a7-4181-4645-87c4-6726509122c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Dataset">
-      <UniqueIdentifier>{7e2b9d0c-50b0-4603-b033-158db78ff8e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Dataset">
-      <UniqueIdentifier>{2a6bed29-31cb-4219-8622-8e4de3b878e0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Adaboost">
-      <UniqueIdentifier>{e23ba498-f463-4cd0-8b57-01dd3f0e0e03}</UniqueIdentifier>
+    <Filter Include="Header Files\Base">
+      <UniqueIdentifier>{4c83e018-8799-41af-a75d-032148d77f62}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HistogramOfOrientedGradients.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="FeatureVector.h">
+      <Filter>Header Files\Base</Filter>
     </ClInclude>
     <ClInclude Include="Helper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Detector.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Base</Filter>
     </ClInclude>
     <ClInclude Include="Histogram.h">
+      <Filter>Header Files\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="HistogramOfOrientedGradients.h">
+      <Filter>Header Files\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FeatureVector.h">
+    <ClInclude Include="FeaturesSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Test2DBoost.h">
+    <ClInclude Include="IFeatureCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HOGRGBFeatureCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataSetLabel.h">
-      <Filter>Header Files\Dataset</Filter>
-    </ClInclude>
-    <ClInclude Include="DataSet.h">
-      <Filter>Header Files\Dataset</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KITTIDataSet.h">
-      <Filter>Header Files\Dataset</Filter>
-    </ClInclude>
-    <ClInclude Include="adaboost\adaboost.hpp">
-      <Filter>Header Files\Adaboost</Filter>
-    </ClInclude>
-    <ClInclude Include="adaboost\weak_classifier.hpp">
-      <Filter>Header Files\Adaboost</Filter>
-    </ClInclude>
-    <ClInclude Include="adaboost\test.h">
-      <Filter>Header Files\Adaboost</Filter>
-    </ClInclude>
-    <ClInclude Include="DetectorCascade.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PedestrianDetection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DataSetLabel.cpp">
-      <Filter>Source Files\Dataset</Filter>
-    </ClCompile>
-    <ClCompile Include="DataSet.cpp">
-      <Filter>Source Files\Dataset</Filter>
-    </ClCompile>
-    <ClCompile Include="HistogramOfOrientedGradients.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="FeatureVector.cpp">
+      <Filter>Source Files\Base</Filter>
     </ClCompile>
     <ClCompile Include="Helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Detector.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Base</Filter>
     </ClCompile>
     <ClCompile Include="Histogram.cpp">
+      <Filter>Source Files\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="HistogramOfOrientedGradients.cpp">
+      <Filter>Source Files\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelEvaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FeatureVector.cpp">
+    <ClCompile Include="FeaturesSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Test2DBoost.cpp">
+    <ClCompile Include="IFeatureCreator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HOGRGBFeatureCreator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataSetLabel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KITTIDataSet.cpp">
-      <Filter>Source Files\Dataset</Filter>
-    </ClCompile>
-    <ClCompile Include="adaboost\adaboost.cpp">
-      <Filter>Source Files\Adaboost</Filter>
-    </ClCompile>
-    <ClCompile Include="adaboost\test.cpp">
-      <Filter>Source Files\Adaboost</Filter>
-    </ClCompile>
-    <ClCompile Include="DetectorCascade.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

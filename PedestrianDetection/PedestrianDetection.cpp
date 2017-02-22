@@ -16,6 +16,8 @@
 #include "HOGDepthFeatureCreator.h"
 #include "HOGRGBHistogramVarianceFeatureCreator.h"
 
+#include "ModelEvaluator.h"
+
 #include "FeatureTester.h"
 
 #include "FeatureSet.h"
@@ -23,9 +25,17 @@
 
 #include "KITTIDataSet.h"
 #include "DataSet.h"
+
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+
+int patchSize = 8;
+int binSize = 9;
 int refWidth = 64;
 int refHeight = 128;
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+
+
 
 
 bool overlaps(std::vector<DataSetLabel> labels, cv::Rect2d r, std::vector<cv::Rect2d> selectedRegions) {
@@ -165,25 +175,59 @@ void saveTNTP() {
 }
 
 
+
+void testClassifier() {
+	FeatureSet testSet;
+	testSet.addCreator(new HOGRGBFeatureCreator(patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
+
+	ModelEvaluator model(baseDatasetPath, testSet, 0.2, 0.8);
+
+//	model.train();
+//	model.saveModel(std::string("testmodel.xml"));
+	model.loadModel(std::string("testmodel.xml"));
+
+	ClassifierEvaluation eval = model.evaluate();
+	eval.print(std::cout);
+	
+	cv::Mat mRGB = cv::imread("D:\\PedestrianDetectionDatasets\\kitti\\rgb\\000000.png");
+	cv::Mat mDepth = cv::imread("D:\\PedestrianDetectionDatasets\\kitti\\depth\\000000.png");
+
+	slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect2d bbox) -> void {
+		cv::Mat regionRGB;
+		cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+
+		cv::Mat regionDepth;
+		cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+
+		FeatureVector v = testSet.getFeatures(regionRGB, regionDepth);
+		int result = model.evaluate(regionRGB, regionDepth);
+		if(result == 1)
+			cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 1);
+	},0.25,1);
+	cv::imshow("Test", mRGB);
+	
+	// this will leak because creators are never disposed!
+	cv::waitKey(0);
+}
+
+
 int main()
 {
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
+	testClassifier();
 	//saveTNTP();
 	//return 0;
-	std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-	int patchSize = 8;
-	int binSize = 9;
-	int refWidth = 64;
-	int refHeight = 128;
 
 	FeatureTester tester(baseDatasetPath);
 	tester.addAvailableCreator(std::string("HoG(RGB)"), new HOGRGBFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("S2HoG(RGB)"), new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
-	
+
 	std::set<std::string> set;
-	
+
 	set = { "HoG(RGB)" };
 	tester.addJob(set);
 
@@ -197,7 +241,10 @@ int main()
 	tester.addJob(set);
 
 
+
 	tester.runJobs();
+
+
 
 
 
@@ -205,7 +252,7 @@ int main()
 	//set.addCreator(&HOGRGBFeatureCreator());
 	////set.addCreator(&HOGDepthFeatureCreator());
 
-	
+
 
 	//{
 	//	std::cout << "Testing with 0.8/0.2 prior weights" << std::endl;

@@ -181,10 +181,8 @@ ClassifierEvaluation ModelEvaluator::evaluate() {
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		sumTime += measure<std::chrono::milliseconds>::execution([&]() -> void {
-			FeatureVector v = set.getFeatures(rgb, depth);
-			v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
-
-			int result = model.boost->predict(v.toMat());
+			
+			int result = evaluate(rgb, depth);
 			if (resultClass == result) {
 				if (resultClass == -1)
 					eval.nrOfTrueNegatives++;
@@ -202,4 +200,36 @@ ClassifierEvaluation ModelEvaluator::evaluate() {
 	});
 	eval.evaluationSpeedPerRegionMS = sumTime / nrRegions;
 	return eval;
+}
+
+int ModelEvaluator::evaluate(cv::Mat& rgb, cv::Mat& depth) const {
+	FeatureVector v = set.getFeatures(rgb, depth);
+	v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
+
+	int result = model.boost->predict(v.toMat());
+	return result;
+}
+
+
+void ModelEvaluator::saveModel(std::string& path) {	
+	std::string filename = path;
+
+	cv::FileStorage fs(filename + ".data.xml", cv::FileStorage::WRITE);
+	fs << "mean" << model.meanVector;
+	fs << "sigma" << model.sigmaVector;
+	model.boost->save(filename + ".boost.xml");
+	fs.release();
+
+}
+
+void ModelEvaluator::loadModel(std::string& path) {
+
+	std::string filename = path;
+
+	model.boost = cv::Algorithm::load<cv::ml::Boost>(filename +".boost.xml");
+	cv::FileStorage fsRead(filename + ".data.xml", cv::FileStorage::READ);
+	fsRead["mean"] >> model.meanVector;
+	fsRead["sigma"] >> model.sigmaVector;
+	
+	fsRead.release();
 }

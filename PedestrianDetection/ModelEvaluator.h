@@ -36,11 +36,13 @@ public:
 
 
 	double trainingTimeMS = 0;
-	
-
 
 	void train();
 
-	ClassifierEvaluation evaluate() ;
+	ClassifierEvaluation evaluate();
+	int ModelEvaluator::evaluate(cv::Mat& rgb, cv::Mat& depth) const;
+
+	void saveModel(std::string& path);
+	void loadModel(std::string& path);
 };
 

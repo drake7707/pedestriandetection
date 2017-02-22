@@ -21,6 +21,8 @@ int randBetween(int min, int max);
 
 int ceilTo(double val, double target);
 
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect2d bbox)> func, double minScaleReduction = 0.25, double maxScaleReduction = 4, int refWidth = 64, int refHeight = 128);
+
 
 template<typename TimeT = std::chrono::milliseconds>
 struct measure

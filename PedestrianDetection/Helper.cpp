@@ -31,10 +31,32 @@ void showHistogram(Histogram& histogram) {
 }
 
 int randBetween(int min, int max) {
-	return min + 1.0 * rand()/RAND_MAX * (max - min);
+	return min + 1.0 * rand() / RAND_MAX * (max - min);
 }
 
 int ceilTo(double val, double target) {
 	return ceil(val / target) * target;
 }
 
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect2d bbox)> func, double minScaleReduction , double maxScaleReduction, int refWidth, int refHeight) {
+	int slidingWindowWidth = 32;
+	int slidingWindowHeight = 64;
+	int slidingWindowStep = 8;
+
+
+	double invscale = minScaleReduction;
+	while (invscale < maxScaleReduction) {
+		double  iWidth = 1.0 *imgWidth / invscale;
+		double iHeight = 1.0* imgHeight / invscale;
+		double rectWidth = 1.0 * slidingWindowWidth / invscale;
+		double rectHeight = 1.0 * slidingWindowHeight / invscale;
+		for (double j  = 0; j < imgHeight - rectHeight; j += slidingWindowStep / invscale) {
+			for (double i  = 0; i < imgWidth - rectWidth; i += slidingWindowStep / invscale) {
+				
+				cv::Rect windowRect(i,j,rectWidth, rectHeight);
+				func(windowRect);
+			}
+		}
+		invscale *= 2;
+	}
+}

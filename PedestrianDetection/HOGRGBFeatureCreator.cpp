@@ -3,7 +3,8 @@
 
 
 
-HOGRGBFeatureCreator::HOGRGBFeatureCreator()
+HOGRGBFeatureCreator::HOGRGBFeatureCreator(int patchSize, int binSize, int refWidth, int refHeight)
+	: patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight)
 {
 }
 
@@ -14,7 +15,7 @@ HOGRGBFeatureCreator::~HOGRGBFeatureCreator()
 
 
 int HOGRGBFeatureCreator::getNumberOfFeatures() const {
-	return getNumberOfFeatures();
+	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize);
 }
 
 FeatureVector HOGRGBFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {

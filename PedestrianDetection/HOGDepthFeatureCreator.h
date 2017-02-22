@@ -12,7 +12,7 @@ private:
 	int refHeight = 128;
 
 public:
-	HOGDepthFeatureCreator();
+	HOGDepthFeatureCreator(int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
 	virtual ~HOGDepthFeatureCreator();
 
 	int getNumberOfFeatures() const;

@@ -2,7 +2,8 @@
 #include "HistogramOfOrientedGradients.h"
 
 
-HOGDepthFeatureCreator::HOGDepthFeatureCreator()
+HOGDepthFeatureCreator::HOGDepthFeatureCreator(int patchSize, int binSize, int refWidth, int refHeight)
+	: patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight)
 {
 }
 

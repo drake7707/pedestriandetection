@@ -1,6 +1,6 @@
 #pragma once
 #include "IFeatureCreator.h"
-class HOGRGBFeatureCreator : public IFeatureCreator
+class HOGRGBHistogramVarianceFeatureCreator : public IFeatureCreator
 {
 
 private:
@@ -10,8 +10,8 @@ private:
 	int refHeight = 128;
 
 public:
-	HOGRGBFeatureCreator(int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
-	virtual ~HOGRGBFeatureCreator();
+	HOGRGBHistogramVarianceFeatureCreator(int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
+	virtual ~HOGRGBHistogramVarianceFeatureCreator();
 
 	int getNumberOfFeatures() const;
 	std::string explainFeature(int featureIndex, double featureValue) const;

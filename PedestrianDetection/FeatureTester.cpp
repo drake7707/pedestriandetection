@@ -42,6 +42,7 @@ std::vector<ClassifierEvaluation>  FeatureTesterJob::run() const {
 
 FeatureTester::FeatureTester(std::string& baseDatasetPath) : baseDatasetPath(baseDatasetPath)
 {
+	loadProcessedFeatureSets();
 }
 
 
@@ -50,6 +51,25 @@ FeatureTester::~FeatureTester()
 	// delete creators
 	for (auto& pair : creators)
 		delete pair.second;
+}
+
+void FeatureTester::loadProcessedFeatureSets() {
+	std::ifstream str("processedsets.txt");
+	if (!str.is_open())
+		return;
+
+	std::string line;
+	while (std::getline(str, line))	{
+		processedFeatureSets.emplace(line);
+	}
+}
+
+void FeatureTester::markFeatureSetProcessed(std::string& featureSetName) {
+	processedFeatureSets.emplace(featureSetName);
+	std::ofstream str("processedsets.txt", std::ofstream::out | std::ofstream::app);
+	if (!str.is_open())
+		return;
+	str << featureSetName << std::endl;
 }
 
 void FeatureTester::addAvailableCreator(std::string& name, IFeatureCreator* creator) {
@@ -97,35 +117,41 @@ void FeatureTester::runJobs() {
 		FeatureTesterJob job = jobs.front();
 		jobs.pop();
 
-		
-		semaphore.wait();
+		if (processedFeatureSets.find(job.featureSetName) != processedFeatureSets.end()) {
+			std::cout << "Job " << job.featureSetName << " is already processed and will be skipped" << std::endl;
+		}
+		else {
+			semaphore.wait();
 
-		threads.push_back(std::thread([job, &resultsFileMutex, &resultStream, &semaphore]() -> void {
-			try {
+			FeatureTester* ft = this;
+			threads.push_back(std::thread([job, &resultsFileMutex, &resultStream, &semaphore, &ft]() -> void {
+				try {
 
-				std::cout << "Starting job " << job.featureSetName << std::endl;
-				std::vector<ClassifierEvaluation> results = job.run();
-				std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+					std::cout << "Starting job " << job.featureSetName << std::endl;
+					std::vector<ClassifierEvaluation> results = job.run();
+					std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
+					resultsFileMutex.lock();
+					for (auto& eval : results) {
+						resultStream << job.featureSetName << ";";
+						eval.toCSVLine(resultStream, false);
+						resultStream << ";" << std::endl;
+					}
 
-				resultsFileMutex.lock();
-				for (auto& eval : results) {
-					resultStream << job.featureSetName << ";";
-					eval.toCSVLine(resultStream, false);
-					resultStream << ";" << std::endl;
+					resultsFileMutex.unlock();
+
+					std::string name = job.featureSetName;
+					ft->markFeatureSetProcessed(name);
+
+					semaphore.notify();
 				}
+				catch (std::exception e) {
 
-				resultsFileMutex.unlock();
-
-
-				semaphore.notify();
-			}
-			catch (std::exception e) {
-
-				std::cout << "Error: " << e.what() << std::endl;
-				semaphore.notify();
-			}
-		}));
+					std::cout << "Error: " << e.what() << std::endl;
+					semaphore.notify();
+				}
+			}));
+		}
 	}
 
 	// clean up all threads by joining htem

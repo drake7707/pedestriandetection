@@ -31,6 +31,11 @@ private:
 	std::string baseDatasetPath;
 	std::queue<FeatureTesterJob> jobs;
 
+
+	std::set<std::string> processedFeatureSets;
+	void loadProcessedFeatureSets();
+	void markFeatureSetProcessed(std::string& featureSetName);
+
 public:
 	FeatureTester(std::string& baseDatasetPath);
 	~FeatureTester();

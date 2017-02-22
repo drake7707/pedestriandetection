@@ -14,6 +14,8 @@
 #include "IFeatureCreator.h"
 #include "HOGRGBFeatureCreator.h"
 #include "HOGDepthFeatureCreator.h"
+#include "HOGRGBHistogramVarianceFeatureCreator.h"
+
 #include "FeatureTester.h"
 
 #include "FeatureSet.h"
@@ -170,17 +172,35 @@ int main()
 	//return 0;
 	std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
+	int patchSize = 8;
+	int binSize = 9;
+	int refWidth = 64;
+	int refHeight = 128;
+
 	FeatureTester tester(baseDatasetPath);
-	tester.addAvailableCreator(std::string("HoG(RGB)"), new HOGRGBFeatureCreator());
-	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator());
+	tester.addAvailableCreator(std::string("HoG(RGB)"), new HOGRGBFeatureCreator(patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(std::string("S2HoG(RGB)"), new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	
-	std::set<std::string> set = { "HoG(RGB)" };
+	std::set<std::string> set;
+	
+	set = { "HoG(RGB)" };
+	tester.addJob(set);
+
+	set = { "HoG(RGB)", "S2HoG(RGB)" };
 	tester.addJob(set);
 
 	set = { "HoG(RGB)", "HoG(Depth)" };
 	tester.addJob(set);
 
+	set = { "HoG(RGB)",  "S2HoG(RGB)",  "HoG(Depth)" };
+	tester.addJob(set);
+
+
 	tester.runJobs();
+
+
+
 	//FeatureSet set;
 	//set.addCreator(&HOGRGBFeatureCreator());
 	////set.addCreator(&HOGDepthFeatureCreator());
@@ -210,7 +230,7 @@ int main()
 	//}
 
 
-	getchar();
+	//getchar();
 	return 0;
 }
 

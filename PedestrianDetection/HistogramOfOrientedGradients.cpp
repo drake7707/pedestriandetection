@@ -59,10 +59,22 @@ namespace hog {
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
 
-		int x = featureIndex % (nrOfCellsWidth - 1);
-		int y = featureIndex / (nrOfCellsWidth - 1);
+		int idx = 0;
+		// now normalize all histograms
+		for (int y = 0; y < nrOfCellsHeight - 1; y++) {
+			for (int x = 0; x < nrOfCellsWidth - 1; x++) {
 
-		return "HoG @ (" + std::to_string(x) + "," + std::to_string(y) + ")";
+				for (int k = 0; k < binSize; k++)
+				{
+
+					if (featureIndex == idx)
+						return "HoG @ (" + std::to_string(x) + "," + std::to_string(y) + ") with angle " + std::to_string((180.0 / binSize)*k);
+
+					idx++;
+				}
+			}
+		}
+		return "";
 	}
 
 

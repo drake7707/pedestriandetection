@@ -329,3 +329,6 @@ __pycache__/
 /PedestrianDetection/kittitrainingsvm.xml
 /PedestrianDetection/kittitrainingboost.xml
 /PedestrianDetection/results.csv
+/PedestrianDetection/results.xlsx
+/PedestrianDetection/results - Copy.csv
+/PedestrianDetection/processedsets.txt

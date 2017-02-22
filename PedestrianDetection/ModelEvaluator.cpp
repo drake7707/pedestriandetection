@@ -168,7 +168,7 @@ void ModelEvaluator::train()
 	auto& nodes = boost->getNodes();
 	auto& splits = boost->getSplits();
 	for (auto& r : roots) {
-		std::cout << "Root split " << nodes[r].split << " variable index " << splits[nodes[r].split].varIdx << " quality: " << splits[nodes[r].split].quality << std::endl;
+		std::cout << "Root split " << nodes[r].split << " variable index " << splits[nodes[r].split].varIdx << " quality: " << splits[nodes[r].split].quality << " explain: " << set.explainFeature(splits[nodes[r].split].varIdx, nodes[r].value) << std::endl;		
 	}
 }
 

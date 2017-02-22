@@ -69,6 +69,9 @@
     <ClInclude Include="FeatureSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HOGRGBHistogramVarianceFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -115,6 +118,9 @@
     </ClCompile>
     <ClCompile Include="FeatureSet.cpp">
       <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HOGRGBHistogramVarianceFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

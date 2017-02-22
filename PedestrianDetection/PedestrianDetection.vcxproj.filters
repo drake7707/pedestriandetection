@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -13,11 +9,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Base">
-      <UniqueIdentifier>{d077a2a7-4181-4645-87c4-6726509122c4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Base">
       <UniqueIdentifier>{4c83e018-8799-41af-a75d-032148d77f62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FeatureCreators">
+      <UniqueIdentifier>{c463a5eb-0cf4-4770-b918-ff4a59834ed4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\Source Files\Base">
+      <UniqueIdentifier>{d077a2a7-4181-4645-87c4-6726509122c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Source Files\FeatureCreators">
+      <UniqueIdentifier>{fee1e5d6-46f9-4f70-ac6c-957428ae29b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -30,19 +36,10 @@
     <ClInclude Include="Histogram.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="HistogramOfOrientedGradients.h">
-      <Filter>Header Files\Base</Filter>
-    </ClInclude>
     <ClInclude Include="ModelEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FeaturesSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IFeatureCreator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HOGRGBFeatureCreator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataSet.h">
@@ -54,43 +51,70 @@
     <ClInclude Include="KITTIDataSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HOGRGBFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
+    <ClInclude Include="HistogramOfOrientedGradients.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
+    <ClInclude Include="HOGDepthFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassifierEvaluation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FeatureTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FeatureSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FeatureVector.cpp">
-      <Filter>Source Files\Base</Filter>
+      <Filter>Resource Files\Source Files\Base</Filter>
     </ClCompile>
     <ClCompile Include="Helper.cpp">
-      <Filter>Source Files\Base</Filter>
+      <Filter>Resource Files\Source Files\Base</Filter>
     </ClCompile>
     <ClCompile Include="Histogram.cpp">
-      <Filter>Source Files\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="HistogramOfOrientedGradients.cpp">
-      <Filter>Source Files\Base</Filter>
+      <Filter>Resource Files\Source Files\Base</Filter>
     </ClCompile>
     <ClCompile Include="ModelEvaluator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FeaturesSet.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IFeatureCreator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HOGRGBFeatureCreator.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DataSet.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DataSetLabel.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KITTIDataSet.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HOGRGBFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="HistogramOfOrientedGradients.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="HOGDepthFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassifierEvaluation.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FeatureTester.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FeatureSet.cpp">
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

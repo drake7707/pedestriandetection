@@ -13,7 +13,10 @@
 #include "ModelEvaluator.h"
 #include "IFeatureCreator.h"
 #include "HOGRGBFeatureCreator.h"
-#include "FeaturesSet.h"
+#include "HOGDepthFeatureCreator.h"
+#include "FeatureTester.h"
+
+#include "FeatureSet.h"
 
 
 #include "KITTIDataSet.h"
@@ -133,10 +136,10 @@ void saveTNTP() {
 				double width = refWidth * sizeMultiplier;
 				double height = refHeight * sizeMultiplier;
 				rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - width), randBetween(0, currentImages[0].rows - height), width, height);
-			} while (iteration++ < 100 && (overlaps(pair.second, rTN, selectedTNRegions) || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
+			} while (iteration++ < 10000 && (overlaps(pair.second, rTN, selectedTNRegions) || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
 
 
-			if (iteration < 100) {
+			if (iteration < 10000) {
 				selectedTNRegions.push_back(rTN);
 				for (int i = 0; i < currentImages.size(); i++)
 				{
@@ -163,21 +166,48 @@ void saveTNTP() {
 int main()
 {
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
-	saveTNTP();
+	//saveTNTP();
 	//return 0;
-
-	FeaturesSet set;
-	set.addCreator(&HOGRGBFeatureCreator());
-
 	std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
-	ModelEvaluator evaluator(baseDatasetPath, set);
 
-	evaluator.train();
+	FeatureTester tester(baseDatasetPath);
+	tester.addAvailableCreator(std::string("HoG(RGB)"), new HOGRGBFeatureCreator());
+	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator());
+	
+	std::set<std::string> set = { "HoG(RGB)" };
+	tester.addJob(set);
 
-	ClassifierEvaluation eval = evaluator.evaluate();
+	set = { "HoG(RGB)", "HoG(Depth)" };
+	tester.addJob(set);
 
-	eval.print(std::cout);
+	tester.runJobs();
+	//FeatureSet set;
+	//set.addCreator(&HOGRGBFeatureCreator());
+	////set.addCreator(&HOGDepthFeatureCreator());
 
+	
+
+	//{
+	//	std::cout << "Testing with 0.8/0.2 prior weights" << std::endl;
+	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.8, 0.2);
+	//	evaluator.train();
+	//	ClassifierEvaluation eval = evaluator.evaluate();
+	//	eval.print(std::cout);
+	//}
+	//{
+	//	std::cout << "Testing with 0.5/0.5 prior weights" << std::endl;
+	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.5, 0.5);
+	//	evaluator.train();
+	//	ClassifierEvaluation eval = evaluator.evaluate();
+	//	eval.print(std::cout);
+	//}
+	//{
+	//	std::cout << "Testing with 0.2/0.8 prior weights" << std::endl;
+	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.2, 0.8);
+	//	evaluator.train();
+	//	ClassifierEvaluation eval = evaluator.evaluate();
+	//	eval.print(std::cout);
+	//}
 
 
 	getchar();

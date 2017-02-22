@@ -8,6 +8,10 @@ public:
 	IFeatureCreator();
 	virtual ~IFeatureCreator();
 
+	virtual int getNumberOfFeatures() const = 0;
+
 	virtual FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const = 0;
+
+	virtual std::string explainFeature(int featureIndex, double featureValue) const = 0;
 };
 

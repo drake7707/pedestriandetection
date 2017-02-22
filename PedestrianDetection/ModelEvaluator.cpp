@@ -1,7 +1,8 @@
 #include "ModelEvaluator.h"
 
 
-ModelEvaluator::ModelEvaluator(std::string& baseDatasetPath, FeaturesSet& set) : baseDatasetPath(baseDatasetPath), set(set)
+ModelEvaluator::ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set, float tpWeight, float tnWeight)
+	: baseDatasetPath(baseDatasetPath), set(set), tpWeight(tpWeight), tnWeight(tnWeight)
 {
 }
 
@@ -54,7 +55,7 @@ void ModelEvaluator::train()
 	std::vector<FeatureVector> trueNegativeFeatures;
 
 
-	iterateDataSet([](int idx) -> bool { return idx % 5 != 0; },
+	iterateDataSet([](int idx) -> bool { return idx % 2 != 0; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v = set.getFeatures(rgb, depth);
@@ -142,8 +143,8 @@ void ModelEvaluator::train()
 	//boost->setBoostType(cv::ml::Boost::GENTLE);
 
 	std::vector<double>	priors(2);
-	priors[0] = trueNegativeFeatures.size();
-	priors[1] = truePositiveFeatures.size();
+	priors[0] = trueNegativeFeatures.size() * tpWeight;
+	priors[1] = truePositiveFeatures.size() * tnWeight;
 
 	boost->setPriors(cv::Mat(priors));
 	//boost->setWeakCount(10);
@@ -152,36 +153,53 @@ void ModelEvaluator::train()
 	//boost->setUseSurrogates(false);
 
 	std::cout << "Training boost classifier on " << N << " samples, feature size " << featureSize << std::endl;
-	boost->train(tdata);
+
+	trainingTimeMS = measure<std::chrono::milliseconds>::execution([&]() -> void {
+		boost->train(tdata);
+	});
+	std::cout << "Done training, took " << trainingTimeMS << "ms" << std::endl;
 
 	if (!boost->isTrained())
 		throw std::exception("Boost training failed");
 
 	model.boost = boost;
+
+	auto& roots = boost->getRoots();
+	auto& nodes = boost->getNodes();
+	auto& splits = boost->getSplits();
+	for (auto& r : roots) {
+		std::cout << "Root split " << nodes[r].split << " variable index " << splits[nodes[r].split].varIdx << " quality: " << splits[nodes[r].split].quality << std::endl;
+	}
 }
 
-ClassifierEvaluation ModelEvaluator::evaluate() const {
+ClassifierEvaluation ModelEvaluator::evaluate() {
 	ClassifierEvaluation eval;
 
-	iterateDataSet([](int idx) -> bool { return idx % 5 == 0; },
+	double sumTime = 0;
+	double nrRegions = 0;
+	iterateDataSet([](int idx) -> bool { return idx % 2 == 0; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
-		FeatureVector v = set.getFeatures(rgb, depth);
-		v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
+		sumTime += measure<std::chrono::milliseconds>::execution([&]() -> void {
+			FeatureVector v = set.getFeatures(rgb, depth);
+			v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
-		int result = model.boost->predict(v.toMat());
-		if (resultClass == result) {
-			if (resultClass == -1)
-				eval.nrOfTrueNegatives++;
-			else
-				eval.nrOfTruePositives++;
-		}
-		else {
-			if (resultClass == -1 && result == 1)
-				eval.nrOfFalsePositives++;
-			else
-				eval.nrOfFalseNegatives++;
-		}
+			int result = model.boost->predict(v.toMat());
+			if (resultClass == result) {
+				if (resultClass == -1)
+					eval.nrOfTrueNegatives++;
+				else
+					eval.nrOfTruePositives++;
+			}
+			else {
+				if (resultClass == -1 && result == 1)
+					eval.nrOfFalsePositives++;
+				else
+					eval.nrOfFalseNegatives++;
+			}
+		});
+		nrRegions++;
 	});
+	eval.evaluationSpeedPerRegionMS = sumTime / nrRegions;
 	return eval;
 }

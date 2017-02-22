@@ -37,3 +37,4 @@ int randBetween(int min, int max) {
 int ceilTo(double val, double target) {
 	return ceil(val / target) * target;
 }
+

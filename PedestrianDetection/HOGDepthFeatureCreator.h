@@ -1,8 +1,8 @@
 #pragma once
 #include "IFeatureCreator.h"
-class HOGRGBFeatureCreator : public IFeatureCreator
-{
 
+class HOGDepthFeatureCreator : public IFeatureCreator
+{
 private:
 
 
@@ -12,8 +12,8 @@ private:
 	int refHeight = 128;
 
 public:
-	HOGRGBFeatureCreator();
-	virtual ~HOGRGBFeatureCreator();
+	HOGDepthFeatureCreator();
+	virtual ~HOGDepthFeatureCreator();
 
 	int getNumberOfFeatures() const;
 	std::string explainFeature(int featureIndex, double featureValue) const;

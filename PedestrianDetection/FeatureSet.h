@@ -4,17 +4,20 @@
 #include "opencv2/opencv.hpp"
 
 
-class FeaturesSet
+class FeatureSet
 {
 private:
 	std::vector<IFeatureCreator*> creators;
 
 public:
-	FeaturesSet();
-	~FeaturesSet();
+	FeatureSet();
+	~FeatureSet();
 
 	void addCreator(IFeatureCreator* creator);
 
+	int getNumberOfFeatures() const;
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
+
+	std::string explainFeature(int featureIndex, double splitValue) const;
 };
 

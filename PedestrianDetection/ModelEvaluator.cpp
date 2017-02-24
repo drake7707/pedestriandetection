@@ -175,18 +175,26 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) 
 
 	std::vector<double> sumTimes(nrOfEvaluations, 0);
 	std::vector<int> nrRegions(nrOfEvaluations, 0);
+	double featureBuildTime = 0;
 
 	iterateDataSet([](int idx) -> bool { return idx % 2 == 0; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
-		// get 1000 datapoints, ranging from -10 to 10
+		FeatureVector v;
+		featureBuildTime += measure<std::chrono::milliseconds>::execution([&]() -> void {
+			v = set.getFeatures(rgb, depth);
+			v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
+		});
+
+
+		// get datapoints, ranging from -10 to 10
 		for (int i = 0; i < nrOfEvaluations; i++)
 		{
 			double valueShift = 1.0 * i / nrOfEvaluations * 20 - 10;
-
+			evals[i].valueShift = valueShift;
 			sumTimes[i] += measure<std::chrono::milliseconds>::execution([&]() -> void {
 
-				int result = evaluateWindow(rgb, depth, valueShift);
+				int result = evaluateFeatures(v, valueShift);
 				if (resultClass == result) {
 					if (resultClass == -1)
 						evals[i].nrOfTrueNegatives++;
@@ -202,19 +210,24 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) 
 			});
 			nrRegions[i]++;
 		}
-	
 	});
 
 	for (int i = 0; i < nrOfEvaluations; i++)
-		evals[i].evaluationSpeedPerRegionMS = sumTimes[i] / nrRegions[i];
-	
+		evals[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes[i]) / nrRegions[i];
+
 	return evals;
 }
 
 int ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift) const {
+
 	FeatureVector v = set.getFeatures(rgb, depth);
 	v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
+	return evaluateFeatures(v, valueShift);
+}
+
+
+int ModelEvaluator::evaluateFeatures(FeatureVector& v, double valueShift) const {
 
 	auto& nodes = model.boost->getNodes();
 	auto& roots = model.boost->getRoots();
@@ -241,7 +254,7 @@ int ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShi
 	}
 
 	float result = model.boost->predict(v.toMat(), cv::noArray());
-	
+
 	return sum + valueShift > 0 ? 1 : -1;
 }
 

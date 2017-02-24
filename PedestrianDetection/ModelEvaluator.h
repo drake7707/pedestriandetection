@@ -26,6 +26,8 @@ private:
 	Model model;
 
 	void iterateDataSet(std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat& rgb, cv::Mat& depth)> func) const;
+	int evaluateFeatures(FeatureVector& v, double valueShift = 0) const;
+
 
 public:
 	ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set);
@@ -37,7 +39,8 @@ public:
 	void train();
 
 	std::vector<ClassifierEvaluation> evaluate(int nrOfEvaluations);
-	int ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift = 0) const;
+	int evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift = 0) const;
+	
 
 	void saveModel(std::string& path);
 	void loadModel(std::string& path);

@@ -72,6 +72,12 @@
     <ClInclude Include="HOGRGBHistogramVarianceFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
+    <ClInclude Include="RGBCornerFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
+    <ClInclude Include="HistogramDepthFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -120,6 +126,12 @@
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HOGRGBHistogramVarianceFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="RGBCornerFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="HistogramDepthFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>

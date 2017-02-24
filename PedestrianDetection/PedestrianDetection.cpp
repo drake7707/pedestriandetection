@@ -17,6 +17,9 @@
 #include "HOGRGBFeatureCreator.h"
 #include "HOGDepthFeatureCreator.h"
 #include "HOGRGBHistogramVarianceFeatureCreator.h"
+#include "RGBCornerFeatureCreator.h"
+#include "HistogramDepthFeatureCreator.h"
+
 
 #include "ModelEvaluator.h"
 
@@ -279,62 +282,44 @@ int main()
 	while (true) {
 		char nrStr[7];
 		sprintf(nrStr, "%06d", nr);
-		cv::Mat img = cv::imread(kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
-		cv::cvtColor(img, img, CV_BGR2GRAY);
-
-		Histogram h(11, 0);
+		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
 
 
-		img.convertTo(img, CV_32F);
-		auto& mean = cv::mean(img);
+		std::function<void(cv::Mat&,std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
+			cv::Mat gray;
+			cv::cvtColor(img, gray, CV_BGR2GRAY);
 
+			cv::normalize(img, img, 0, 255, cv::NormTypes::NORM_MINMAX);
 
-		float max = std::numeric_limits<float>().min();
-		float min = std::numeric_limits<float>().max();
+			std::vector<cv::Point2f> corners;
+			int maxCorners = 1000;
+			float qualityLevel = 0.01;
+			float minDistance = 5;
 
-		for (int j = 0; j < img.rows; j++)
-		{
-			for (int i = 0; i < img.cols; i++)
-			{
-				float val = img.at<float>(j, i); // (img.at<float>(j, i) - mean[0]) * (img.at<float>(j, i) - mean[0]);
-				img.at<float>(j, i) = val;
-				if (max < val)
-					max = val;
-
-				if (min > val)
-					min = val;
+			cv::goodFeaturesToTrack(gray, corners, maxCorners, qualityLevel, minDistance);
+			for (auto& c : corners) {
+				cv::circle(img, c, 2, cv::Scalar(0, 255, 0), -1);
 			}
-		}
-		for (int j = 0; j < img.rows; j++)
-		{
-			for (int i = 0; i < img.cols; i++)
-			{
-				img.at<float>(j, i) = (max - img.at<float>(j, i)) / (max-min);
-			}
-		}
 
-		
-		
-		for (int j = 0; j < img.rows; j++)
-		{
-			for (int i = 0; i < img.cols; i++)
+
+			Histogram h(26, 0);
+			for (int j = 0; j < img.rows; j++)
 			{
-			
-			//	if (img.at<uchar>(j, i) > 20) {
-					int idx = floor(img.at<float>(j, i) * (h.size() - 1));
-					//	if (idx >= 0 && idx < h.size())
+				for (int i = 0; i < img.cols; i++)
+				{
+					int idx = img.at<uchar>(j, i) / 10;
 					h[idx]++;
-			//	}
+				}
 			}
-		}
-		showHistogram(h);
+			showHistogram(h, std::string("Histogram_") + msg);
+			cv::imshow(msg, img);
+		};
 
-		cv::Mat binningValues;
-		img.convertTo(binningValues, CV_32F);
-		normalize(binningValues, binningValues, 0, 1, cv::NormTypes::NORM_MINMAX, CV_32FC1, cv::Mat());
+		func(tp, "TP");
 
+		func(tn, "TN");
 
-		cv::imshow("Test", img);
 		cv::waitKey(0);
 		nr++;
 	}
@@ -350,9 +335,26 @@ int main()
 	tester.addAvailableCreator(std::string("HoG(RGB)"), new HOGRGBFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("S2HoG(RGB)"), new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(std::string("Corner(RGB)"), new RGBCornerFeatureCreator(patchSize, refWidth, refHeight));
+	tester.addAvailableCreator(std::string("Histogram(Depth)"), new HistogramDepthFeatureCreator());
 
 	int nrOfEvaluations = 100;
 	std::set<std::string> set;
+
+	set = { "Corner(RGB)" };
+	tester.addJob(set, nrOfEvaluations);
+	
+	set = { "HoG(RGB)", "Corner(RGB)" };
+	tester.addJob(set, nrOfEvaluations);
+
+
+	set = { "HoG(RGB)","Histogram(Depth)" };
+	tester.addJob(set, nrOfEvaluations);
+
+
+	set = { "Histogram(Depth)" };
+	tester.addJob(set, nrOfEvaluations);
+
 
 	set = { "HoG(RGB)" };
 	tester.addJob(set, nrOfEvaluations);

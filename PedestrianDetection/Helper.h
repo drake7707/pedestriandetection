@@ -15,7 +15,7 @@
 #endif 
 
 
-void showHistogram(Histogram& hist);
+void showHistogram(Histogram& hist, std::string title = "Histogram");
 
 int randBetween(int min, int max);
 

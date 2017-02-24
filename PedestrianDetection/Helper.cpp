@@ -2,7 +2,7 @@
 
 
 
-void showHistogram(Histogram& histogram) {
+void showHistogram(Histogram& histogram, std::string title) {
 
 
 	cv::Mat hist(cv::Size(300, 300), CV_8U, cv::Scalar(255));
@@ -26,8 +26,8 @@ void showHistogram(Histogram& histogram) {
 		rectangle(hist, cv::Rect(x, y, rectWidth, hist.rows), cv::Scalar(0), -1);
 	}
 
-	cv::namedWindow("Histogram", CV_WINDOW_KEEPRATIO);
-	cv::imshow("Histogram", hist);
+	cv::namedWindow(title, CV_WINDOW_KEEPRATIO);
+	cv::imshow(title, hist);
 }
 
 int randBetween(int min, int max) {

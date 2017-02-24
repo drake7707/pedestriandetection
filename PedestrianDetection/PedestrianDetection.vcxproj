@@ -163,6 +163,7 @@
     <ClInclude Include="FeatureVector.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Histogram.h" />
+    <ClInclude Include="HistogramDepthFeatureCreator.h" />
     <ClInclude Include="HistogramOfOrientedGradients.h" />
     <ClInclude Include="HOGDepthFeatureCreator.h" />
     <ClInclude Include="HOGRGBFeatureCreator.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="IFeatureCreator.h" />
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="ModelEvaluator.h" />
+    <ClInclude Include="RGBCornerFeatureCreator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClassifierEvaluation.cpp" />
@@ -180,6 +182,7 @@
     <ClCompile Include="FeatureVector.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Histogram.cpp" />
+    <ClCompile Include="HistogramDepthFeatureCreator.cpp" />
     <ClCompile Include="HistogramOfOrientedGradients.cpp" />
     <ClCompile Include="HOGDepthFeatureCreator.cpp" />
     <ClCompile Include="HOGRGBFeatureCreator.cpp" />
@@ -188,6 +191,7 @@
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="ModelEvaluator.cpp" />
     <ClCompile Include="PedestrianDetection.cpp" />
+    <ClCompile Include="RGBCornerFeatureCreator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

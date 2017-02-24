@@ -8,6 +8,7 @@ struct ClassifierEvaluation {
 	int nrOfFalsePositives = 0;
 	int nrOfFalseNegatives = 0;
 
+	double valueShift = 0;
 	double evaluationSpeedPerRegionMS = 0;
 
 	void print(std::ostream& out) {
@@ -56,10 +57,10 @@ struct ClassifierEvaluation {
 
 	void toCSVLine(std::ostream& out, bool header) {
 		if (header)
-			out << "TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;EvaluationTimePerWindowMS";
+			out << "TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;EvaluationTimePerWindowMS;ValueShift";
 		else
 			out << std::fixed << nrOfTruePositives << ";" << nrOfTrueNegatives << ";" << nrOfFalsePositives << ";" << nrOfFalseNegatives
-			<< ";" << getTPR() << ";" << getFPR() << ";" << getPrecision() << ";" << getRecall() << ";" << getFScore(1)
-			<< ";" << evaluationSpeedPerRegionMS;
+			<< ";" << getTPR() << ";" << getFPR() << ";" << getPrecision() << ";" << getRecall() << ";" << getFScore(1) 
+			<< ";" << evaluationSpeedPerRegionMS << ";" << valueShift;
 	}
 };

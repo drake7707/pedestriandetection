@@ -20,7 +20,7 @@
       <cols>1</cols>
       <dt>d</dt>
       <data>
-        7.6379998779297239e+02 3056.</data></priors>
+        7.6379998779297557e+02 3056.</data></priors>
     <weight_trimming_rate>9.4999999999999996e-01</weight_trimming_rate></training_params>
   <global_var_idx>1</global_var_idx>
   <var_idx>

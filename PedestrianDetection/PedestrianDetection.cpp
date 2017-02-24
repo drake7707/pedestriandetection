@@ -10,6 +10,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "HistogramOfOrientedGradients.h"
+
 #include "ModelEvaluator.h"
 #include "IFeatureCreator.h"
 #include "HOGRGBFeatureCreator.h"
@@ -26,9 +28,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -37,6 +41,61 @@ int refHeight = 128;
 
 
 
+
+void cornerFeatureTest() {
+	cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\test.jpg");
+
+	cv::cvtColor(mRGB, mRGB, cv::COLOR_BGR2GRAY);
+
+	cv::Mat dst;
+	cv::cornerHarris(mRGB, dst, 2, 3, 0);
+
+
+	// Detecting corners
+	cornerHarris(mRGB, dst, 7, 5, 0.05, cv::BORDER_DEFAULT);
+
+	// Normalizing
+	cv::Mat dst_norm;
+	cv::Mat dst_norm_scaled;
+	normalize(dst, dst_norm, 0, 255, cv::NormTypes::NORM_MINMAX, CV_32FC1, cv::Mat());
+
+	Histogram h(101, 0);
+
+	auto& mean = cv::mean(dst_norm);
+	for (int j = 0; j < dst.rows; j++)
+	{
+		for (int i = 0; i < dst.cols; i++)
+		{
+			dst_norm.at<float>(j, i) = abs(dst_norm.at<float>(j, i) - mean[0]) *(dst_norm.at<float>(j, i) - mean[0]);
+		}
+	}
+	convertScaleAbs(dst_norm, dst_norm_scaled);
+
+
+	for (int j = 0; j < dst.rows; j++)
+	{
+		for (int i = 0; i < dst.cols; i++)
+		{
+			//	dst_norm_scaled.at<uchar>(j, i) = (dst_norm_scaled.at<uchar>(j, i) - mean[0])*(dst_norm_scaled.at<uchar>(j, i) - mean[0]);
+
+			int idx = floor(dst_norm_scaled.at<uchar>(j, i) / 255.0 * (h.size() - 1));
+			//	if (idx >= 0 && idx < h.size())
+			h[idx]++;
+		}
+	}
+	showHistogram(h);
+	cv::Mat binningValues;
+	dst_norm_scaled.convertTo(binningValues, CV_32F);
+	normalize(binningValues, binningValues, 0, 1, cv::NormTypes::NORM_MINMAX, CV_32FC1, cv::Mat());
+
+
+	auto histResult = hog::getHistogramsOfX(cv::Mat(dst_norm_scaled.rows, dst_norm_scaled.cols, CV_32FC1, cv::Scalar(1)), binningValues, patchSize, binSize, true, true);
+
+
+	cv::imshow("Test", histResult.hogImage);
+	cv::waitKey(0);
+
+}
 
 bool overlaps(std::vector<DataSetLabel> labels, cv::Rect2d r, std::vector<cv::Rect2d> selectedRegions) {
 	for (auto& l : labels) {
@@ -182,17 +241,17 @@ void testClassifier() {
 	testSet.addCreator(new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	testSet.addCreator(new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
 
-	ModelEvaluator model(baseDatasetPath, testSet, 0.2, 0.8);
+	ModelEvaluator model(baseDatasetPath, testSet);
 
-//	model.train();
-//	model.saveModel(std::string("testmodel.xml"));
+	//model.train();
+	//model.saveModel(std::string("testmodel.xml"));
 	model.loadModel(std::string("testmodel.xml"));
 
-	ClassifierEvaluation eval = model.evaluate();
+	ClassifierEvaluation eval = model.evaluate(1)[0];
 	eval.print(std::cout);
-	
-	cv::Mat mRGB = cv::imread("D:\\PedestrianDetectionDatasets\\kitti\\rgb\\000000.png");
-	cv::Mat mDepth = cv::imread("D:\\PedestrianDetectionDatasets\\kitti\\depth\\000000.png");
+
+	cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");
+	cv::Mat mDepth = cv::imread(kittiDatasetPath + "\\depth\\000000.png");
 
 	slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect2d bbox) -> void {
 		cv::Mat regionRGB;
@@ -202,12 +261,12 @@ void testClassifier() {
 		cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
 
 		FeatureVector v = testSet.getFeatures(regionRGB, regionDepth);
-		int result = model.evaluate(regionRGB, regionDepth);
-		if(result == 1)
+		int result = model.evaluateWindow(regionRGB, regionDepth, -5);
+		if (result == 1)
 			cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 1);
-	},0.25,1);
+	}, 0.25, 1);
 	cv::imshow("Test", mRGB);
-	
+
 	// this will leak because creators are never disposed!
 	cv::waitKey(0);
 }
@@ -215,30 +274,97 @@ void testClassifier() {
 
 int main()
 {
+	//testClassifier();
+	/*int nr = 0;
+	while (true) {
+		char nrStr[7];
+		sprintf(nrStr, "%06d", nr);
+		cv::Mat img = cv::imread(kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+		cv::cvtColor(img, img, CV_BGR2GRAY);
+
+		Histogram h(11, 0);
+
+
+		img.convertTo(img, CV_32F);
+		auto& mean = cv::mean(img);
+
+
+		float max = std::numeric_limits<float>().min();
+		float min = std::numeric_limits<float>().max();
+
+		for (int j = 0; j < img.rows; j++)
+		{
+			for (int i = 0; i < img.cols; i++)
+			{
+				float val = img.at<float>(j, i); // (img.at<float>(j, i) - mean[0]) * (img.at<float>(j, i) - mean[0]);
+				img.at<float>(j, i) = val;
+				if (max < val)
+					max = val;
+
+				if (min > val)
+					min = val;
+			}
+		}
+		for (int j = 0; j < img.rows; j++)
+		{
+			for (int i = 0; i < img.cols; i++)
+			{
+				img.at<float>(j, i) = (max - img.at<float>(j, i)) / (max-min);
+			}
+		}
+
+		
+		
+		for (int j = 0; j < img.rows; j++)
+		{
+			for (int i = 0; i < img.cols; i++)
+			{
+			
+			//	if (img.at<uchar>(j, i) > 20) {
+					int idx = floor(img.at<float>(j, i) * (h.size() - 1));
+					//	if (idx >= 0 && idx < h.size())
+					h[idx]++;
+			//	}
+			}
+		}
+		showHistogram(h);
+
+		cv::Mat binningValues;
+		img.convertTo(binningValues, CV_32F);
+		normalize(binningValues, binningValues, 0, 1, cv::NormTypes::NORM_MINMAX, CV_32FC1, cv::Mat());
+
+
+		cv::imshow("Test", img);
+		cv::waitKey(0);
+		nr++;
+	}
+	*/
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
-	testClassifier();
+	//testClassifier();
 	//saveTNTP();
 	//return 0;
 
+	std::cout << hog::getNumberOfFeatures(64, 128, 8, 9) << std::endl;
 
 	FeatureTester tester(baseDatasetPath);
 	tester.addAvailableCreator(std::string("HoG(RGB)"), new HOGRGBFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("S2HoG(RGB)"), new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
 
+	int nrOfEvaluations = 100;
 	std::set<std::string> set;
 
 	set = { "HoG(RGB)" };
-	tester.addJob(set);
+	tester.addJob(set, nrOfEvaluations);
 
 	set = { "HoG(RGB)", "S2HoG(RGB)" };
-	tester.addJob(set);
+	tester.addJob(set, nrOfEvaluations);
 
 	set = { "HoG(RGB)", "HoG(Depth)" };
-	tester.addJob(set);
+	tester.addJob(set, nrOfEvaluations);
 
 	set = { "HoG(RGB)",  "S2HoG(RGB)",  "HoG(Depth)" };
-	tester.addJob(set);
+	tester.addJob(set, nrOfEvaluations);
 
 
 

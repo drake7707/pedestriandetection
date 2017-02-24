@@ -66,12 +66,29 @@ namespace hog {
 
 				for (int k = 0; k < binSize; k++)
 				{
-
 					if (featureIndex == idx)
 						return "HoG @ (" + std::to_string(x) + "," + std::to_string(y) + ") with angle " + std::to_string((180.0 / binSize)*k);
-
 					idx++;
 				}
+				for (int k = 0; k < binSize; k++)
+				{
+					if (featureIndex == idx)
+						return "HoG @ (" + std::to_string(x+1) + "," + std::to_string(y) + ") with angle " + std::to_string((180.0 / binSize)*k);
+					idx++;
+				}
+				for (int k = 0; k < binSize; k++)
+				{
+					if (featureIndex == idx)
+						return "HoG @ (" + std::to_string(x) + "," + std::to_string(y+1) + ") with angle " + std::to_string((180.0 / binSize)*k);
+					idx++;
+				}
+				for (int k = 0; k < binSize; k++)
+				{
+					if (featureIndex == idx)
+						return "HoG @ (" + std::to_string(x+1) + "," + std::to_string(y+1) + ") with angle " + std::to_string((180.0 / binSize)*k);
+					idx++;
+				}
+
 			}
 		}
 		return "";

@@ -1,8 +1,8 @@
 #include "ModelEvaluator.h"
 
 
-ModelEvaluator::ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set, float tpWeight, float tnWeight)
-	: baseDatasetPath(baseDatasetPath), set(set), tpWeight(tpWeight), tnWeight(tnWeight)
+ModelEvaluator::ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set)
+	: baseDatasetPath(baseDatasetPath), set(set)
 {
 }
 
@@ -140,11 +140,9 @@ void ModelEvaluator::train()
 		cv::noArray(), cv::noArray(), cv::noArray(), cv::noArray());
 
 
-	//boost->setBoostType(cv::ml::Boost::GENTLE);
-
 	std::vector<double>	priors(2);
-	priors[0] = trueNegativeFeatures.size() * tpWeight;
-	priors[1] = truePositiveFeatures.size() * tnWeight;
+	priors[0] = trueNegativeFeatures.size();
+	priors[1] = truePositiveFeatures.size();
 
 	boost->setPriors(cv::Mat(priors));
 	//boost->setWeakCount(10);
@@ -168,50 +166,87 @@ void ModelEvaluator::train()
 	auto& nodes = boost->getNodes();
 	auto& splits = boost->getSplits();
 	for (auto& r : roots) {
-		std::cout << "Root split " << nodes[r].split << " variable index " << splits[nodes[r].split].varIdx << " quality: " << splits[nodes[r].split].quality << " explain: " << set.explainFeature(splits[nodes[r].split].varIdx, nodes[r].value) << std::endl;		
+		std::cout << "Root split " << nodes[r].split << " variable index " << splits[nodes[r].split].varIdx << " quality: " << splits[nodes[r].split].quality << " explain: " << set.explainFeature(splits[nodes[r].split].varIdx, nodes[r].value) << std::endl;
 	}
 }
 
-ClassifierEvaluation ModelEvaluator::evaluate() {
-	ClassifierEvaluation eval;
+std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) {
+	std::vector<ClassifierEvaluation> evals(nrOfEvaluations, ClassifierEvaluation());
 
-	double sumTime = 0;
-	double nrRegions = 0;
+	std::vector<double> sumTimes(nrOfEvaluations, 0);
+	std::vector<int> nrRegions(nrOfEvaluations, 0);
+
 	iterateDataSet([](int idx) -> bool { return idx % 2 == 0; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
-		sumTime += measure<std::chrono::milliseconds>::execution([&]() -> void {
-			
-			int result = evaluate(rgb, depth);
-			if (resultClass == result) {
-				if (resultClass == -1)
-					eval.nrOfTrueNegatives++;
-				else
-					eval.nrOfTruePositives++;
-			}
-			else {
-				if (resultClass == -1 && result == 1)
-					eval.nrOfFalsePositives++;
-				else
-					eval.nrOfFalseNegatives++;
-			}
-		});
-		nrRegions++;
+		// get 1000 datapoints, ranging from -10 to 10
+		for (int i = 0; i < nrOfEvaluations; i++)
+		{
+			double valueShift = 1.0 * i / nrOfEvaluations * 20 - 10;
+
+			sumTimes[i] += measure<std::chrono::milliseconds>::execution([&]() -> void {
+
+				int result = evaluateWindow(rgb, depth, valueShift);
+				if (resultClass == result) {
+					if (resultClass == -1)
+						evals[i].nrOfTrueNegatives++;
+					else
+						evals[i].nrOfTruePositives++;
+				}
+				else {
+					if (resultClass == -1 && result == 1)
+						evals[i].nrOfFalsePositives++;
+					else
+						evals[i].nrOfFalseNegatives++;
+				}
+			});
+			nrRegions[i]++;
+		}
+	
 	});
-	eval.evaluationSpeedPerRegionMS = sumTime / nrRegions;
-	return eval;
+
+	for (int i = 0; i < nrOfEvaluations; i++)
+		evals[i].evaluationSpeedPerRegionMS = sumTimes[i] / nrRegions[i];
+	
+	return evals;
 }
 
-int ModelEvaluator::evaluate(cv::Mat& rgb, cv::Mat& depth) const {
+int ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift) const {
 	FeatureVector v = set.getFeatures(rgb, depth);
 	v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
-	int result = model.boost->predict(v.toMat());
-	return result;
+
+	auto& nodes = model.boost->getNodes();
+	auto& roots = model.boost->getRoots();
+	auto& splits = model.boost->getSplits();
+
+	double sum = 0.;
+	for (auto& r : roots) {
+
+		int nidx = r, prev = nidx, c = 0;
+
+
+		while (true) {
+			auto& n = nodes[r];
+			prev = nidx;
+			const cv::ml::DTrees::Node& node = nodes[nidx];
+			if (node.split < 0)
+				break;
+			const cv::ml::DTrees::Split& split = splits[node.split];
+			int vi = split.varIdx;
+			float val = v[vi];
+			nidx = val <= split.c ? node.left : node.right;
+		}
+		sum += nodes[prev].value;
+	}
+
+	float result = model.boost->predict(v.toMat(), cv::noArray());
+	
+	return sum + valueShift > 0 ? 1 : -1;
 }
 
 
-void ModelEvaluator::saveModel(std::string& path) {	
+void ModelEvaluator::saveModel(std::string& path) {
 	std::string filename = path;
 
 	cv::FileStorage fs(filename + ".data.xml", cv::FileStorage::WRITE);
@@ -226,10 +261,14 @@ void ModelEvaluator::loadModel(std::string& path) {
 
 	std::string filename = path;
 
-	model.boost = cv::Algorithm::load<cv::ml::Boost>(filename +".boost.xml");
+	model.boost = cv::Algorithm::load<cv::ml::Boost>(filename + ".boost.xml");
 	cv::FileStorage fsRead(filename + ".data.xml", cv::FileStorage::READ);
 	fsRead["mean"] >> model.meanVector;
 	fsRead["sigma"] >> model.sigmaVector;
-	
+
+
+
+
+
 	fsRead.release();
 }

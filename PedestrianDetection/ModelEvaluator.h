@@ -25,13 +25,10 @@ private:
 
 	Model model;
 
-	float tpWeight;
-	float tnWeight;
-
 	void iterateDataSet(std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat& rgb, cv::Mat& depth)> func) const;
 
 public:
-	ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set, float tpWeight, float tnWeight);
+	ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set);
 	~ModelEvaluator();
 
 
@@ -39,8 +36,8 @@ public:
 
 	void train();
 
-	ClassifierEvaluation evaluate();
-	int ModelEvaluator::evaluate(cv::Mat& rgb, cv::Mat& depth) const;
+	std::vector<ClassifierEvaluation> evaluate(int nrOfEvaluations);
+	int ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift = 0) const;
 
 	void saveModel(std::string& path);
 	void loadModel(std::string& path);

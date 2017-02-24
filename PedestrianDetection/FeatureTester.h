@@ -14,11 +14,12 @@ class FeatureTesterJob {
 	
 	std::string baseDatasetPath;
 	FeatureSet set;
+	int nrOfEvaluations;
 
 public:
 	std::string featureSetName;
 
-	FeatureTesterJob(std::string& featureSetName, FeatureSet& set, std::string& baseDatasetPath);
+	FeatureTesterJob(std::string& featureSetName, FeatureSet& set, std::string& baseDatasetPath, int nrOfEvaluations);
 	std::vector<ClassifierEvaluation> run() const;
 
 };
@@ -43,7 +44,7 @@ public:
 
 	void addAvailableCreator(std::string& name, IFeatureCreator* creator);
 
-	void addJob(std::set<std::string>& set);
+	void addJob(std::set<std::string>& set, int nrOfEvaluations);
 
 	void runJobs();
 };

@@ -4,38 +4,19 @@
 
 
 
-FeatureTesterJob::FeatureTesterJob(std::string& featureSetName, FeatureSet& set, std::string& baseDatasetPath) : featureSetName(featureSetName), set(set), baseDatasetPath(baseDatasetPath) {
+FeatureTesterJob::FeatureTesterJob(std::string& featureSetName, FeatureSet& set, std::string& baseDatasetPath, int nrOfEvaluations) : featureSetName(featureSetName), set(set), baseDatasetPath(baseDatasetPath), nrOfEvaluations(nrOfEvaluations) {
 
 }
 
 std::vector<ClassifierEvaluation>  FeatureTesterJob::run() const {
 
 	std::vector<ClassifierEvaluation> evaluations;
-	{
-		std::cout << "Testing with 0.8/0.2 prior weights" << std::endl;
-		ModelEvaluator evaluator(baseDatasetPath, set, 0.8, 0.2);
-		evaluator.train();
-		ClassifierEvaluation eval = evaluator.evaluate();
-		eval.print(std::cout);
-		evaluations.push_back(eval);
-	}
-	{
-		std::cout << "Testing with 0.5/0.5 prior weights" << std::endl;
-		ModelEvaluator evaluator(baseDatasetPath, set, 0.5, 0.5);
-		evaluator.train();
-		ClassifierEvaluation eval = evaluator.evaluate();
-		eval.print(std::cout);
-		evaluations.push_back(eval);
-	}
-	{
-		std::cout << "Testing with 0.2/0.8 prior weights" << std::endl;
-		ModelEvaluator evaluator(baseDatasetPath, set, 0.2, 0.8);
-		evaluator.train();
-		ClassifierEvaluation eval = evaluator.evaluate();
 
-		eval.print(std::cout);
-		evaluations.push_back(eval);
-	}
+	ModelEvaluator evaluator(baseDatasetPath, set);
+	evaluator.train();
+
+
+	return evaluator.evaluate(nrOfEvaluations);
 	return evaluations;
 }
 
@@ -76,7 +57,7 @@ void FeatureTester::addAvailableCreator(std::string& name, IFeatureCreator* crea
 	creators.emplace(name, creator);
 }
 
-void FeatureTester::addJob(std::set<std::string>& set) {
+void FeatureTester::addJob(std::set<std::string>& set, int nrOfEvaluations) {
 	FeatureSet featureSet;
 	std::string featureSetName("");
 	for (auto& name : set) {
@@ -91,7 +72,7 @@ void FeatureTester::addJob(std::set<std::string>& set) {
 			featureSetName += name;
 	}
 
-	FeatureTesterJob job(featureSetName, featureSet, baseDatasetPath);
+	FeatureTesterJob job(featureSetName, featureSet, baseDatasetPath, nrOfEvaluations);
 	jobs.push(job);
 }
 
@@ -129,8 +110,7 @@ void FeatureTester::runJobs() {
 
 					std::cout << "Starting job " << job.featureSetName << std::endl;
 					std::vector<ClassifierEvaluation> results = job.run();
-					std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-
+					
 					resultsFileMutex.lock();
 					for (auto& eval : results) {
 						resultStream << job.featureSetName << ";";

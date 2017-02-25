@@ -79,7 +79,7 @@
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
     <ClInclude Include="VariableNumberFeatureCreator.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -138,7 +138,7 @@
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
     <ClCompile Include="VariableNumberFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files</Filter>
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

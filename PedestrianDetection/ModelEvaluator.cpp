@@ -244,10 +244,5 @@ void ModelEvaluator::loadModel(std::string& path) {
 	cv::FileStorage fsRead(filename + ".data.xml", cv::FileStorage::READ);
 	fsRead["mean"] >> model.meanVector;
 	fsRead["sigma"] >> model.sigmaVector;
-
-
-
-
-
 	fsRead.release();
 }

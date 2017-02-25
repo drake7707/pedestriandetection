@@ -1,5 +1,6 @@
 #include "FeatureTester.h"
 #include "ModelEvaluator.h"
+#include "VariableNumberFeatureCreator.h"
 #include <fstream>
 
 
@@ -32,6 +33,16 @@ FeatureTester::~FeatureTester()
 	// delete creators
 	for (auto& pair : creators)
 		delete pair.second;
+}
+
+
+void FeatureTester::prepareCreators() {
+	// all variable number feature creators need to be prepared with the k-means centroids
+	for (auto& pair : creators) {
+		if (dynamic_cast<VariableNumberFeatureCreator*>(pair.second) != nullptr) {
+			dynamic_cast<VariableNumberFeatureCreator*>(pair.second)->prepare(baseDatasetPath);
+		}
+	}
 }
 
 void FeatureTester::loadProcessedFeatureSets() {
@@ -87,6 +98,8 @@ void FeatureTester::runJobs() {
 	resultStream << ";";
 	resultStream << std::endl;
 
+	// make sure all creates are ready to roll
+	prepareCreators();
 
 	std::mutex resultsFileMutex;
 

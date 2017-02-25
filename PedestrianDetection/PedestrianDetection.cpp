@@ -278,7 +278,7 @@ void testClassifier() {
 int main()
 {
 	//testClassifier();
-	int nr = 0;
+	/*int nr = 0;
 	while (true) {
 		char nrStr[7];
 		sprintf(nrStr, "%06d", nr);
@@ -323,7 +323,7 @@ int main()
 		cv::waitKey(0);
 		nr++;
 	}
-	
+	*/
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	//testClassifier();
 	//saveTNTP();
@@ -337,6 +337,7 @@ int main()
 	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("Corner(RGB)"), new RGBCornerFeatureCreator(patchSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("Histogram(Depth)"), new HistogramDepthFeatureCreator());
+
 
 	int nrOfEvaluations = 100;
 	std::set<std::string> set;
@@ -367,7 +368,7 @@ int main()
 
 	set = { "HoG(RGB)",  "S2HoG(RGB)",  "HoG(Depth)" };
 	tester.addJob(set, nrOfEvaluations);
-
+	
 
 
 	tester.runJobs();

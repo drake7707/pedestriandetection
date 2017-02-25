@@ -37,6 +37,8 @@ private:
 	void loadProcessedFeatureSets();
 	void markFeatureSetProcessed(std::string& featureSetName);
 
+	void prepareCreators();
+
 public:
 	FeatureTester(std::string& baseDatasetPath);
 	~FeatureTester();

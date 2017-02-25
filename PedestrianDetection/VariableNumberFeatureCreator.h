@@ -22,6 +22,10 @@ public:
 
 	virtual std::string explainFeature(int featureIndex, double featureValue) const;
 
+
+	void saveCentroids(std::string& path);
+	void loadCentroids(std::string& path);
+
 	VariableNumberFeatureCreator(std::string& creatorName, int clusterSize);
 	~VariableNumberFeatureCreator();
 };

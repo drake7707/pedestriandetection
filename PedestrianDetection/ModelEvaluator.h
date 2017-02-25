@@ -25,7 +25,6 @@ private:
 
 	Model model;
 
-	void iterateDataSet(std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat& rgb, cv::Mat& depth)> func) const;
 	int evaluateFeatures(FeatureVector& v, double valueShift = 0) const;
 
 

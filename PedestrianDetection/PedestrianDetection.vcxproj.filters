@@ -78,6 +78,9 @@
     <ClInclude Include="HistogramDepthFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
+    <ClInclude Include="VariableNumberFeatureCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -133,6 +136,9 @@
     </ClCompile>
     <ClCompile Include="HistogramDepthFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="VariableNumberFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

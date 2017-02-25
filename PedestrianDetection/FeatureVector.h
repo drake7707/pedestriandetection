@@ -33,6 +33,18 @@ public:
 		}
 	}
 
+	double distanceToSquared(const FeatureVector& v) {
+		if (v.size() != this->size())
+			throw std::exception("Can't calculate distance between 2 vectors of varying dimensions");
+
+		double sumsquares = 0;
+		for (int f = 0; f < size(); f++)
+		{
+			sumsquares += (v[f] - at(f)) * (v[f] - at(f));
+		}
+		return sumsquares;
+	}
+
 	void applyMeanAndVariance(std::vector<float> meanVector, std::vector<float> sigmaVector) {
 		for (int f = 0; f < this->size(); f++)
 			at(f) = sigmaVector[f] != 0 ? (at(f) - meanVector[f]) / sigmaVector[f] : 0;

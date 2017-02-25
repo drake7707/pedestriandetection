@@ -172,6 +172,7 @@
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="ModelEvaluator.h" />
     <ClInclude Include="RGBCornerFeatureCreator.h" />
+    <ClInclude Include="VariableNumberFeatureCreator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClassifierEvaluation.cpp" />
@@ -192,6 +193,7 @@
     <ClCompile Include="ModelEvaluator.cpp" />
     <ClCompile Include="PedestrianDetection.cpp" />
     <ClCompile Include="RGBCornerFeatureCreator.cpp" />
+    <ClCompile Include="VariableNumberFeatureCreator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

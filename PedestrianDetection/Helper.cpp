@@ -60,3 +60,39 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect2d bbox
 		invscale *= 2;
 	}
 }
+
+
+
+void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func) {
+	int i = 0;
+	bool stop = false;
+	while (!stop) {
+		if (canSelectFunc(i)) {
+			std::string rgbTP = baseDatasetPath + PATH_SEPARATOR + "tp" + PATH_SEPARATOR + "rgb" + std::to_string(i) + ".png";
+			std::string rgbTN = baseDatasetPath + PATH_SEPARATOR + "tn" + PATH_SEPARATOR + "rgb" + std::to_string(i) + ".png";
+			std::string depthTP = baseDatasetPath + PATH_SEPARATOR + "tp" + PATH_SEPARATOR + "depth" + std::to_string(i) + ".png";
+			std::string depthTN = baseDatasetPath + PATH_SEPARATOR + "tn" + PATH_SEPARATOR + "depth" + std::to_string(i) + ".png";
+
+			cv::Mat rgb;
+			cv::Mat depth;
+			rgb = cv::imread(rgbTP);
+			depth = cv::imread(depthTP);
+			if (rgb.cols == 0 || rgb.rows == 0 || depth.cols == 0 || depth.rows == 0) {
+				stop = true;
+				break;
+			}
+
+			func(i, 1, rgb, depth);
+
+			rgb = cv::imread(rgbTN);
+			depth = cv::imread(depthTN);
+			if (rgb.cols == 0 || rgb.rows == 0 || depth.cols == 0 || depth.rows == 0) {
+				stop = true;
+				break;
+			}
+
+			func(i, -1, rgb, depth);
+		}
+		i++;
+	}
+}

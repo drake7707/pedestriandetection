@@ -23,6 +23,8 @@ int ceilTo(double val, double target);
 
 void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect2d bbox)> func, double minScaleReduction = 0.25, double maxScaleReduction = 4, int refWidth = 64, int refHeight = 128);
 
+void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func);
+
 
 template<typename TimeT = std::chrono::milliseconds>
 struct measure

@@ -1,5 +1,5 @@
 #include "ModelEvaluator.h"
-
+#include "Helper.h"
 
 ModelEvaluator::ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set)
 	: baseDatasetPath(baseDatasetPath), set(set)
@@ -13,40 +13,6 @@ ModelEvaluator::~ModelEvaluator()
 
 
 
-void ModelEvaluator::iterateDataSet(std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func) const {
-	int i = 0;
-	bool stop = false;
-	while (!stop) {
-		if (canSelectFunc(i)) {
-			std::string rgbTP = baseDatasetPath + PATH_SEPARATOR + "tp" + PATH_SEPARATOR + "rgb" + std::to_string(i) + ".png";
-			std::string rgbTN = baseDatasetPath + PATH_SEPARATOR + "tn" + PATH_SEPARATOR + "rgb" + std::to_string(i) + ".png";
-			std::string depthTP = baseDatasetPath + PATH_SEPARATOR + "tp" + PATH_SEPARATOR + "depth" + std::to_string(i) + ".png";
-			std::string depthTN = baseDatasetPath + PATH_SEPARATOR + "tn" + PATH_SEPARATOR + "depth" + std::to_string(i) + ".png";
-
-			cv::Mat rgb;
-			cv::Mat depth;
-			rgb = cv::imread(rgbTP);
-			depth = cv::imread(depthTP);
-			if (rgb.cols == 0 || rgb.rows == 0 || depth.cols == 0 || depth.rows == 0) {
-				stop = true;
-				break;
-			}
-
-			func(i, 1, rgb, depth);
-
-			rgb = cv::imread(rgbTN);
-			depth = cv::imread(depthTN);
-			if (rgb.cols == 0 || rgb.rows == 0 || depth.cols == 0 || depth.rows == 0) {
-				stop = true;
-				break;
-			}
-
-			func(i, -1, rgb, depth);
-		}
-		i++;
-	}
-}
-
 
 void ModelEvaluator::train()
 {
@@ -55,7 +21,7 @@ void ModelEvaluator::train()
 	std::vector<FeatureVector> trueNegativeFeatures;
 
 
-	iterateDataSet([](int idx) -> bool { return idx % 2 != 0; },
+	iterateDataSet(baseDatasetPath,[](int idx) -> bool { return idx % 2 != 0; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v = set.getFeatures(rgb, depth);
@@ -177,7 +143,7 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) 
 	std::vector<int> nrRegions(nrOfEvaluations, 0);
 	double featureBuildTime = 0;
 
-	iterateDataSet([](int idx) -> bool { return idx % 2 == 0; },
+	iterateDataSet(baseDatasetPath,[](int idx) -> bool { return idx % 2 == 0; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v;

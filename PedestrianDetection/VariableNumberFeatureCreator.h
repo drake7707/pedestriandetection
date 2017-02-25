@@ -1,0 +1,28 @@
+#pragma once
+#include <string>
+#include "IFeatureCreator.h"
+
+class VariableNumberFeatureCreator : public IFeatureCreator
+{
+
+private:
+	std::string creatorName;
+	int clusterSize;
+	std::vector<FeatureVector> centroids;
+
+public:
+
+	void prepare(std::string& datasetPath);
+
+	virtual int getNumberOfFeatures() const;
+
+	virtual std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const = 0;
+
+	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
+
+	virtual std::string explainFeature(int featureIndex, double featureValue) const;
+
+	VariableNumberFeatureCreator(std::string& creatorName, int clusterSize);
+	~VariableNumberFeatureCreator();
+};
+

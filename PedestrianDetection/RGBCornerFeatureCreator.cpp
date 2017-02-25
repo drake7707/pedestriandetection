@@ -3,8 +3,8 @@
 
 
 
-RGBCornerFeatureCreator::RGBCornerFeatureCreator(int patchSize, int refWidth, int refHeight)
-	: patchSize(patchSize), refWidth(refWidth), refHeight(refHeight), VariableNumberFeatureCreator(std::string("RGBCorner"),10) {
+RGBCornerFeatureCreator::RGBCornerFeatureCreator()
+	: VariableNumberFeatureCreator(std::string("RGBCorner"),10) {
 }
 
 

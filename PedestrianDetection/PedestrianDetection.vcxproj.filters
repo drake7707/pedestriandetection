@@ -81,6 +81,9 @@
     <ClInclude Include="VariableNumberFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
+    <ClInclude Include="SURFFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -138,6 +141,9 @@
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
     <ClCompile Include="VariableNumberFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="SURFFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>

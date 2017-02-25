@@ -6,6 +6,8 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui.hpp"
 #include <opencv2/ml.hpp>
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -19,6 +21,7 @@
 #include "HOGRGBHistogramVarianceFeatureCreator.h"
 #include "RGBCornerFeatureCreator.h"
 #include "HistogramDepthFeatureCreator.h"
+#include "SURFFeatureCreator.h"
 
 
 #include "ModelEvaluator.h"
@@ -297,23 +300,19 @@ int main()
 			float qualityLevel = 0.01;
 			float minDistance = 5;
 
-			cv::goodFeaturesToTrack(gray, corners, maxCorners, qualityLevel, minDistance);
-			for (auto& c : corners) {
-				cv::circle(img, c, 2, cv::Scalar(0, 255, 0), -1);
-			}
 
+			cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create();
+			
+			std::vector<cv::KeyPoint> keypoints;
+			
+			cv::Mat img_keypoints;
+			
+			detector->detect(img, keypoints);
+			
+			cv::drawKeypoints(img, keypoints, img_keypoints, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+			
 
-			Histogram h(26, 0);
-			for (int j = 0; j < img.rows; j++)
-			{
-				for (int i = 0; i < img.cols; i++)
-				{
-					int idx = img.at<uchar>(j, i) / 10;
-					h[idx]++;
-				}
-			}
-			showHistogram(h, std::string("Histogram_") + msg);
-			cv::imshow(msg, img);
+			cv::imshow(msg, img_keypoints);
 		};
 
 		func(tp, "TP");
@@ -329,18 +328,26 @@ int main()
 	//saveTNTP();
 	//return 0;
 
-	std::cout << hog::getNumberOfFeatures(64, 128, 8, 9) << std::endl;
-
 	FeatureTester tester(baseDatasetPath);
 	tester.addAvailableCreator(std::string("HoG(RGB)"), new HOGRGBFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("S2HoG(RGB)"), new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(std::string("Corner(RGB)"), new RGBCornerFeatureCreator(patchSize, refWidth, refHeight));
+	tester.addAvailableCreator(std::string("Corner(RGB)"), new RGBCornerFeatureCreator());
 	tester.addAvailableCreator(std::string("Histogram(Depth)"), new HistogramDepthFeatureCreator());
+	tester.addAvailableCreator(std::string("SURF(RGB)"), new SURFFeatureCreator());
 
+	
 
 	int nrOfEvaluations = 100;
 	std::set<std::string> set;
+
+	set = { "HoG(RGB)","SURF(RGB)" };
+	tester.addJob(set, nrOfEvaluations);
+
+
+	set = { "SURF(RGB)" };
+	tester.addJob(set, nrOfEvaluations);
+
 
 	set = { "Corner(RGB)" };
 	tester.addJob(set, nrOfEvaluations);

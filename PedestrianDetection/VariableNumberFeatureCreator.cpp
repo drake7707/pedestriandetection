@@ -128,9 +128,10 @@ FeatureVector VariableNumberFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& d
 	}
 
 	// because the amount of samples can vary the histogram must be normalized so the values can be compared
-	for (int i = 0; i < histogram.size(); i++)
-		histogram[i] /= localSamples.size();
-
+	if (localSamples.size() > 0) {
+		for (int i = 0; i < histogram.size(); i++)
+			histogram[i] /= localSamples.size();
+	}
 	return histogram;
 }
 
@@ -157,3 +158,5 @@ void VariableNumberFeatureCreator::loadCentroids(std::string& path) {
 	fsRead["centroids"] >> centroids;
 	fsRead.release();
 }
+
+

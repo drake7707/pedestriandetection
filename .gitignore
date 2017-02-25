@@ -333,3 +333,4 @@ __pycache__/
 /PedestrianDetection/results - Copy.csv
 /PedestrianDetection/processedsets.txt
 /PedestrianDetection/RGBCorner.xml
+/PedestrianDetection/RGBSURF.xml

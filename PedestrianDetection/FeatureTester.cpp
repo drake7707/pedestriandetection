@@ -40,6 +40,7 @@ void FeatureTester::prepareCreators() {
 	// all variable number feature creators need to be prepared with the k-means centroids
 	for (auto& pair : creators) {
 		if (dynamic_cast<VariableNumberFeatureCreator*>(pair.second) != nullptr) {
+			std::cout << "Preparing feature creator " << pair.second->getName() << std::endl;
 			dynamic_cast<VariableNumberFeatureCreator*>(pair.second)->prepare(baseDatasetPath);
 		}
 	}
@@ -62,6 +63,7 @@ void FeatureTester::markFeatureSetProcessed(std::string& featureSetName) {
 	if (!str.is_open())
 		return;
 	str << featureSetName << std::endl;
+	str.flush();
 }
 
 void FeatureTester::addAvailableCreator(IFeatureCreator* creator) {
@@ -138,10 +140,10 @@ void FeatureTester::runJobs() {
 						resultStream << ";" << std::endl;
 					}
 
-					resultsFileMutex.unlock();
-
 					std::string name = job.featureSetName;
 					ft->markFeatureSetProcessed(name);
+
+					resultsFileMutex.unlock();
 
 					semaphore.notify();
 				}

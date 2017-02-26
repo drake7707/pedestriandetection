@@ -355,3 +355,8 @@ __pycache__/
 /PedestrianDetection/SURF(RGB).xml
 /PedestrianDetection/results_.csv
 /PedestrianDetection/SURF_results.csv
+/PedestrianDetection/Corner(RGB).xml
+/PedestrianDetection/Corner(Depth).xml
+/PedestrianDetection/SURF(RGB)_new.xml
+/PedestrianDetection/SURF(Depth)_new.xml
+/PedestrianDetection/SURF(Depth).xml

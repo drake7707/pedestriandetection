@@ -18,15 +18,34 @@ std::vector<FeatureVector> SURFFeatureCreator::getVariableNumberFeatures(cv::Mat
 
 
 	cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create();
+	
 	std::vector<cv::KeyPoint> keypoints;
 
-	if(onDepth)
-		detector->detect(depth, keypoints);
+	cv::Mat descriptors;
+	if (onDepth)
+		detector->detectAndCompute(depth, cv::noArray(),  keypoints, descriptors);
 	else
-		detector->detect(rgb, keypoints);
-
+		detector->detectAndCompute(rgb, cv::noArray(), keypoints, descriptors);
+	
 	std::vector<FeatureVector> features;
+	//for (int j = 0; j < descriptors.rows; j++)
+	//{
+	//	FeatureVector v;
+	//	for (int i = 0; i < descriptors.cols; i++)
+	//	{
+	//		v.push_back(descriptors.at<float>(j, i));
+	//	}
+	//	
+	//	auto& k = keypoints[j];
 
+	//	v.push_back(k.pt.x);
+	//	v.push_back(k.pt.y);
+	//	v.push_back(k.size);
+	//	v.push_back(k.octave);
+	//	v.push_back(k.angle);
+	//	v.push_back(k.class_id);
+	//	features.push_back(v);
+	//}
 	for (auto& k : keypoints) {
 		
 		FeatureVector v;

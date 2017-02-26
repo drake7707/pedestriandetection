@@ -63,9 +63,6 @@
     <ClInclude Include="FeatureSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RGBCornerFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
     <ClInclude Include="HistogramDepthFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
@@ -79,6 +76,9 @@
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
     <ClInclude Include="HoGHistogramVarianceFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
+    <ClInclude Include="CornerFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
   </ItemGroup>
@@ -122,9 +122,6 @@
     <ClCompile Include="FeatureSet.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RGBCornerFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
     <ClCompile Include="HistogramDepthFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
@@ -138,6 +135,9 @@
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
     <ClCompile Include="HoGHistogramVarianceFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="CornerFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>

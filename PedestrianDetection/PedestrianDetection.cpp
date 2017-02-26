@@ -18,7 +18,7 @@
 #include "IFeatureCreator.h"
 #include "HoGFeatureCreator.h"
 #include "HoGHistogramVarianceFeatureCreator.h"
-#include "RGBCornerFeatureCreator.h"
+#include "CornerFeatureCreator.h"
 #include "HistogramDepthFeatureCreator.h"
 #include "SURFFeatureCreator.h"
 
@@ -334,7 +334,8 @@ int main()
 	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(RGB)"),false,patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(new HoGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false,patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new RGBCornerFeatureCreator(std::string("Corner(RGB)")));
+	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
+	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
 	tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
 	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
 	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
@@ -348,34 +349,17 @@ int main()
 	//}
 	//
 
+	// evaluate each creator individually
 	for (auto& creator : tester.getAvailableCreators()) {
-
+		set = { creator->getName() };
+		tester.addJob(set, nrOfEvaluations);
 	}
 
-	set = { "HoG(RGB)","SURF(RGB)" };
-	tester.addJob(set, nrOfEvaluations);
-
-
-	set = { "SURF(RGB)" };
-	tester.addJob(set, nrOfEvaluations);
-
-
-	set = { "Corner(RGB)" };
-	tester.addJob(set, nrOfEvaluations);
 	
 	set = { "HoG(RGB)", "Corner(RGB)" };
 	tester.addJob(set, nrOfEvaluations);
 
-
 	set = { "HoG(RGB)","Histogram(Depth)" };
-	tester.addJob(set, nrOfEvaluations);
-
-
-	set = { "Histogram(Depth)" };
-	tester.addJob(set, nrOfEvaluations);
-
-
-	set = { "HoG(RGB)" };
 	tester.addJob(set, nrOfEvaluations);
 
 	set = { "HoG(RGB)", "S2HoG(RGB)" };

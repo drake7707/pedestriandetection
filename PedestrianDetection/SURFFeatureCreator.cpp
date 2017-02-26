@@ -4,8 +4,8 @@
 
 
 
-SURFFeatureCreator::SURFFeatureCreator()
-	: VariableNumberFeatureCreator(std::string("RGBSURF"), 100) {
+SURFFeatureCreator::SURFFeatureCreator(std::string& name, int clusterSize, bool onDepth)
+	: VariableNumberFeatureCreator(name, clusterSize), onDepth(onDepth) {
 }
 
 
@@ -20,7 +20,10 @@ std::vector<FeatureVector> SURFFeatureCreator::getVariableNumberFeatures(cv::Mat
 	cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create();
 	std::vector<cv::KeyPoint> keypoints;
 
-	detector->detect(rgb, keypoints);
+	if(onDepth)
+		detector->detect(depth, keypoints);
+	else
+		detector->detect(rgb, keypoints);
 
 	std::vector<FeatureVector> features;
 

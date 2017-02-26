@@ -165,9 +165,8 @@
     <ClInclude Include="Histogram.h" />
     <ClInclude Include="HistogramDepthFeatureCreator.h" />
     <ClInclude Include="HistogramOfOrientedGradients.h" />
-    <ClInclude Include="HOGDepthFeatureCreator.h" />
-    <ClInclude Include="HOGRGBFeatureCreator.h" />
-    <ClInclude Include="HOGRGBHistogramVarianceFeatureCreator.h" />
+    <ClInclude Include="HoGFeatureCreator.h" />
+    <ClInclude Include="HoGHistogramVarianceFeatureCreator.h" />
     <ClInclude Include="IFeatureCreator.h" />
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="ModelEvaluator.h" />
@@ -186,9 +185,8 @@
     <ClCompile Include="Histogram.cpp" />
     <ClCompile Include="HistogramDepthFeatureCreator.cpp" />
     <ClCompile Include="HistogramOfOrientedGradients.cpp" />
-    <ClCompile Include="HOGDepthFeatureCreator.cpp" />
-    <ClCompile Include="HOGRGBFeatureCreator.cpp" />
-    <ClCompile Include="HOGRGBHistogramVarianceFeatureCreator.cpp" />
+    <ClCompile Include="HoGFeatureCreator.cpp" />
+    <ClCompile Include="HoGHistogramVarianceFeatureCreator.cpp" />
     <ClCompile Include="IFeatureCreator.cpp" />
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="ModelEvaluator.cpp" />

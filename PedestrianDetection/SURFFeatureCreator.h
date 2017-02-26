@@ -3,8 +3,11 @@
 class SURFFeatureCreator :
 	public VariableNumberFeatureCreator
 {
+
+private:
+	bool onDepth;
 public:
-	SURFFeatureCreator();
+	SURFFeatureCreator(std::string& name, int clusterSize, bool onDepth);
 	virtual ~SURFFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const;

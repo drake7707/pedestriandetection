@@ -6,7 +6,6 @@ class VariableNumberFeatureCreator : public IFeatureCreator
 {
 
 private:
-	std::string creatorName;
 	int clusterSize;
 	std::vector<FeatureVector> centroids;
 

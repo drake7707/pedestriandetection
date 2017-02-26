@@ -3,8 +3,8 @@
 
 
 
-RGBCornerFeatureCreator::RGBCornerFeatureCreator()
-	: VariableNumberFeatureCreator(std::string("RGBCorner"),10) {
+RGBCornerFeatureCreator::RGBCornerFeatureCreator(std::string& name)
+	: VariableNumberFeatureCreator(name,10) {
 }
 
 

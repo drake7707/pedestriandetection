@@ -44,7 +44,8 @@ public:
 	~FeatureTester();
 
 
-	void addAvailableCreator(std::string& name, IFeatureCreator* creator);
+	void addAvailableCreator(IFeatureCreator* creator);
+	std::vector<IFeatureCreator*> getAvailableCreators() const;
 
 	void addJob(std::set<std::string>& set, int nrOfEvaluations);
 

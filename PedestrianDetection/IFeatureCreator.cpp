@@ -2,11 +2,14 @@
 
 
 
-IFeatureCreator::IFeatureCreator()
-{
+IFeatureCreator::IFeatureCreator(std::string& name) : name(name) {
 }
 
 
-IFeatureCreator::~IFeatureCreator()
-{
+IFeatureCreator::~IFeatureCreator() {
+}
+
+
+std::string IFeatureCreator::getName() const {
+	return name;
 }

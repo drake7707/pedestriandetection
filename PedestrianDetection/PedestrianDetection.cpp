@@ -16,9 +16,8 @@
 
 #include "ModelEvaluator.h"
 #include "IFeatureCreator.h"
-#include "HOGRGBFeatureCreator.h"
-#include "HOGDepthFeatureCreator.h"
-#include "HOGRGBHistogramVarianceFeatureCreator.h"
+#include "HoGFeatureCreator.h"
+#include "HoGHistogramVarianceFeatureCreator.h"
 #include "RGBCornerFeatureCreator.h"
 #include "HistogramDepthFeatureCreator.h"
 #include "SURFFeatureCreator.h"
@@ -243,9 +242,9 @@ void saveTNTP() {
 
 void testClassifier() {
 	FeatureSet testSet;
-	testSet.addCreator(new HOGRGBFeatureCreator(patchSize, binSize, refWidth, refHeight));
-	testSet.addCreator(new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
-	testSet.addCreator(new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HoGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HoGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HoGFeatureCreator(std::string("HoG(Depth)"), true,patchSize, binSize, refWidth, refHeight));
 
 	ModelEvaluator model(baseDatasetPath, testSet);
 
@@ -328,18 +327,30 @@ int main()
 	//saveTNTP();
 	//return 0;
 
-	FeatureTester tester(baseDatasetPath);
-	tester.addAvailableCreator(std::string("HoG(RGB)"), new HOGRGBFeatureCreator(patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(std::string("S2HoG(RGB)"), new HOGRGBHistogramVarianceFeatureCreator(patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(std::string("HoG(Depth)"), new HOGDepthFeatureCreator(patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(std::string("Corner(RGB)"), new RGBCornerFeatureCreator());
-	tester.addAvailableCreator(std::string("Histogram(Depth)"), new HistogramDepthFeatureCreator());
-	tester.addAvailableCreator(std::string("SURF(RGB)"), new SURFFeatureCreator());
-
-	
-
 	int nrOfEvaluations = 100;
 	std::set<std::string> set;
+
+	FeatureTester tester(baseDatasetPath);
+	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(RGB)"),false,patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new HoGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false,patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new RGBCornerFeatureCreator(std::string("Corner(RGB)")));
+	tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
+	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
+	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
+	
+	//for (int i = 10; i < 100; i+=5)
+	//{
+	//	tester.addAvailableCreator(std::string("SURF(RGB)_") + std::to_string(i), new SURFFeatureCreator(std::string("SURF(RGB)_") + std::to_string(i), i));
+
+	//	set = { std::string("SURF(RGB)_") + std::to_string(i) };
+	//	tester.addJob(set, nrOfEvaluations);
+	//}
+	//
+
+	for (auto& creator : tester.getAvailableCreators()) {
+
+	}
 
 	set = { "HoG(RGB)","SURF(RGB)" };
 	tester.addJob(set, nrOfEvaluations);

@@ -1,8 +1,8 @@
 #include "HistogramDepthFeatureCreator.h"
 
 
-HistogramDepthFeatureCreator::HistogramDepthFeatureCreator()
-{
+HistogramDepthFeatureCreator::HistogramDepthFeatureCreator(std::string& name)
+	: IFeatureCreator(name) {
 }
 
 

@@ -8,7 +8,7 @@ class HistogramDepthFeatureCreator : public IFeatureCreator
 private:
 	
 public:
-	HistogramDepthFeatureCreator();
+	HistogramDepthFeatureCreator(std::string& name);
 	virtual ~HistogramDepthFeatureCreator();
 
 	int getNumberOfFeatures() const;

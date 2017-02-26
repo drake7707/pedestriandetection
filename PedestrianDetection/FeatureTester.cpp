@@ -64,8 +64,15 @@ void FeatureTester::markFeatureSetProcessed(std::string& featureSetName) {
 	str << featureSetName << std::endl;
 }
 
-void FeatureTester::addAvailableCreator(std::string& name, IFeatureCreator* creator) {
-	creators.emplace(name, creator);
+void FeatureTester::addAvailableCreator(IFeatureCreator* creator) {
+	creators.emplace(creator->getName(), creator);
+}
+
+std::vector<IFeatureCreator*> FeatureTester::getAvailableCreators() const {
+	std::vector<IFeatureCreator*> items;
+	for (auto& pair : creators)
+		items.push_back(pair.second);
+	return items;
 }
 
 void FeatureTester::addJob(std::set<std::string>& set, int nrOfEvaluations) {

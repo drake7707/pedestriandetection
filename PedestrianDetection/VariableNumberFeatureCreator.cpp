@@ -2,7 +2,8 @@
 #include "Helper.h"
 
 
-VariableNumberFeatureCreator::VariableNumberFeatureCreator(std::string& creatorName, int clusterSize) : creatorName(creatorName), clusterSize(clusterSize)
+VariableNumberFeatureCreator::VariableNumberFeatureCreator(std::string& creatorName, int clusterSize)
+	: IFeatureCreator(creatorName), clusterSize(clusterSize)
 {
 }
 
@@ -141,20 +142,20 @@ int VariableNumberFeatureCreator::getNumberOfFeatures() const {
 
 
 std::string VariableNumberFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return creatorName + " centroid " + std::to_string(featureIndex) + " count ";
+	return getName() + " centroid " + std::to_string(featureIndex) + " count ";
 }
 
 
 void VariableNumberFeatureCreator::saveCentroids(std::string& path) {
 
-	cv::FileStorage fs(path + creatorName + ".xml", cv::FileStorage::WRITE);
+	cv::FileStorage fs(path + getName() + ".xml", cv::FileStorage::WRITE);
 	fs << "centroids" << centroids;
 	fs.release();
 }
 
 void VariableNumberFeatureCreator::loadCentroids(std::string& path) {
 
-	cv::FileStorage fsRead(path + creatorName + ".xml", cv::FileStorage::READ);
+	cv::FileStorage fsRead(path + getName() + ".xml", cv::FileStorage::READ);
 	fsRead["centroids"] >> centroids;
 	fsRead.release();
 }

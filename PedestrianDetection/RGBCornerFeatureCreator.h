@@ -10,7 +10,7 @@ private:
 	int refWidth = 64;
 	int refHeight = 128;
 public:
-	RGBCornerFeatureCreator();
+	RGBCornerFeatureCreator(std::string& name);
 	virtual ~RGBCornerFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const;

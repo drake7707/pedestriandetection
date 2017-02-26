@@ -4,9 +4,15 @@
 
 class IFeatureCreator
 {
+
+private:
+	std::string name;
+
 public:
-	IFeatureCreator();
+	IFeatureCreator(std::string& name);
 	virtual ~IFeatureCreator();
+
+	std::string getName() const;
 
 	virtual int getNumberOfFeatures() const = 0;
 

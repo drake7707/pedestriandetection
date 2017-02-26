@@ -22,6 +22,10 @@ std::vector<ClassifierEvaluation>  FeatureTesterJob::run() const {
 }
 
 
+//-------------------------------------------------
+
+
+
 FeatureTester::FeatureTester(std::string& baseDatasetPath) : baseDatasetPath(baseDatasetPath)
 {
 	loadProcessedFeatureSets();

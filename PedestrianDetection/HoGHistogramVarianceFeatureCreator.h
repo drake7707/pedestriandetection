@@ -1,6 +1,6 @@
 #pragma once
 #include "IFeatureCreator.h"
-class HoGHistogramVarianceFeatureCreator : public IFeatureCreator
+class HOGHistogramVarianceFeatureCreator : public IFeatureCreator
 {
 
 private:
@@ -10,8 +10,8 @@ private:
 	int refHeight = 128;
 	bool onDepth;
 public:
-	HoGHistogramVarianceFeatureCreator(std::string& name, bool onDepth, int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
-	virtual ~HoGHistogramVarianceFeatureCreator();
+	HOGHistogramVarianceFeatureCreator(std::string& name, bool onDepth, int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
+	virtual ~HOGHistogramVarianceFeatureCreator();
 
 	int getNumberOfFeatures() const;
 	std::string explainFeature(int featureIndex, double featureValue) const;

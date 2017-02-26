@@ -243,8 +243,8 @@ void saveTNTP() {
 void testClassifier() {
 	FeatureSet testSet;
 	testSet.addCreator(new HoGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	testSet.addCreator(new HoGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	testSet.addCreator(new HoGFeatureCreator(std::string("HoG(Depth)"), true,patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HoGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
 
 	ModelEvaluator model(baseDatasetPath, testSet);
 
@@ -276,37 +276,168 @@ void testClassifier() {
 	cv::waitKey(0);
 }
 
+using namespace cv;
+using namespace std;
+
+
+Mat createSegmentationDisplay(Mat & segments, int numOfSegments, Mat & image)
+{
+	//create a new image
+	Mat wshed(segments.size(), CV_8UC3);
+
+	//Create color tab for coloring the segments
+	vector<Vec3b> colorTab;
+	for (int i = 0; i < numOfSegments; i++)
+	{
+		int b = theRNG().uniform(0, 255);
+		int g = theRNG().uniform(0, 255);
+		int r = theRNG().uniform(0, 255);
+
+		colorTab.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
+	}
+
+	//assign different color to different segments
+	for (int i = 0; i < segments.rows; i++)
+	{
+		for (int j = 0; j < segments.cols; j++)
+		{
+			int index = segments.at<int>(i, j);
+			if (index == -1)
+				wshed.at<Vec3b>(i, j) = Vec3b(255, 255, 255);
+			else if (index <= 0 || index > numOfSegments)
+				wshed.at<Vec3b>(i, j) = Vec3b(0, 0, 0);
+			else
+				wshed.at<Vec3b>(i, j) = colorTab[index - 1];
+		}
+	}
+
+	//If the original image available then merge with the colors of segments
+	if (image.dims > 0)
+		wshed = wshed*0.5 + image*0.5;
+
+	return wshed;
+}
+
+
+/**
+* This is an example method showing how to use this implementation.
+*
+* @param input The original image.
+* @return wshedWithImage A merged image of the original and the segments.
+*/
+Mat watershedWithMarkers(Mat input) {
+
+	// Change the background from white to black, since that will help later to extract
+	// better results during the use of Distance Transform
+	for (int x = 0; x < input.rows; x++) {
+		for (int y = 0; y < input.cols; y++) {
+			if (input.at<Vec3b>(x, y) == Vec3b(255, 255, 255)) {
+				input.at<Vec3b>(x, y)[0] = 0;
+				input.at<Vec3b>(x, y)[1] = 0;
+				input.at<Vec3b>(x, y)[2] = 0;
+			}
+		}
+	}
+	// Show output image
+	//imshow("Black Background Image", input);
+
+	// Create a kernel that we will use for accuting/sharpening our image
+	Mat kernel = (Mat_<float>(3, 3) <<
+		1, 1, 1,
+		1, -8, 1,
+		1, 1, 1); // an approximation of second derivative, a quite strong kernel
+
+				  // do the laplacian filtering as it is
+				  // well, we need to convert everything in something more deeper then CV_8U
+				  // because the kernel has some negative values,
+				  // and we can expect in general to have a Laplacian image with negative values
+				  // BUT a 8bits unsigned int (the one we are working with) can contain values from 0 to 255
+				  // so the possible negative number will be truncated
+	Mat imgLaplacian;
+	Mat sharp = input; // copy source image to another temporary one
+	filter2D(sharp, imgLaplacian, CV_32F, kernel);
+	input.convertTo(sharp, CV_32F);
+	Mat imgResult = sharp - imgLaplacian;
+	// convert back to 8bits gray scale
+	imgResult.convertTo(imgResult, CV_8UC3);
+	imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
+	// imshow( "Laplace Filtered Image", imgLaplacian );
+	//imshow( "New Sharped Image", imgResult );
+
+	input = imgResult; // copy back
+					   // Create binary image from source image
+	Mat bw;
+	cvtColor(input, bw, CV_BGR2GRAY);
+	threshold(bw, bw, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+	//imshow("Binary Image", bw);
+
+	// Perform the distance transform algorithm
+	Mat dist;
+	distanceTransform(bw, dist, CV_DIST_L2, 3);
+	// Normalize the distance image for range = {0.0, 1.0}
+	// so we can visualize and threshold it
+	normalize(dist, dist, 0, 1., NORM_MINMAX);
+	//imshow("Distance Transform Image", dist);
+
+	// Threshold to obtain the peaks
+	// This will be the markers for the foreground objects
+	threshold(dist, dist, .4, 1., CV_THRESH_BINARY);
+	// Dilate a bit the dist image
+	Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
+	dilate(dist, dist, kernel1);
+	//imshow("Peaks", dist);
+
+	// Create the CV_8U version of the distance image
+	// It is needed for findContours()
+	Mat dist_8u;
+	dist.convertTo(dist_8u, CV_8U);
+
+	// Find total markers
+	vector<vector<Point> > contours;
+	findContours(dist_8u, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+	// Create the marker image for the watershed algorithm
+	Mat markers = Mat::zeros(dist.size(), CV_32SC1);
+
+	// Draw the foreground markers
+	for (size_t i = 0; i < contours.size(); i++)
+		drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i) + 1), -1);
+
+	// Draw the background marker
+	circle(markers, Point(5, 5), 3, CV_RGB(255, 255, 255), -1);
+	//imshow("Markers", markers*10000);
+
+	// Perform the watershed algorithm
+	watershed(input, markers);
+	Mat mark = Mat::zeros(markers.size(), CV_8UC1);
+	markers.convertTo(mark, CV_8UC1);
+	bitwise_not(mark, mark);
+	//imshow("Markers_v2", mark); // uncomment this if you want to see how the mark image looks like at that point
+
+	int numOfSegments = contours.size();
+	Mat wshed = createSegmentationDisplay(markers, numOfSegments, input);
+
+	return wshed;
+}
+
 
 int main()
 {
 	//testClassifier();
-	int nr = 0;
+	/*int nr = 0;
 	while (true) {
 		char nrStr[7];
 		sprintf(nrStr, "%06d", nr);
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
+		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
 
 
-		std::function<void(cv::Mat&,std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
+		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
 			cv::Mat gray;
 			cv::cvtColor(img, gray, CV_BGR2GRAY);
 
-			cv::normalize(img, img, 0, 255, cv::NormTypes::NORM_MINMAX);
-
-
-			cv::Ptr < cv::xfeatures2d::DAISY> detector = cv::xfeatures2d::DAISY::create();
-			
-			std::vector<cv::KeyPoint> keypoints;
-			
-			cv::Mat img_keypoints;
-			
-			detector->detect(img, keypoints);
-			
-			cv::drawKeypoints(img, keypoints, img_keypoints, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-			
-
-			cv::imshow(msg, img_keypoints);
+			cv::Mat result = watershedWithMarkers(img);
+			cv::imshow(msg, img);
 		};
 
 		func(tp, "TP");
@@ -316,7 +447,7 @@ int main()
 		cv::waitKey(0);
 		nr++;
 	}
-	
+	*/
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	//testClassifier();
 	//saveTNTP();
@@ -326,8 +457,8 @@ int main()
 	std::set<std::string> set;
 
 	FeatureTester tester(baseDatasetPath);
-	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(RGB)"),false,patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new HoGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false,patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
 	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
@@ -336,7 +467,7 @@ int main()
 	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
 	tester.addAvailableCreator(new SURFFeatureCreator(std::string("ORB(RGB)"), 80, false));
 	tester.addAvailableCreator(new SURFFeatureCreator(std::string("ORB(Depth)"), 80, true));
-	
+
 	//for (int i = 10; i < 100; i+=5)
 	//{
 	//	tester.addAvailableCreator(std::string("SURF(RGB)_") + std::to_string(i), new SURFFeatureCreator(std::string("SURF(RGB)_") + std::to_string(i), i));
@@ -352,7 +483,7 @@ int main()
 		tester.addJob(set, nrOfEvaluations);
 	}
 
-	
+
 	set = { "HoG(RGB)", "Corner(RGB)" };
 	tester.addJob(set, nrOfEvaluations);
 
@@ -367,7 +498,7 @@ int main()
 
 	set = { "HoG(RGB)",  "S2HoG(RGB)",  "HoG(Depth)" };
 	tester.addJob(set, nrOfEvaluations);
-	
+
 
 
 	tester.runJobs();

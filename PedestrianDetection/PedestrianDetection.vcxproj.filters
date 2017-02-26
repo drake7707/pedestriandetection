@@ -81,6 +81,9 @@
     <ClInclude Include="CornerFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
+    <ClInclude Include="ORBFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -138,6 +141,9 @@
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
     <ClCompile Include="CornerFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="ORBFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>

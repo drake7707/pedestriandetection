@@ -171,6 +171,7 @@
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="ModelEvaluator.h" />
     <ClInclude Include="CornerFeatureCreator.h" />
+    <ClInclude Include="ORBFeatureCreator.h" />
     <ClInclude Include="SURFFeatureCreator.h" />
     <ClInclude Include="VariableNumberFeatureCreator.h" />
   </ItemGroup>
@@ -190,6 +191,7 @@
     <ClCompile Include="IFeatureCreator.cpp" />
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="ModelEvaluator.cpp" />
+    <ClCompile Include="ORBFeatureCreator.cpp" />
     <ClCompile Include="PedestrianDetection.cpp" />
     <ClCompile Include="CornerFeatureCreator.cpp" />
     <ClCompile Include="SURFFeatureCreator.cpp" />

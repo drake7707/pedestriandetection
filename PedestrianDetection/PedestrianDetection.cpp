@@ -280,12 +280,12 @@ void testClassifier() {
 int main()
 {
 	//testClassifier();
-	/*int nr = 0;
+	int nr = 0;
 	while (true) {
 		char nrStr[7];
 		sprintf(nrStr, "%06d", nr);
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
-		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
+		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
+		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
 
 
 		std::function<void(cv::Mat&,std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
@@ -294,13 +294,8 @@ int main()
 
 			cv::normalize(img, img, 0, 255, cv::NormTypes::NORM_MINMAX);
 
-			std::vector<cv::Point2f> corners;
-			int maxCorners = 1000;
-			float qualityLevel = 0.01;
-			float minDistance = 5;
 
-
-			cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create();
+			cv::Ptr < cv::xfeatures2d::DAISY> detector = cv::xfeatures2d::DAISY::create();
 			
 			std::vector<cv::KeyPoint> keypoints;
 			
@@ -321,7 +316,7 @@ int main()
 		cv::waitKey(0);
 		nr++;
 	}
-	*/
+	
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	//testClassifier();
 	//saveTNTP();
@@ -339,6 +334,8 @@ int main()
 	tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
 	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
 	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
+	tester.addAvailableCreator(new SURFFeatureCreator(std::string("ORB(RGB)"), 80, false));
+	tester.addAvailableCreator(new SURFFeatureCreator(std::string("ORB(Depth)"), 80, true));
 	
 	//for (int i = 10; i < 100; i+=5)
 	//{

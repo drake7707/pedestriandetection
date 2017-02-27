@@ -581,6 +581,26 @@ int main()
 	}
 	tester.runJobs(std::string("results\\hogrgbhogdepth_results.csv"));
 
+
+	for (auto& creator : tester.getAvailableCreators()) {
+		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)") {
+			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  creator->getName() };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs(std::string("results\\hogrgbhogdepthlbprgb_results.csv"));
+
+
+
+	for (auto& creator : tester.getAvailableCreators()) {
+		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)" && creator->getName() != "Histogram(Depth)") {
+			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)", "Histogram(Depth)",  creator->getName() };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs(std::string("results\\hogrgbhogdepthlbprgbhistogramdepth_results.csv"));
+
+
 	/*
 
 		set = { "HoG(RGB)", "Corner(RGB)" };

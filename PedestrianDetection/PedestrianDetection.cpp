@@ -431,66 +431,66 @@ Mat watershedWithMarkers(Mat input) {
 int main()
 {
 	//testClassifier();
-	int nr = 0;
-	while (true) {
-		char nrStr[7];
-		sprintf(nrStr, "%06d", nr);
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
-		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
+	//int nr = 0;
+	//while (true) {
+	//	char nrStr[7];
+	//	sprintf(nrStr, "%06d", nr);
+	//	cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+	//	cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
 
 
-		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
+	//	std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
 
-			
-			hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
-			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
-				std::vector<cv::KeyPoint> keypoints;
-
-
-				cv::Mat descriptors;
-				detector->detect(img, keypoints);
+	//		
+	//		hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
+	//		/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
+	//			std::vector<cv::KeyPoint> keypoints;
 
 
-				//detector->compute(img, keypoints, descriptors);
+	//			cv::Mat descriptors;
+	//			detector->detect(img, keypoints);
 
-				cv::Mat imgKeypoints;
-				cv::drawKeypoints(img, keypoints, imgKeypoints);
-				*/
 
-			/*cv::Mat depth;
-			cvtColor(img, img, CV_BGR2GRAY);
+	//			//detector->compute(img, keypoints, descriptors);
 
-			img.convertTo(depth, CV_32FC1, 1 , 0);
+	//			cv::Mat imgKeypoints;
+	//			cv::drawKeypoints(img, keypoints, imgKeypoints);
+	//			*/
 
-			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+	//		/*cv::Mat depth;
+	//		cvtColor(img, img, CV_BGR2GRAY);
 
-			for (int y = 1; y < depth.rows - 1; y++)
-			{
-				for (int x = 1; x < depth.cols - 1; x++)
-				{
+	//		img.convertTo(depth, CV_32FC1, 1 , 0);
 
-					Vec3f t(x, y - 1, depth.at<float>(y - 1, x));
-					Vec3f l(x - 1, y, depth.at<float>(y, x - 1));
-					Vec3f c(x, y, depth.at<float>(y, x));
+	//		Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
 
-					Vec3f d = (l - c).cross(t - c);
+	//		for (int y = 1; y < depth.rows - 1; y++)
+	//		{
+	//			for (int x = 1; x < depth.cols - 1; x++)
+	//			{
 
-					Vec3f n = normalize(d);
-					normals.at<Vec3f>(y, x) = n;
-				}
-			}
+	//				Vec3f t(x, y - 1, depth.at<float>(y - 1, x));
+	//				Vec3f l(x - 1, y, depth.at<float>(y, x - 1));
+	//				Vec3f c(x, y, depth.at<float>(y, x));
 
-			*/
-			cv::imshow(msg, result.combineHOGImage(img));
-		};
+	//				Vec3f d = (l - c).cross(t - c);
 
-		func(tp, "TP");
+	//				Vec3f n = normalize(d);
+	//				normals.at<Vec3f>(y, x) = n;
+	//			}
+	//		}
 
-		func(tn, "TN");
+	//		*/
+	//		cv::imshow(msg, result.combineHOGImage(img));
+	//	};
 
-		cv::waitKey(0);
-		nr++;
-	}
+	//	func(tp, "TP");
+
+	//	func(tn, "TN");
+
+	//	cv::waitKey(0);
+	//	nr++;
+	//}
 
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	//testClassifier();
@@ -542,7 +542,7 @@ int main()
 		set = { creator->getName() };
 		tester.addJob(set, nrOfEvaluations);
 	}
-	tester.runJobs(std::string("individualresults.csv"));
+	tester.runJobs(std::string("results\\individualresults.csv"));
 
 	// evaluate each creator combined with HOG(RGB)
 	for (auto& creator : tester.getAvailableCreators()) {
@@ -551,7 +551,7 @@ int main()
 			tester.addJob(set, nrOfEvaluations);
 		}
 	}
-	tester.runJobs(std::string("hogrgb_results.csv"));
+	tester.runJobs(std::string("results\\hogrgb_results.csv"));
 
 	for (auto& creator : tester.getAvailableCreators()) {
 		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)") {
@@ -559,7 +559,7 @@ int main()
 			tester.addJob(set, nrOfEvaluations);
 		}
 	}
-	tester.runJobs(std::string("hogrgbhogdepth_results.csv"));
+	tester.runJobs(std::string("results\\hogrgbhogdepth_results.csv"));
 
 	/*
 

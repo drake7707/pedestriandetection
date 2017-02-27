@@ -21,8 +21,7 @@ int HDDFeatureCreator::getNumberOfFeatures() const {
 FeatureVector HDDFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 
 	hog::HOGResult result;
-	result = hog::getHistogramsOfOrientedGradient(depth, patchSize, binSize, false, true);
-
+	result = hog::getHistogramsOfDepthDifferences(depth, patchSize, binSize, false, true);
 	return result.getFeatureArray();
 }
 

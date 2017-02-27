@@ -364,3 +364,6 @@ __pycache__/
 /PedestrianDetection/ORB(Depth).xml
 /PedestrianDetection/results
 /PedestrianDetection/featurecache
+/PedestrianDetection/individualresults.csv
+/PedestrianDetection/hogrgb_results.csv
+/PedestrianDetection/hogrgbhogdepth_results.csv

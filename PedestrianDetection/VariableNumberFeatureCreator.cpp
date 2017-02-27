@@ -15,7 +15,7 @@ VariableNumberFeatureCreator::~VariableNumberFeatureCreator()
 void VariableNumberFeatureCreator::prepare(std::string& datasetPath) {
 
 	// try and load first
-	loadCentroids(std::string(""));
+	loadCentroids(std::string("featurecache") + PATH_SEPARATOR);
 	if (centroids.size() > 0)
 		return;
 
@@ -102,7 +102,7 @@ void VariableNumberFeatureCreator::prepare(std::string& datasetPath) {
 
 
 
-	saveCentroids(std::string(""));
+	saveCentroids(std::string("featurecache") + PATH_SEPARATOR);
 }
 
 FeatureVector VariableNumberFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {

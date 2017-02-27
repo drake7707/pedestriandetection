@@ -3,24 +3,24 @@
 
 
 
-HoGFeatureCreator::HoGFeatureCreator(std::string& name, bool onDepth, int patchSize, int binSize, int refWidth, int refHeight)
+HOGFeatureCreator::HOGFeatureCreator(std::string& name, bool onDepth, int patchSize, int binSize, int refWidth, int refHeight)
 	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight), onDepth(onDepth)
 {
 }
 
 
-HoGFeatureCreator::~HoGFeatureCreator()
+HOGFeatureCreator::~HOGFeatureCreator()
 {
 }
 
 
-int HoGFeatureCreator::getNumberOfFeatures() const {
+int HOGFeatureCreator::getNumberOfFeatures() const {
 	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize);
 }
 
-FeatureVector HoGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 
-	hog::HoGResult result;
+	hog::HOGResult result;
 	if(onDepth)
 		result = hog::getHistogramsOfOrientedGradient(rgb, patchSize, binSize, false, true);
 	else
@@ -29,6 +29,6 @@ FeatureVector HoGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const
 	return result.getFeatureArray();
 }
 
-std::string HoGFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " " + hog::explainHoGFeature(featureIndex, featureValue, refWidth, refHeight, patchSize, binSize);
+std::string HOGFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
+	return getName() + " " + hog::explainHOGFeature(featureIndex, featureValue, refWidth, refHeight, patchSize, binSize);
 }

@@ -55,7 +55,7 @@ namespace hog {
 		return (nrOfCellsHeight - 1) * (nrOfCellsWidth - 1) * binSize * 4;
 	}
 
-	std::string explainHoGFeature(int featureIndex, double featureValue, int imgWidth, int imgHeight, int patchSize, int binSize) {
+	std::string explainHOGFeature(int featureIndex, double featureValue, int imgWidth, int imgHeight, int patchSize, int binSize) {
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
 
@@ -73,19 +73,19 @@ namespace hog {
 				for (int k = 0; k < binSize; k++)
 				{
 					if (featureIndex == idx)
-						return "HoG @ (" + std::to_string(x+1) + "," + std::to_string(y) + ") with angle " + std::to_string((180.0 / binSize)*k);
+						return "HoG @ (" + std::to_string(x + 1) + "," + std::to_string(y) + ") with angle " + std::to_string((180.0 / binSize)*k);
 					idx++;
 				}
 				for (int k = 0; k < binSize; k++)
 				{
 					if (featureIndex == idx)
-						return "HoG @ (" + std::to_string(x) + "," + std::to_string(y+1) + ") with angle " + std::to_string((180.0 / binSize)*k);
+						return "HoG @ (" + std::to_string(x) + "," + std::to_string(y + 1) + ") with angle " + std::to_string((180.0 / binSize)*k);
 					idx++;
 				}
 				for (int k = 0; k < binSize; k++)
 				{
 					if (featureIndex == idx)
-						return "HoG @ (" + std::to_string(x+1) + "," + std::to_string(y+1) + ") with angle " + std::to_string((180.0 / binSize)*k);
+						return "HoG @ (" + std::to_string(x + 1) + "," + std::to_string(y + 1) + ") with angle " + std::to_string((180.0 / binSize)*k);
 					idx++;
 				}
 
@@ -95,7 +95,7 @@ namespace hog {
 	}
 
 
-	HoGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
+	HOGResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
 
 		cv::Mat mat = img.clone();
 		cv::cvtColor(img, mat, cv::COLOR_RGB2GRAY);
@@ -194,7 +194,7 @@ namespace hog {
 		if (createImage)
 			hog = createHoGImage(mat, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
 
-		HoGResult result;
+		HOGResult result;
 		result.width = nrOfCellsWidth - 1;
 		result.height = nrOfCellsHeight - 1;
 		result.data = newcells;
@@ -207,9 +207,8 @@ namespace hog {
 	cv::Mat createHoGImage(cv::Mat& mat, const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, int patchSize) {
 		cv::Mat hog;
 
-		hog = mat.clone();
-		cv::cvtColor(hog, hog, CV_GRAY2BGR);
-
+		hog = cv::Mat(mat.rows, mat.cols, CV_8UC3, cv::Scalar(0));
+		
 		for (int y = 0; y < nrOfCellsHeight; y++) {
 			for (int x = 0; x < nrOfCellsWidth; x++) {
 
@@ -236,13 +235,51 @@ namespace hog {
 		return hog;
 	}
 
-	HoGResult getHistogramsOfX(cv::Mat& imgValues, cv::Mat& imgBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize) {
+
+	HOGResult getHistogramsOfDepthDifferences(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
+
+		cv::Mat depth;
+		cvtColor(img, depth, CV_BGR2GRAY);
+		depth.convertTo(depth, CV_32FC1, 1 / 255.0, 0);
+
+		cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
+		cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
+
+
+		for (int j = 1; j < depth.rows - 1; j++)
+		{
+			for (int i = 1; i < depth.cols - 1; i++)
+			{
+				
+				float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
+				float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
+
+				float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j+1,i);
+				float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j-1, i);
+
+				float dx = (r-l) / 2;
+				float dy = (b-t) / 2;
+
+				double anglePixel = atan2(dy, dx);
+				// don't limit to 0-pi, but instead use 0-2pi range
+				anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI /2;
+				if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
+
+				double magPixel = sqrt((dx*dx) + (dy*dy));
+				magnitude.at<float>(j, i) = magPixel;
+				angle.at<float>(j, i) = anglePixel / (2*CV_PI);
+			}
+		}
+		return getHistogramsOfX(magnitude, angle, patchSize, binSize, createImage, l2normalize);
+	}
+
+	HOGResult getHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize) {
 
 
 		double max = 1;
 
-		int nrOfCellsWidth = imgValues.cols / patchSize;
-		int nrOfCellsHeight = imgValues.rows / patchSize;
+		int nrOfCellsWidth = weights.cols / patchSize;
+		int nrOfCellsHeight = weights.rows / patchSize;
 
 		std::vector<std::vector<Histogram>> cells(nrOfCellsHeight, std::vector<Histogram>(nrOfCellsWidth, Histogram(binSize, 0)));
 
@@ -255,8 +292,8 @@ namespace hog {
 				for (int l = 0; l < patchSize; l++) {
 					for (int k = 0; k < patchSize; k++) {
 
-						float anglePixel = imgBinningValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
-						double magPixel = imgValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+						float anglePixel = normalizedBinningValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+						double magPixel = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
 
 						// distribute based on angle
 						// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
@@ -286,10 +323,10 @@ namespace hog {
 
 		cv::Mat hog;
 		if (createImage) {
-			cv::Mat m(imgValues.rows, imgValues.cols, CV_32FC1);
+			cv::Mat m(weights.rows, weights.cols, CV_32FC1);
 			hog = createHoGImage(m, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
 		}
-		HoGResult result;
+		HOGResult result;
 		result.width = nrOfCellsWidth - 1;
 		result.height = nrOfCellsHeight - 1;
 		result.data = newcells;

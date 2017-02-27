@@ -362,3 +362,5 @@ __pycache__/
 /PedestrianDetection/SURF(Depth).xml
 /PedestrianDetection/ORB(RGB).xml
 /PedestrianDetection/ORB(Depth).xml
+/PedestrianDetection/results
+/PedestrianDetection/featurecache

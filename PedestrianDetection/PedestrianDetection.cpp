@@ -21,6 +21,13 @@
 #include "CornerFeatureCreator.h"
 #include "HistogramDepthFeatureCreator.h"
 #include "SURFFeatureCreator.h"
+#include "ORBFeatureCreator.h"
+#include "SIFTFeatureCreator.h"
+#include "CenSurEFeatureCreator.h"
+#include "MSDFeatureCreator.h"
+#include "BRISKFeatureCreator.h"
+#include "FASTFeatureCreator.h"
+#include "HDDFeatureCreator.h"
 
 
 #include "ModelEvaluator.h"
@@ -242,9 +249,9 @@ void saveTNTP() {
 
 void testClassifier() {
 	FeatureSet testSet;
-	testSet.addCreator(new HoGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
 	testSet.addCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	testSet.addCreator(new HoGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
 
 	ModelEvaluator model(baseDatasetPath, testSet);
 
@@ -424,20 +431,57 @@ Mat watershedWithMarkers(Mat input) {
 int main()
 {
 	//testClassifier();
-	/*int nr = 0;
+	int nr = 0;
 	while (true) {
 		char nrStr[7];
 		sprintf(nrStr, "%06d", nr);
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+		cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
 		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
 
 
 		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
-			cv::Mat gray;
-			cv::cvtColor(img, gray, CV_BGR2GRAY);
 
-			cv::Mat result = watershedWithMarkers(img);
-			cv::imshow(msg, img);
+			
+			hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
+			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
+				std::vector<cv::KeyPoint> keypoints;
+
+
+				cv::Mat descriptors;
+				detector->detect(img, keypoints);
+
+
+				//detector->compute(img, keypoints, descriptors);
+
+				cv::Mat imgKeypoints;
+				cv::drawKeypoints(img, keypoints, imgKeypoints);
+				*/
+
+			/*cv::Mat depth;
+			cvtColor(img, img, CV_BGR2GRAY);
+
+			img.convertTo(depth, CV_32FC1, 1 , 0);
+
+			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+
+			for (int y = 1; y < depth.rows - 1; y++)
+			{
+				for (int x = 1; x < depth.cols - 1; x++)
+				{
+
+					Vec3f t(x, y - 1, depth.at<float>(y - 1, x));
+					Vec3f l(x - 1, y, depth.at<float>(y, x - 1));
+					Vec3f c(x, y, depth.at<float>(y, x));
+
+					Vec3f d = (l - c).cross(t - c);
+
+					Vec3f n = normalize(d);
+					normals.at<Vec3f>(y, x) = n;
+				}
+			}
+
+			*/
+			cv::imshow(msg, result.combineHOGImage(img));
 		};
 
 		func(tp, "TP");
@@ -447,7 +491,7 @@ int main()
 		cv::waitKey(0);
 		nr++;
 	}
-	*/
+
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	//testClassifier();
 	//saveTNTP();
@@ -456,17 +500,6 @@ int main()
 	int nrOfEvaluations = 100;
 	std::set<std::string> set;
 
-	FeatureTester tester(baseDatasetPath);
-	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new HoGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
-	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
-	tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
-	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
-	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
-	tester.addAvailableCreator(new SURFFeatureCreator(std::string("ORB(RGB)"), 80, false));
-	tester.addAvailableCreator(new SURFFeatureCreator(std::string("ORB(Depth)"), 80, true));
 
 	//for (int i = 10; i < 100; i+=5)
 	//{
@@ -477,31 +510,77 @@ int main()
 	//}
 	//
 
-	// evaluate each creator individually
+
+	FeatureTester tester(baseDatasetPath);
+	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
+	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
+	tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
+
+	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
+	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
+	tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(RGB)"), 80, false));
+	tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(Depth)"), 80, true));
+	tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(RGB)"), 80, false));
+	tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(Depth)"), 80, true));
+	tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(RGB)"), 80, false));
+	tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(Depth)"), 80, true));
+	tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(RGB)"), 80, false));
+	tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(Depth)"), 80, true));
+	/*tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(RGB)"), 80, false)); // way too damn slow
+	tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(Depth)"), 80, true));*/
+	tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(RGB)"), 80, false));
+	tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(Depth)"), 80, true));
+
+	tester.addAvailableCreator(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight));
+
+
+	//evaluate each creator individually
 	for (auto& creator : tester.getAvailableCreators()) {
 		set = { creator->getName() };
 		tester.addJob(set, nrOfEvaluations);
 	}
+	tester.runJobs(std::string("individualresults.csv"));
+
+	// evaluate each creator combined with HOG(RGB)
+	for (auto& creator : tester.getAvailableCreators()) {
+		if (creator->getName() != "HoG(RGB)") {
+			set = { "HoG(RGB)", creator->getName() };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs(std::string("hogrgb_results.csv"));
+
+	for (auto& creator : tester.getAvailableCreators()) {
+		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)") {
+			set = { "HoG(Depth)", "HoG(RGB)", creator->getName() };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs(std::string("hogrgbhogdepth_results.csv"));
+
+	/*
+
+		set = { "HoG(RGB)", "Corner(RGB)" };
+		tester.addJob(set, nrOfEvaluations);
+
+		set = { "HoG(RGB)","Histogram(Depth)" };
+		tester.addJob(set, nrOfEvaluations);
+
+		set = { "HoG(RGB)", "S2HoG(RGB)" };
+		tester.addJob(set, nrOfEvaluations);
+
+		set = { "HoG(RGB)", "HoG(Depth)" };
+		tester.addJob(set, nrOfEvaluations);
+
+		set = { "HoG(RGB)",  "S2HoG(RGB)",  "HoG(Depth)" };
+		tester.addJob(set, nrOfEvaluations);
+
+	*/
 
 
-	set = { "HoG(RGB)", "Corner(RGB)" };
-	tester.addJob(set, nrOfEvaluations);
-
-	set = { "HoG(RGB)","Histogram(Depth)" };
-	tester.addJob(set, nrOfEvaluations);
-
-	set = { "HoG(RGB)", "S2HoG(RGB)" };
-	tester.addJob(set, nrOfEvaluations);
-
-	set = { "HoG(RGB)", "HoG(Depth)" };
-	tester.addJob(set, nrOfEvaluations);
-
-	set = { "HoG(RGB)",  "S2HoG(RGB)",  "HoG(Depth)" };
-	tester.addJob(set, nrOfEvaluations);
-
-
-
-	tester.runJobs();
 
 
 

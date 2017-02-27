@@ -1,6 +1,6 @@
 #pragma once
 #include "IFeatureCreator.h"
-class HOGFeatureCreator : public IFeatureCreator
+class HDDFeatureCreator : public IFeatureCreator
 {
 
 private:
@@ -11,8 +11,8 @@ private:
 	bool onDepth;
 
 public:
-	HOGFeatureCreator(std::string& name, bool onDepth, int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
-	virtual ~HOGFeatureCreator();
+	HDDFeatureCreator(std::string& name, int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
+	virtual ~HDDFeatureCreator();
 
 	int getNumberOfFeatures() const;
 	std::string explainFeature(int featureIndex, double featureValue) const;

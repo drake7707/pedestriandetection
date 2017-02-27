@@ -19,7 +19,7 @@ int HOGHistogramVarianceFeatureCreator::getNumberOfFeatures() const {
 }
 
 FeatureVector HOGHistogramVarianceFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
-	hog::HoGResult result;
+	hog::HOGResult result;
 	if(onDepth)
 		result = hog::getHistogramsOfOrientedGradient(depth, patchSize, binSize, false, true);
 	else

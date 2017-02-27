@@ -100,9 +100,9 @@ void FeatureTester::addJob(std::set<std::string>& set, int nrOfEvaluations) {
 	jobs.push(job);
 }
 
-void FeatureTester::runJobs() {
+void FeatureTester::runJobs(std::string& resultsFile) {
 
-	std::ofstream resultStream("results.csv", std::ofstream::out | std::ofstream::app);
+	std::ofstream resultStream(resultsFile, std::ofstream::out | std::ofstream::app);
 	if (!resultStream.is_open())
 		throw std::exception("Unable to open or create results file");
 

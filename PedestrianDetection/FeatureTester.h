@@ -49,6 +49,6 @@ public:
 
 	void addJob(std::set<std::string>& set, int nrOfEvaluations);
 
-	void runJobs();
+	void runJobs(std::string& resultsFile = std::string("results.csv"));
 };
 

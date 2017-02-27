@@ -111,7 +111,7 @@ void ModelEvaluator::train()
 	priors[1] = truePositiveFeatures.size();
 
 	boost->setPriors(cv::Mat(priors));
-	//boost->setWeakCount(10);
+	boost->setWeakCount(200);
 	//boost->setWeightTrimRate(0.95);
 	//boost->setMaxDepth(5);
 	//boost->setUseSurrogates(false);

@@ -433,82 +433,82 @@ Mat watershedWithMarkers(Mat input) {
 int main()
 {
 	//testClassifier();
-	int nr = 0;
-	while (true) {
-		char nrStr[7];
-		sprintf(nrStr, "%06d", nr);
-		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
+	//int nr = 0;
+	//while (true) {
+	//	char nrStr[7];
+	//	sprintf(nrStr, "%06d", nr);
+	//	//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+	//	cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
+	//	cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
 
 
-		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
+	//	std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
 
 
 
-			//hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
-			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
-				std::vector<cv::KeyPoint> keypoints;
+	//		//hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
+	//		/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
+	//			std::vector<cv::KeyPoint> keypoints;
 
 
-				cv::Mat descriptors;
-				detector->detect(img, keypoints);
+	//			cv::Mat descriptors;
+	//			detector->detect(img, keypoints);
 
 
-				//detector->compute(img, keypoints, descriptors);
+	//			//detector->compute(img, keypoints, descriptors);
 
-				cv::Mat imgKeypoints;
-				cv::drawKeypoints(img, keypoints, imgKeypoints);
-				*/
+	//			cv::Mat imgKeypoints;
+	//			cv::drawKeypoints(img, keypoints, imgKeypoints);
+	//			*/
 
-				/*cv::Mat depth;
-				cvtColor(img, img, CV_BGR2GRAY);
+	//			/*cv::Mat depth;
+	//			cvtColor(img, img, CV_BGR2GRAY);
 
-				img.convertTo(depth, CV_32FC1, 1 , 0);
+	//			img.convertTo(depth, CV_32FC1, 1 , 0);
 
-				Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+	//			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
 
-				for (int y = 1; y < depth.rows - 1; y++)
-				{
-					for (int x = 1; x < depth.cols - 1; x++)
-					{
+	//			for (int y = 1; y < depth.rows - 1; y++)
+	//			{
+	//				for (int x = 1; x < depth.cols - 1; x++)
+	//				{
 
-						Vec3f t(x, y - 1, depth.at<float>(y - 1, x));
-						Vec3f l(x - 1, y, depth.at<float>(y, x - 1));
-						Vec3f c(x, y, depth.at<float>(y, x));
+	//					Vec3f t(x, y - 1, depth.at<float>(y - 1, x));
+	//					Vec3f l(x - 1, y, depth.at<float>(y, x - 1));
+	//					Vec3f c(x, y, depth.at<float>(y, x));
 
-						Vec3f d = (l - c).cross(t - c);
+	//					Vec3f d = (l - c).cross(t - c);
 
-						Vec3f n = normalize(d);
-						normals.at<Vec3f>(y, x) = n;
-					}
-				}
+	//					Vec3f n = normalize(d);
+	//					normals.at<Vec3f>(y, x) = n;
+	//				}
+	//			}
 
-				*/
+	//			*/
 
-			cvtColor(img, img, CV_BGR2GRAY);
-			cv::Mat lbp = Algorithms::OLBP(img);
-			lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+	//		cvtColor(img, img, CV_BGR2GRAY);
+	//		cv::Mat lbp = Algorithms::OLBP(img);
+	//		lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
 
-			cv::Mat padded;
-			int padding = 1;
-			padded.create(img.rows,img.cols, lbp.type());
-			padded.setTo(cv::Scalar::all(0));
-			lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+	//		cv::Mat padded;
+	//		int padding = 1;
+	//		padded.create(img.rows,img.cols, lbp.type());
+	//		padded.setTo(cv::Scalar::all(0));
+	//		lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
 
-			
-			auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
+	//		
+	//		auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
 
-			cv::imshow(msg, result.combineHOGImage(img));
-		};
+	//		cv::imshow(msg, result.combineHOGImage(img));
+	//	};
 
-		func(tp, "TP");
+	//	func(tp, "TP");
 
-		func(tn, "TN");
+	//	func(tn, "TN");
 
-		cv::waitKey(0);
-		nr++;
-	}
+	//	cv::waitKey(0);
+	//	nr++;
+	//}
 
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	//testClassifier();

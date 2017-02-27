@@ -46,13 +46,16 @@ namespace hog {
 	}
 
 
-	int getNumberOfFeatures(int imgWidth, int imgHeight, int patchSize, int binSize) {
+	int getNumberOfFeatures(int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize) {
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
 
 		// histograms are patchSize x patchSize in an image and contain binSize values
 		// to normalize light and shadows histograms are normalized with their adjacent ones, forming an 2x2 rectangle or 4 histograms together
-		return (nrOfCellsHeight - 1) * (nrOfCellsWidth - 1) * binSize * 4;
+		if (l2normalize)
+			return (nrOfCellsHeight - 1) * (nrOfCellsWidth - 1) * binSize * 4;
+		else
+			return (nrOfCellsHeight) * (nrOfCellsWidth)* binSize;
 	}
 
 	std::string explainHOGFeature(int featureIndex, double featureValue, int imgWidth, int imgHeight, int patchSize, int binSize) {

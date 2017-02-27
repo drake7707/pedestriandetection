@@ -15,7 +15,7 @@ HDDFeatureCreator::~HDDFeatureCreator()
 
 
 int HDDFeatureCreator::getNumberOfFeatures() const {
-	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize);
+	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, true);
 }
 
 FeatureVector HDDFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {

@@ -102,6 +102,12 @@
     <ClInclude Include="HDDFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
+    <ClInclude Include="LocalBinaryPatterns.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LBPFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -180,6 +186,12 @@
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HDDFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="LocalBinaryPatterns.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LBPFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>

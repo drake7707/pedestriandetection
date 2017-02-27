@@ -15,7 +15,7 @@ HOGHistogramVarianceFeatureCreator::~HOGHistogramVarianceFeatureCreator()
 
 int HOGHistogramVarianceFeatureCreator::getNumberOfFeatures() const {
 	// each rectangle of 2x2 histograms, each containing binSize elements is now replaced by a single S2 value
-	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize) / (binSize * 4);
+	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, true) / (binSize * 4);
 }
 
 FeatureVector HOGHistogramVarianceFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {

@@ -15,7 +15,7 @@ HOGFeatureCreator::~HOGFeatureCreator()
 
 
 int HOGFeatureCreator::getNumberOfFeatures() const {
-	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize);
+	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, true);
 }
 
 FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {

@@ -64,7 +64,7 @@ namespace hog {
 
 	cv::Mat createHoGImage(cv::Mat& mat, const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, int patchSize);
 
-	int getNumberOfFeatures(int imgWidth, int imgHeight, int patchSize, int binSize);
+	int getNumberOfFeatures(int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize);
 
 	std::string explainHOGFeature(int featureIndex, double featureValue, int imgWidth, int imgHeight, int patchSize, int binSize);
 

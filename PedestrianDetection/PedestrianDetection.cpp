@@ -45,11 +45,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -203,21 +203,24 @@ TrainingDataSet saveTNTP() {
 
 void testClassifier() {
 	FeatureSet testSet;
-	testSet.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	testSet.addCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	/*testSet.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	testSet.addCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));*/
 	testSet.addCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+	TrainingDataSet tSet(kittiDatasetPath);
+	tSet.load(std::string("train0.txt"));
 
-	ModelEvaluator model(baseDatasetPath, testSet);
+	ModelEvaluator model(tSet, testSet);
 
 	//model.train();
 	//model.saveModel(std::string("testmodel.xml"));
 	model.loadModel(std::string("testmodel.xml"));
 
-	ClassifierEvaluation eval = model.evaluate(1)[0];
-	eval.print(std::cout);
+	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
+	eval.print(std::cout);*/
 
 	cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");
 	cv::Mat mDepth = cv::imread(kittiDatasetPath + "\\depth\\000000.png");
+	mDepth.convertTo(mDepth, CV_32FC1, 1.0 / 0xFFFF, 0);
 
 	slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect2d bbox) -> void {
 		cv::Mat regionRGB;
@@ -227,10 +230,11 @@ void testClassifier() {
 		cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
 
 		FeatureVector v = testSet.getFeatures(regionRGB, regionDepth);
-		int result = model.evaluateWindow(regionRGB, regionDepth, -5);
-		if (result == 1)
-			cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 1);
-	}, 0.25, 1);
+		EvaluationResult result = model.evaluateWindow(regionRGB, regionDepth, -5);
+		if (result.resultClass == 1 && result.rawResponse > 8)
+			cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
+		
+	}, 0.5,1, 8);
 	cv::imshow("Test", mRGB);
 
 	// this will leak because creators are never disposed!
@@ -390,7 +394,7 @@ int main()
 
 
 	FeatureTester tester(tSet);
-	tester.nrOfConcurrentJobs = 8;
+	tester.nrOfConcurrentJobs = 6;
 
 	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));

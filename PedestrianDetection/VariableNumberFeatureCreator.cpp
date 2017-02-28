@@ -27,7 +27,7 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
 	std::vector<FeatureVector> samples;
 
 	trainingDataSet.iterateDataSet([](int idx) -> bool { return true; },
-		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		// aggregate vectors
 

@@ -71,7 +71,7 @@ void TrainingDataSet::load(std::string & path)
 	}
 }
 
-void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func) const {
+void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth)> func) const {
 	int idx = 0;
 	for (auto& pair : images) {
 
@@ -91,12 +91,11 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 				throw std::exception(std::string("RGB image " + rgbPath + " is corrupt").c_str());
 			}
 			if (depth.rows == 0 || depth.cols == 0) {
-				// shite went to the crapper
 				throw std::exception(std::string("Depth image " + depthPath + " is corrupt").c_str());
 			}
 
 			for (auto& r : pair.second.regions) {
-
+				
 
 
 
@@ -107,14 +106,14 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 				cv::resize(depth(r.region), regionDepth, cv::Size2d(refWidth, refHeight));
 
 
-				func(idx, r.regionClass, regionRGB, regionDepth);
+				func(idx, r.regionClass, pair.first, r.region, regionRGB, regionDepth);
 				idx++;
 
 				cv::Mat rgbFlipped;
 				cv::Mat depthFlipped;
 				cv::flip(regionRGB, rgbFlipped, 1);
 				cv::flip(regionDepth, depthFlipped, 1);
-				func(idx, r.regionClass, rgbFlipped, depthFlipped);
+				func(idx, r.regionClass, pair.first, r.region, rgbFlipped, depthFlipped);
 				idx++;
 			}
 		}

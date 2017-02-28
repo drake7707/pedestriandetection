@@ -17,6 +17,11 @@ struct Model {
 };
 
 
+struct EvaluationResult {
+	int resultClass;
+	double rawResponse;
+	EvaluationResult(int resultClass, double rawResponse) : resultClass(resultClass), rawResponse(rawResponse) { }
+};
 
 
 class ModelEvaluator
@@ -27,7 +32,7 @@ private:
 
 	Model model;
 
-	int evaluateFeatures(FeatureVector& v, double valueShift = 0) const;
+	EvaluationResult evaluateFeatures(FeatureVector& v, double valueShift = 0) const;
 
 
 public:
@@ -39,8 +44,8 @@ public:
 
 	void train();
 
-	std::vector<ClassifierEvaluation> evaluate(int nrOfEvaluations);
-	int evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift = 0) const;
+	std::vector<ClassifierEvaluation> evaluateDataSet(int nrOfEvaluations, bool includeRawResponses);
+	EvaluationResult evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift = 0) const;
 
 
 	void saveModel(std::string& path);

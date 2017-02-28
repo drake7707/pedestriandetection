@@ -22,7 +22,7 @@ void ModelEvaluator::train()
 
 
 	trainingDataSet.iterateDataSet([](int idx) -> bool { return idx % 2 != 0; },
-		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v = set.getFeatures(rgb, depth);
 		if (resultClass == 1)
@@ -121,22 +121,22 @@ void ModelEvaluator::train()
 	trainingTimeMS = measure<std::chrono::milliseconds>::execution([&]() -> void {
 		boost->train(tdata);
 	});
-	std::cout << "Done training, took " << trainingTimeMS << "ms" << std::endl;
+	//std::cout << "Done training, took " << trainingTimeMS << "ms" << std::endl;
 
 	if (!boost->isTrained())
 		throw std::exception("Boost training failed");
 
 	model.boost = boost;
 
-	auto& roots = boost->getRoots();
-	auto& nodes = boost->getNodes();
-	auto& splits = boost->getSplits();
-	for (auto& r : roots) {
-		std::cout << "Root split " << nodes[r].split << " variable index " << splits[nodes[r].split].varIdx << " quality: " << splits[nodes[r].split].quality << " explain: " << set.explainFeature(splits[nodes[r].split].varIdx, nodes[r].value) << std::endl;
-	}
+	//auto& roots = boost->getRoots();
+	//auto& nodes = boost->getNodes();
+	//auto& splits = boost->getSplits();
+	//for (auto& r : roots) {
+	//	std::cout << "Root split " << nodes[r].split << " variable index " << splits[nodes[r].split].varIdx << " quality: " << splits[nodes[r].split].quality << " explain: " << set.explainFeature(splits[nodes[r].split].varIdx, nodes[r].value) << std::endl;
+	//}
 }
 
-std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) {
+std::vector<ClassifierEvaluation> ModelEvaluator::evaluateDataSet(int nrOfEvaluations, bool includeRawResponses) {
 	std::vector<ClassifierEvaluation> evals(nrOfEvaluations, ClassifierEvaluation());
 
 	std::vector<double> sumTimes(nrOfEvaluations, 0);
@@ -144,7 +144,7 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) 
 	double featureBuildTime = 0;
 
 	trainingDataSet.iterateDataSet([](int idx) -> bool { return idx % 2 == 0; },
-		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v;
 		featureBuildTime += measure<std::chrono::milliseconds>::execution([&]() -> void {
@@ -160,19 +160,27 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) 
 			evals[i].valueShift = valueShift;
 			sumTimes[i] += measure<std::chrono::milliseconds>::execution([&]() -> void {
 
-				int result = evaluateFeatures(v, valueShift);
-				if (resultClass == result) {
+				EvaluationResult result = evaluateFeatures(v, valueShift);
+				bool correct;
+				if (resultClass == result.resultClass) {
 					if (resultClass == -1)
 						evals[i].nrOfTrueNegatives++;
 					else
 						evals[i].nrOfTruePositives++;
+
+					correct = true;
 				}
 				else {
-					if (resultClass == -1 && result == 1)
+					if (resultClass == -1 && result.resultClass == 1)
 						evals[i].nrOfFalsePositives++;
 					else
 						evals[i].nrOfFalseNegatives++;
+
+					correct = false;
 				}
+
+				if (includeRawResponses)
+					evals[i].rawValues.push_back(RawEvaluationEntry(imageNumber, region, result.rawResponse, correct));
 			});
 			nrRegions[i]++;
 		}
@@ -184,7 +192,7 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) 
 	return evals;
 }
 
-int ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift) const {
+EvaluationResult ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift) const {
 
 	FeatureVector v = set.getFeatures(rgb, depth);
 	v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
@@ -193,7 +201,7 @@ int ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShi
 }
 
 
-int ModelEvaluator::evaluateFeatures(FeatureVector& v, double valueShift) const {
+EvaluationResult ModelEvaluator::evaluateFeatures(FeatureVector& v, double valueShift) const {
 
 	auto& nodes = model.boost->getNodes();
 	auto& roots = model.boost->getRoots();
@@ -221,17 +229,18 @@ int ModelEvaluator::evaluateFeatures(FeatureVector& v, double valueShift) const 
 
 	float result = model.boost->predict(v.toMat(), cv::noArray());
 
-	return sum + valueShift > 0 ? 1 : -1;
+	return EvaluationResult(sum + valueShift > 0 ? 1 : -1, sum);
 }
 
 
 void ModelEvaluator::saveModel(std::string& path) {
 	std::string filename = path;
 
-	cv::FileStorage fs(filename + ".data.xml", cv::FileStorage::WRITE);
+	cv::FileStorage fs(filename, cv::FileStorage::WRITE);
+	model.boost->write(fs);
 	fs << "mean" << model.meanVector;
 	fs << "sigma" << model.sigmaVector;
-	model.boost->save(filename + ".boost.xml");
+	//model.boost->save(filename + ".boost.xml");
 	fs.release();
 
 }
@@ -240,8 +249,10 @@ void ModelEvaluator::loadModel(std::string& path) {
 
 	std::string filename = path;
 
-	model.boost = cv::Algorithm::load<cv::ml::Boost>(filename + ".boost.xml");
-	cv::FileStorage fsRead(filename + ".data.xml", cv::FileStorage::READ);
+	//model.boost = cv::Algorithm::load<cv::ml::Boost>(filename + ".boost.xml");
+	cv::FileStorage fsRead(filename, cv::FileStorage::READ);
+
+	model.boost = cv::Algorithm::read<cv::ml::Boost>(fsRead.root());
 	fsRead["mean"] >> model.meanVector;
 	fsRead["sigma"] >> model.sigmaVector;
 	fsRead.release();

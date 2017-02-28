@@ -10,15 +10,26 @@ FeatureTesterJob::FeatureTesterJob(std::string& featureSetName, FeatureSet& set,
 
 }
 
-std::vector<ClassifierEvaluation>  FeatureTesterJob::run() const {
+std::vector<ClassifierEvaluation> FeatureTesterJob::run() const {
 
 	std::vector<ClassifierEvaluation> evaluations;
 
 	ModelEvaluator evaluator(trainingDataSet, featureSet);
-	evaluator.train();
 
+	std::cout << "Started training of " << this->featureSetName << std::endl;
+	long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+		evaluator.train();
+	});
+	std::cout << "Training complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
 
-	return evaluator.evaluate(nrOfEvaluations);
+	// save it to a file
+	evaluator.saveModel("models\\" + this->featureSetName + ".xml");
+
+	std::cout << "Started evaluation of" << this->featureSetName << std::endl;
+	long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+		evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
+	});
+	std::cout << "Evaluation complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
 	return evaluations;
 }
 
@@ -57,7 +68,7 @@ void FeatureTester::loadProcessedFeatureSets() {
 		return;
 
 	std::string line;
-	while (std::getline(str, line))	{
+	while (std::getline(str, line)) {
 		processedFeatureSets.emplace(line);
 	}
 }
@@ -133,24 +144,24 @@ void FeatureTester::runJobs(std::string& resultsFile) {
 
 			FeatureTester* ft = this;
 			threads.push_back(std::thread([job, &resultsFileMutex, &resultStream, &semaphore, &ft]() -> void {
-			//	try {
+				//	try {
 
-					std::cout << "Starting job " << job.featureSetName << std::endl;
-					std::vector<ClassifierEvaluation> results = job.run();
-					
-					resultsFileMutex.lock();
-					for (auto& eval : results) {
-						resultStream << job.featureSetName << ";";
-						eval.toCSVLine(resultStream, false);
-						resultStream << ";" << std::endl;
-					}
+				std::cout << "Starting job " << job.featureSetName << std::endl;
+				std::vector<ClassifierEvaluation> results = job.run();
 
-					std::string name = job.featureSetName;
-					ft->markFeatureSetProcessed(name);
+				resultsFileMutex.lock();
+				for (auto& eval : results) {
+					resultStream << job.featureSetName << ";";
+					eval.toCSVLine(resultStream, false);
+					resultStream << ";" << std::endl;
+				}
 
-					resultsFileMutex.unlock();
+				std::string name = job.featureSetName;
+				ft->markFeatureSetProcessed(name);
 
-					semaphore.notify();
+				resultsFileMutex.unlock();
+
+				semaphore.notify();
 				/*}
 				catch (std::exception e) {
 

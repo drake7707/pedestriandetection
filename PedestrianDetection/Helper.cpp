@@ -38,10 +38,10 @@ int ceilTo(double val, double target) {
 	return ceil(val / target) * target;
 }
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect2d bbox)> func, double minScaleReduction , double maxScaleReduction, int refWidth, int refHeight) {
-	int slidingWindowWidth = 32;
-	int slidingWindowHeight = 64;
-	int slidingWindowStep = 8;
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect2d bbox)> func, double minScaleReduction , double maxScaleReduction, int slidingWindowStep, int refWidth, int refHeight) {
+	int slidingWindowWidth = 64;
+	int slidingWindowHeight = 128;
+//	int slidingWindowStep = 8;
 
 
 	double invscale = minScaleReduction;

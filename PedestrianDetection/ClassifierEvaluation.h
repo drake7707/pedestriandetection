@@ -1,6 +1,19 @@
 #pragma once
 #include <iostream>
 #include <iomanip>
+#include "opencv2/opencv.hpp"
+
+struct RawEvaluationEntry {
+	int imageNumber;
+	cv::Rect region;
+	double response;
+	bool correct;
+	RawEvaluationEntry(int imageNumber, cv::Rect& region, double response, bool correct) : imageNumber(imageNumber), region(region), response(response), correct(correct) { }
+
+	bool operator<(RawEvaluationEntry& other) const {
+		return this->response < other.response;
+	}
+};
 
 struct ClassifierEvaluation {
 	int nrOfTruePositives = 0;
@@ -10,6 +23,8 @@ struct ClassifierEvaluation {
 
 	double valueShift = 0;
 	double evaluationSpeedPerRegionMS = 0;
+
+	std::vector<RawEvaluationEntry> rawValues;
 
 	void print(std::ostream& out) {
 
@@ -24,7 +39,7 @@ struct ClassifierEvaluation {
 		out << "# False Positives " << nrOfFalsePositives << std::endl;
 		out << "# False Negatives " << nrOfFalseNegatives << std::endl;
 		out << "-------------------" << std::endl;
-		out << "TPR " <<  getTPR() * 100 << "%" << std::endl;
+		out << "TPR " << getTPR() * 100 << "%" << std::endl;
 		out << "FPR " << getFPR() * 100 << "%" << std::endl;
 		out << "-------------------" << std::endl;
 		out << std::setprecision(6) << std::endl;
@@ -60,7 +75,7 @@ struct ClassifierEvaluation {
 			out << "TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;EvaluationTimePerWindowMS;ValueShift";
 		else
 			out << std::fixed << nrOfTruePositives << ";" << nrOfTrueNegatives << ";" << nrOfFalsePositives << ";" << nrOfFalseNegatives
-			<< ";" << getTPR() << ";" << getFPR() << ";" << getPrecision() << ";" << getRecall() << ";" << getFScore(1) 
+			<< ";" << getTPR() << ";" << getFPR() << ";" << getPrecision() << ";" << getRecall() << ";" << getFScore(1)
 			<< ";" << evaluationSpeedPerRegionMS << ";" << valueShift;
 	}
 };

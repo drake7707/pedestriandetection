@@ -246,7 +246,7 @@ void testFeature() {
 
 		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
 		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png", CV_LOAD_IMAGE_ANYDEPTH);
+		cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png", CV_LOAD_IMAGE_UNCHANGED);
 		//cv::Mat tp = cv::imread("D:\\test.png", CV_LOAD_IMAGE_ANYDEPTH);
 		tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
 
@@ -359,7 +359,7 @@ void testFeature() {
 
 int main()
 {
-
+	//testFeature();
 	/*TrainingDataSet tSet = saveTNTP();
 
 	tSet.save(std::string("train0.txt"));

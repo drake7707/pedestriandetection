@@ -1,8 +1,8 @@
 #include "ModelEvaluator.h"
 #include "Helper.h"
 
-ModelEvaluator::ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set)
-	: baseDatasetPath(baseDatasetPath), set(set)
+ModelEvaluator::ModelEvaluator(const TrainingDataSet& trainingDataSet, const FeatureSet& set)
+	: trainingDataSet(trainingDataSet), set(set)
 {
 }
 
@@ -21,7 +21,7 @@ void ModelEvaluator::train()
 	std::vector<FeatureVector> trueNegativeFeatures;
 
 
-	iterateDataSet(baseDatasetPath,[](int idx) -> bool { return idx % 2 != 0; },
+	trainingDataSet.iterateDataSet([](int idx) -> bool { return idx % 2 != 0; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v = set.getFeatures(rgb, depth);
@@ -143,7 +143,7 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluate(int nrOfEvaluations) 
 	std::vector<int> nrRegions(nrOfEvaluations, 0);
 	double featureBuildTime = 0;
 
-	iterateDataSet(baseDatasetPath,[](int idx) -> bool { return idx % 2 == 0; },
+	trainingDataSet.iterateDataSet([](int idx) -> bool { return idx % 2 == 0; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v;

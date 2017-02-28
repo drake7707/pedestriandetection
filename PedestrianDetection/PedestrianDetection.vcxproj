@@ -185,6 +185,7 @@
     <ClInclude Include="ORBFeatureCreator.h" />
     <ClInclude Include="SIFTFeatureCreator.h" />
     <ClInclude Include="SURFFeatureCreator.h" />
+    <ClInclude Include="TrainingDataSet.h" />
     <ClInclude Include="VariableNumberFeatureCreator.h" />
   </ItemGroup>
   <ItemGroup>
@@ -219,6 +220,7 @@
     <ClCompile Include="CornerFeatureCreator.cpp" />
     <ClCompile Include="SIFTFeatureCreator.cpp" />
     <ClCompile Include="SURFFeatureCreator.cpp" />
+    <ClCompile Include="TrainingDataSet.cpp" />
     <ClCompile Include="VariableNumberFeatureCreator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -22,5 +22,6 @@ public:
 	virtual std::vector<DataSetLabel> getLabels() const;
 	virtual std::vector<cv::Mat> getImagesForNumber(const std::string& number) const;
 
+	virtual int getNrOfImages() const;
 };
 

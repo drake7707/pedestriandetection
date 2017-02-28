@@ -56,3 +56,8 @@ std::vector<cv::Mat> KITTIDataSet::getImagesForNumber(const std::string& number)
 
 	return{ rgb, depth };
 }
+
+int KITTIDataSet::getNrOfImages() const
+{
+	return 7480;
+}

@@ -6,20 +6,22 @@
 #include <queue>
 #include "Helper.h"
 #include "ClassifierEvaluation.h"
+#include "TrainingDataSet.h"
 
 class FeatureTester;
 
 class FeatureTesterJob {
 
 	
-	std::string baseDatasetPath;
-	FeatureSet set;
+	TrainingDataSet trainingDataSet;
+
+	FeatureSet featureSet;
 	int nrOfEvaluations;
 
 public:
 	std::string featureSetName;
 
-	FeatureTesterJob(std::string& featureSetName, FeatureSet& set, std::string& baseDatasetPath, int nrOfEvaluations);
+	FeatureTesterJob(std::string& featureSetName, FeatureSet& set, TrainingDataSet& trainingDataSet, int nrOfEvaluations);
 	std::vector<ClassifierEvaluation> run() const;
 
 };
@@ -29,7 +31,8 @@ class FeatureTester
 {
 private:
 	std::unordered_map<std::string, IFeatureCreator*> creators;
-	std::string baseDatasetPath;
+	TrainingDataSet trainingDataSet;
+
 	std::queue<FeatureTesterJob> jobs;
 
 
@@ -40,7 +43,7 @@ private:
 	void prepareCreators();
 
 public:
-	FeatureTester(std::string& baseDatasetPath);
+	FeatureTester(TrainingDataSet& trainingDataSet);
 	~FeatureTester();
 
 

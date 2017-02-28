@@ -5,7 +5,8 @@
 
 
 
-FeatureTesterJob::FeatureTesterJob(std::string& featureSetName, FeatureSet& set, std::string& baseDatasetPath, int nrOfEvaluations) : featureSetName(featureSetName), set(set), baseDatasetPath(baseDatasetPath), nrOfEvaluations(nrOfEvaluations) {
+FeatureTesterJob::FeatureTesterJob(std::string& featureSetName, FeatureSet& set, TrainingDataSet& trainingDataSet, int nrOfEvaluations)
+	: featureSetName(featureSetName), featureSet(set), trainingDataSet(trainingDataSet), nrOfEvaluations(nrOfEvaluations) {
 
 }
 
@@ -13,7 +14,7 @@ std::vector<ClassifierEvaluation>  FeatureTesterJob::run() const {
 
 	std::vector<ClassifierEvaluation> evaluations;
 
-	ModelEvaluator evaluator(baseDatasetPath, set);
+	ModelEvaluator evaluator(trainingDataSet, featureSet);
 	evaluator.train();
 
 
@@ -26,7 +27,7 @@ std::vector<ClassifierEvaluation>  FeatureTesterJob::run() const {
 
 
 
-FeatureTester::FeatureTester(std::string& baseDatasetPath) : baseDatasetPath(baseDatasetPath)
+FeatureTester::FeatureTester(TrainingDataSet& trainingDataSet) : trainingDataSet(trainingDataSet)
 {
 	loadProcessedFeatureSets();
 }
@@ -45,7 +46,7 @@ void FeatureTester::prepareCreators() {
 	for (auto& pair : creators) {
 		if (dynamic_cast<VariableNumberFeatureCreator*>(pair.second) != nullptr) {
 			std::cout << "Preparing feature creator " << pair.second->getName() << std::endl;
-			dynamic_cast<VariableNumberFeatureCreator*>(pair.second)->prepare(baseDatasetPath);
+			dynamic_cast<VariableNumberFeatureCreator*>(pair.second)->prepare(trainingDataSet.getBaseDataSetPath());
 		}
 	}
 }
@@ -96,7 +97,7 @@ void FeatureTester::addJob(std::set<std::string>& set, int nrOfEvaluations) {
 			featureSetName += name;
 	}
 
-	FeatureTesterJob job(featureSetName, featureSet, baseDatasetPath, nrOfEvaluations);
+	FeatureTesterJob job(featureSetName, featureSet, trainingDataSet, nrOfEvaluations);
 	jobs.push(job);
 }
 

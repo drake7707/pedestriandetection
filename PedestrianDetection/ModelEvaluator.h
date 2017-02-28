@@ -6,6 +6,8 @@
 #include "opencv2/opencv.hpp"
 #include "Helper.h"
 #include "ClassifierEvaluation.h"
+#include "TrainingDataSet.h"
+
 
 
 struct Model {
@@ -20,7 +22,7 @@ struct Model {
 class ModelEvaluator
 {
 private:
-	const std::string baseDatasetPath;
+	const TrainingDataSet& trainingDataSet;
 	const FeatureSet& set;
 
 	Model model;
@@ -29,7 +31,7 @@ private:
 
 
 public:
-	ModelEvaluator(const std::string& baseDatasetPath, const FeatureSet& set);
+	ModelEvaluator(const TrainingDataSet& trainingDataSet, const FeatureSet& set);
 	~ModelEvaluator();
 
 
@@ -39,7 +41,7 @@ public:
 
 	std::vector<ClassifierEvaluation> evaluate(int nrOfEvaluations);
 	int evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift = 0) const;
-	
+
 
 	void saveModel(std::string& path);
 	void loadModel(std::string& path);

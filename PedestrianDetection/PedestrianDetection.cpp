@@ -12,6 +12,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "TrainingDataSet.h"
+
 #include "HistogramOfOrientedGradients.h"
 #include "LocalBinaryPatterns.h"
 
@@ -112,12 +114,7 @@ void cornerFeatureTest() {
 
 }
 
-bool overlaps(std::vector<DataSetLabel> labels, cv::Rect2d r, std::vector<cv::Rect2d> selectedRegions) {
-	for (auto& l : labels) {
-		if ((r & l.getBbox()).area() > 0)
-			return true;
-	}
-
+bool overlaps(cv::Rect2d r, std::vector<cv::Rect2d> selectedRegions) {
 	for (auto& region : selectedRegions) {
 		if ((r & region).area() > 0)
 			return true;
@@ -126,93 +123,52 @@ bool overlaps(std::vector<DataSetLabel> labels, cv::Rect2d r, std::vector<cv::Re
 	return false;
 }
 
-void saveTNTP() {
+TrainingDataSet saveTNTP() {
 
-	KITTIDataSet* dataSet = new KITTIDataSet(kittiDatasetPath);
+
+	TrainingDataSet trainingSet(kittiDatasetPath);
+
+	KITTIDataSet dataSet = KITTIDataSet(kittiDatasetPath);
 
 	srand(7707);
 
 
-	std::vector<DataSetLabel> labels = dataSet->getLabels();
-
-	std::map<std::string, std::vector<DataSetLabel>> labelsPerNumber;
+	std::vector<DataSetLabel> labels = dataSet.getLabels();
+	
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber(dataSet.getNrOfImages(), std::vector<DataSetLabel>());
 	for (auto& l : labels)
-		labelsPerNumber[l.getNumber()].push_back(l);
-
-
+		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
 
 	int sizeVariance = 4;
-	int tpIdxRGB = 0;
-	int tnIdxRGB = 0;
+	int nrOfTNPerImage = 2;
+	
+	for (int i = 0; i < labelsPerNumber.size(); i++)
+	{
+		TrainingImage tImg;
+		tImg.number = i;
 
-	int tpIdxDepth = 0;
-	int tnIdxDepth = 0;
+		char nrStr[7];
+		sprintf(nrStr, "%06d", i);
+		std::vector<cv::Mat> currentImages = dataSet.getImagesForNumber(nrStr);
+		std::vector<cv::Rect2d> selectedRegions;
 
-	int idx = 0;
-	for (auto& pair : labelsPerNumber) {
+		for (auto& l : labelsPerNumber[i]) {
 
-
-		std::vector<cv::Mat> currentImages = dataSet->getImagesForNumber(pair.first);
-
-
-		// get true positive and true negative image
-		// -----------------------------------------
-
-		int nrOfTP = 0;
-		for (auto& l : pair.second) {
 			cv::Mat rgbTP;
 			cv::Rect2d& r = l.getBbox();
 			if (r.x >= 0 && r.y >= 0 && r.x + r.width < currentImages[0].cols && r.y + r.height < currentImages[0].rows) {
 
-				//for (auto& img : currentImages) {
-
-				for (int i = 0; i < currentImages.size(); i++)
-				{
-					auto& img = currentImages[i];
-
-					img(l.getBbox()).copyTo(rgbTP);
-					cv::resize(rgbTP, rgbTP, cv::Size2d(refWidth, refHeight));
-
-					// build training mat
-
-					//tpFunc(rgbTP);
-					std::string path;
-					path = "D:\\PedestrianDetectionDatasets\\kitti\\regions\\tp\\";
-					path += i == 0 ? "rgb" : "depth";
-					path += std::to_string(i == 0 ? tpIdxRGB : tpIdxDepth) + ".png";
-					imwrite(path, rgbTP);
-					if (i == 0) {
-						tpIdxRGB++;
-						nrOfTP++;
-					}
-					else
-						tpIdxDepth++;
-					//truePositiveFeatures.push_back(resultTP.getFeatureArray());
-
-					cv::Mat rgbTPFlip;
-					cv::flip(rgbTP, rgbTPFlip, 1);
-
-					//tpFunc(rgbTPFlip);
-					path = "D:\\PedestrianDetectionDatasets\\kitti\\regions\\tp\\";
-					path += i == 0 ? "rgb" : "depth";
-					path += std::to_string(i == 0 ? tpIdxRGB : tpIdxDepth) + ".png";
-					imwrite(path, rgbTPFlip);
-					if (i == 0) {
-						tpIdxRGB++;
-						nrOfTP++;
-					}
-					else
-						tpIdxDepth++;
-				}
-
+				TrainingRegion tr;
+				tr.region = l.getBbox();
+				tr.regionClass = 1;
+				tImg.regions.push_back(tr);
+				selectedRegions.push_back(r);
 			}
 		}
 
-		// take a number of true negative patches that don't overlap
-		std::vector<cv::Rect2d> selectedTNRegions;
-		for (int k = 0; k < nrOfTP; k++)
+		
+		for (int k = 0; k < nrOfTNPerImage; k++)
 		{
-			// take an equivalent patch at random for a true negative
 			cv::Mat rgbTN;
 			cv::Rect2d rTN;
 
@@ -222,30 +178,25 @@ void saveTNTP() {
 				double width = refWidth * sizeMultiplier;
 				double height = refHeight * sizeMultiplier;
 				rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - width), randBetween(0, currentImages[0].rows - height), width, height);
-			} while (iteration++ < 10000 && (overlaps(pair.second, rTN, selectedTNRegions) || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
+			} while (iteration++ < 10000 && (overlaps(rTN, selectedRegions) || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
 
 
 			if (iteration < 10000) {
-				selectedTNRegions.push_back(rTN);
-				for (int i = 0; i < currentImages.size(); i++)
-				{
-					auto& img = currentImages[i];
 
-					img(rTN).copyTo(rgbTN);
-					cv::resize(rgbTN, rgbTN, cv::Size2d(refWidth, refHeight));
-					//tnFunc(rgbTN);
-					std::string path = "D:\\PedestrianDetectionDatasets\\kitti\\regions\\tn\\";
-					path += i == 0 ? "rgb" : "depth";
-					path += std::to_string(i == 0 ? tnIdxRGB : tnIdxDepth) + ".png";
-					imwrite(path, rgbTN);
-					if (i == 0)
-						tnIdxRGB++;
-					else
-						tnIdxDepth++;
-				}
+				TrainingRegion tr;
+				tr.region = rTN;
+				tr.regionClass = -1;
+				tImg.regions.push_back(tr);
+
+				selectedRegions.push_back(rTN);
 			}
 		}
+
+
+		trainingSet.addTrainingImage(tImg);
 	}
+	
+	return trainingSet;
 }
 
 
@@ -285,6 +236,316 @@ void testClassifier() {
 	// this will leak because creators are never disposed!
 	cv::waitKey(0);
 }
+
+
+void testFeature() {
+	int nr = 0;
+	while (true) {
+		char nrStr[7];
+		sprintf(nrStr, "%06d", nr);
+
+		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
+		cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png", CV_LOAD_IMAGE_ANYDEPTH);
+		//cv::Mat tp = cv::imread("D:\\test.png", CV_LOAD_IMAGE_ANYDEPTH);
+		tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
+
+		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
+
+		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
+
+
+
+			//hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
+			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
+			std::vector<cv::KeyPoint> keypoints;
+
+
+			cv::Mat descriptors;
+			detector->detect(img, keypoints);
+
+
+			//detector->compute(img, keypoints, descriptors);
+
+			cv::Mat imgKeypoints;
+			cv::drawKeypoints(img, keypoints, imgKeypoints);
+			*/
+
+			cv::Mat depth;
+			int d = img.depth();
+			if (img.type() != CV_32FC1) {
+				img.convertTo(depth, CV_32FC1, 1, 0);
+			}
+			else
+				depth = img;
+
+			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+			Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+
+			//depth = depth * 255;
+			for (int y = 1; y < depth.rows; y++)
+			{
+				for (int x = 1; x < depth.cols; x++)
+				{
+
+
+					float r = x + 1 >= depth.cols ? depth.at<float>(y, x) : depth.at<float>(y, x + 1);
+					float l = x - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y, x - 1);
+
+					float b = y + 1 >= depth.rows ? depth.at<float>(y, x) : depth.at<float>(y + 1, x);
+					float t = y - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y - 1, x);
+
+
+					float dzdx = (r - l) / 2.0;
+					float dzdy = (b - t) / 2.0;
+
+					Vec3f d(-dzdx, -dzdy, 1.0f);
+
+					Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
+					Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
+					Vec3f c(x, y, depth.at<float>(y, x));
+
+					Vec3f d2 = (ll - c).cross(tt - c);
+
+
+					Vec3f n = normalize(d);
+
+					double azimuth = atan2(-d2[1], -d2[0]); // -pi -> pi
+					if (azimuth < 0)
+						azimuth += 2 * CV_PI;
+
+					double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
+
+					cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 1);
+					angleMat.at<cv::Vec3f>(y, x) = angles;
+
+					//normals.at<Vec3f>(y, x) = n;
+				}
+			}
+
+			auto& result = hog::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
+
+
+
+			//	cv::imshow(msg, normals);
+
+			//cvtColor(img, img, CV_BGR2GRAY);
+			//cv::Mat lbp = Algorithms::OLBP(img);
+			//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+
+			//cv::Mat padded;
+			//int padding = 1;
+			//padded.create(img.rows,img.cols, lbp.type());
+			//padded.setTo(cv::Scalar::all(0));
+			//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+
+			//
+			//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
+
+			cv::Mat tmp;
+			angleMat.convertTo(tmp, CV_8UC3, 255, 0);
+			cv::imshow(msg, result.combineHOGImage(tmp));
+		};
+
+		func(tp, "TP");
+
+		func(tn, "TN");
+
+		cv::waitKey(0);
+		nr++;
+	}
+
+}
+
+int main()
+{
+
+	/*TrainingDataSet tSet = saveTNTP();
+
+	tSet.save(std::string("train0.txt"));
+
+*/
+	TrainingDataSet tSet(baseDatasetPath);
+	tSet.load(std::string("train0.txt"));
+
+	//testClassifier();
+	//testFeature();
+	std::cout << "--------------------- New console session -----------------------" << std::endl;
+	//testClassifier();
+	//saveTNTP();
+	//return 0;
+
+	int nrOfEvaluations = 100;
+	std::set<std::string> set;
+
+
+	//for (int i = 10; i < 100; i+=5)
+	//{
+	//	tester.addAvailableCreator(std::string("SURF(RGB)_") + std::to_string(i), new SURFFeatureCreator(std::string("SURF(RGB)_") + std::to_string(i), i));
+
+	//	set = { std::string("SURF(RGB)_") + std::to_string(i) };
+	//	tester.addJob(set, nrOfEvaluations);
+	//}
+	//
+
+
+	FeatureTester tester(tSet);
+	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
+	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
+	tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
+
+	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
+	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
+	tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(RGB)"), 80, false));
+	tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(Depth)"), 80, true));
+	tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(RGB)"), 80, false));
+	tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(Depth)"), 80, true));
+	tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(RGB)"), 80, false));
+	tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(Depth)"), 80, true));
+	tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(RGB)"), 80, false));
+	tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(Depth)"), 80, true));
+	/*tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(RGB)"), 80, false)); // way too damn slow
+	tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(Depth)"), 80, true));*/
+	tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(RGB)"), 80, false));
+	tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(Depth)"), 80, true));
+
+	tester.addAvailableCreator(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight));
+	tester.addAvailableCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
+	tester.addAvailableCreator(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight));
+
+
+
+	//evaluate each creator individually
+	for (auto& creator : tester.getAvailableCreators()) {
+		set = { creator->getName() };
+		tester.addJob(set, nrOfEvaluations);
+	}
+	tester.runJobs(std::string("results\\individualresults.csv"));
+
+	// evaluate each creator combined with HOG(RGB)
+	for (auto& creator : tester.getAvailableCreators()) {
+		if (creator->getName() != "HoG(RGB)") {
+			set = { "HoG(RGB)", creator->getName() };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs(std::string("results\\hogrgb_results.csv"));
+
+	for (auto& creator : tester.getAvailableCreators()) {
+		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)") {
+			set = { "HoG(Depth)", "HoG(RGB)", creator->getName() };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs(std::string("results\\hogrgbhogdepth_results.csv"));
+
+
+	for (auto& creator : tester.getAvailableCreators()) {
+		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)") {
+			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  creator->getName() };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs(std::string("results\\hogrgbhogdepthlbprgb_results.csv"));
+
+
+
+	for (auto& creator : tester.getAvailableCreators()) {
+		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)" && creator->getName() != "Histogram(Depth)") {
+			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)", "Histogram(Depth)",  creator->getName() };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs(std::string("results\\hogrgbhogdepthlbprgbhistogramdepth_results.csv"));
+
+
+	/*
+
+		set = { "HoG(RGB)", "Corner(RGB)" };
+		tester.addJob(set, nrOfEvaluations);
+
+		set = { "HoG(RGB)","Histogram(Depth)" };
+		tester.addJob(set, nrOfEvaluations);
+
+		set = { "HoG(RGB)", "S2HoG(RGB)" };
+		tester.addJob(set, nrOfEvaluations);
+
+		set = { "HoG(RGB)", "HoG(Depth)" };
+		tester.addJob(set, nrOfEvaluations);
+
+		set = { "HoG(RGB)",  "S2HoG(RGB)",  "HoG(Depth)" };
+		tester.addJob(set, nrOfEvaluations);
+
+	*/
+
+
+
+
+
+
+
+	//FeatureSet set;
+	//set.addCreator(&HOGRGBFeatureCreator());
+	////set.addCreator(&HOGDepthFeatureCreator());
+
+
+
+	//{
+	//	std::cout << "Testing with 0.8/0.2 prior weights" << std::endl;
+	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.8, 0.2);
+	//	evaluator.train();
+	//	ClassifierEvaluation eval = evaluator.evaluate();
+	//	eval.print(std::cout);
+	//}
+	//{
+	//	std::cout << "Testing with 0.5/0.5 prior weights" << std::endl;
+	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.5, 0.5);
+	//	evaluator.train();
+	//	ClassifierEvaluation eval = evaluator.evaluate();
+	//	eval.print(std::cout);
+	//}
+	//{
+	//	std::cout << "Testing with 0.2/0.8 prior weights" << std::endl;
+	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.2, 0.8);
+	//	evaluator.train();
+	//	ClassifierEvaluation eval = evaluator.evaluate();
+	//	eval.print(std::cout);
+	//}
+
+
+	//getchar();
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 using namespace cv;
 using namespace std;
@@ -429,278 +690,3 @@ Mat watershedWithMarkers(Mat input) {
 
 	return wshed;
 }
-
-
-void testFeature() {
-	int nr = 0;
-	while (true) {
-		char nrStr[7];
-		sprintf(nrStr, "%06d", nr);
-
-		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
-		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png", CV_LOAD_IMAGE_ANYDEPTH);
-		//cv::Mat tp = cv::imread("D:\\test.png", CV_LOAD_IMAGE_ANYDEPTH);
-		tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
-
-		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
-
-		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
-
-
-
-			//hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
-			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
-			std::vector<cv::KeyPoint> keypoints;
-
-
-			cv::Mat descriptors;
-			detector->detect(img, keypoints);
-
-
-			//detector->compute(img, keypoints, descriptors);
-
-			cv::Mat imgKeypoints;
-			cv::drawKeypoints(img, keypoints, imgKeypoints);
-			*/
-
-			cv::Mat depth;
-			int d = img.depth();
-			if (img.type() != CV_32FC1) {
-				img.convertTo(depth, CV_32FC1, 1, 0);
-			}
-			else
-				depth = img;
-
-			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-			Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-
-			//depth = depth * 255;
-			for (int y = 1; y < depth.rows; y++)
-			{
-				for (int x = 1; x < depth.cols; x++)
-				{
-
-
-					float r = x + 1 >= depth.cols ? depth.at<float>(y, x) : depth.at<float>(y, x + 1);
-					float l = x - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y, x - 1);
-
-					float b = y + 1 >= depth.rows ? depth.at<float>(y, x) : depth.at<float>(y + 1, x);
-					float t = y - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y - 1, x);
-
-
-					float dzdx = (r - l) / 2.0;
-					float dzdy = (b - t) / 2.0;
-
-					Vec3f d(-dzdx, -dzdy, 1.0f);
-
-					Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
-					Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
-					Vec3f c(x, y, depth.at<float>(y, x));
-
-					Vec3f d2 = (ll - c).cross(tt - c);
-
-
-					Vec3f n = normalize(d);
-
-					double azimuth = atan2(-d2[1], -d2[0]); // -pi -> pi
-					if (azimuth < 0)
-						azimuth += 2 * CV_PI;
-
-					double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
-
-					cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 1);
-					angleMat.at<cv::Vec3f>(y, x) = angles;
-
-					//normals.at<Vec3f>(y, x) = n;
-				}
-			}
-
-			auto& result = hog::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
-
-
-
-			//	cv::imshow(msg, normals);
-
-			//cvtColor(img, img, CV_BGR2GRAY);
-			//cv::Mat lbp = Algorithms::OLBP(img);
-			//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
-
-			//cv::Mat padded;
-			//int padding = 1;
-			//padded.create(img.rows,img.cols, lbp.type());
-			//padded.setTo(cv::Scalar::all(0));
-			//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
-
-			//
-			//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
-
-			cv::Mat tmp;
-			angleMat.convertTo(tmp, CV_8UC3, 255, 0);
-			cv::imshow(msg, result.combineHOGImage(tmp));
-		};
-
-		func(tp, "TP");
-
-		func(tn, "TN");
-
-		cv::waitKey(0);
-		nr++;
-	}
-
-}
-
-int main()
-{
-	//testClassifier();
-	//testFeature();
-	std::cout << "--------------------- New console session -----------------------" << std::endl;
-	//testClassifier();
-	//saveTNTP();
-	//return 0;
-
-	int nrOfEvaluations = 100;
-	std::set<std::string> set;
-
-
-	//for (int i = 10; i < 100; i+=5)
-	//{
-	//	tester.addAvailableCreator(std::string("SURF(RGB)_") + std::to_string(i), new SURFFeatureCreator(std::string("SURF(RGB)_") + std::to_string(i), i));
-
-	//	set = { std::string("SURF(RGB)_") + std::to_string(i) };
-	//	tester.addJob(set, nrOfEvaluations);
-	//}
-	//
-
-
-	FeatureTester tester(baseDatasetPath);
-	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
-	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
-	tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
-
-	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
-	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
-	tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(RGB)"), 80, false));
-	tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(Depth)"), 80, true));
-	tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(RGB)"), 80, false));
-	tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(Depth)"), 80, true));
-	tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(RGB)"), 80, false));
-	tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(Depth)"), 80, true));
-	tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(RGB)"), 80, false));
-	tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(Depth)"), 80, true));
-	/*tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(RGB)"), 80, false)); // way too damn slow
-	tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(Depth)"), 80, true));*/
-	tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(RGB)"), 80, false));
-	tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(Depth)"), 80, true));
-
-	tester.addAvailableCreator(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
-	tester.addAvailableCreator(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight));
-
-
-
-	//evaluate each creator individually
-	for (auto& creator : tester.getAvailableCreators()) {
-		set = { creator->getName() };
-		tester.addJob(set, nrOfEvaluations);
-	}
-	tester.runJobs(std::string("results\\individualresults.csv"));
-
-	// evaluate each creator combined with HOG(RGB)
-	for (auto& creator : tester.getAvailableCreators()) {
-		if (creator->getName() != "HoG(RGB)") {
-			set = { "HoG(RGB)", creator->getName() };
-			tester.addJob(set, nrOfEvaluations);
-		}
-	}
-	tester.runJobs(std::string("results\\hogrgb_results.csv"));
-
-	for (auto& creator : tester.getAvailableCreators()) {
-		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)") {
-			set = { "HoG(Depth)", "HoG(RGB)", creator->getName() };
-			tester.addJob(set, nrOfEvaluations);
-		}
-	}
-	tester.runJobs(std::string("results\\hogrgbhogdepth_results.csv"));
-
-
-	for (auto& creator : tester.getAvailableCreators()) {
-		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)") {
-			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  creator->getName() };
-			tester.addJob(set, nrOfEvaluations);
-		}
-	}
-	tester.runJobs(std::string("results\\hogrgbhogdepthlbprgb_results.csv"));
-
-
-
-	for (auto& creator : tester.getAvailableCreators()) {
-		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)" && creator->getName() != "Histogram(Depth)") {
-			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)", "Histogram(Depth)",  creator->getName() };
-			tester.addJob(set, nrOfEvaluations);
-		}
-	}
-	tester.runJobs(std::string("results\\hogrgbhogdepthlbprgbhistogramdepth_results.csv"));
-
-
-	/*
-
-		set = { "HoG(RGB)", "Corner(RGB)" };
-		tester.addJob(set, nrOfEvaluations);
-
-		set = { "HoG(RGB)","Histogram(Depth)" };
-		tester.addJob(set, nrOfEvaluations);
-
-		set = { "HoG(RGB)", "S2HoG(RGB)" };
-		tester.addJob(set, nrOfEvaluations);
-
-		set = { "HoG(RGB)", "HoG(Depth)" };
-		tester.addJob(set, nrOfEvaluations);
-
-		set = { "HoG(RGB)",  "S2HoG(RGB)",  "HoG(Depth)" };
-		tester.addJob(set, nrOfEvaluations);
-
-	*/
-
-
-
-
-
-
-
-	//FeatureSet set;
-	//set.addCreator(&HOGRGBFeatureCreator());
-	////set.addCreator(&HOGDepthFeatureCreator());
-
-
-
-	//{
-	//	std::cout << "Testing with 0.8/0.2 prior weights" << std::endl;
-	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.8, 0.2);
-	//	evaluator.train();
-	//	ClassifierEvaluation eval = evaluator.evaluate();
-	//	eval.print(std::cout);
-	//}
-	//{
-	//	std::cout << "Testing with 0.5/0.5 prior weights" << std::endl;
-	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.5, 0.5);
-	//	evaluator.train();
-	//	ClassifierEvaluation eval = evaluator.evaluate();
-	//	eval.print(std::cout);
-	//}
-	//{
-	//	std::cout << "Testing with 0.2/0.8 prior weights" << std::endl;
-	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.2, 0.8);
-	//	evaluator.train();
-	//	ClassifierEvaluation eval = evaluator.evaluate();
-	//	eval.print(std::cout);
-	//}
-
-
-	//getchar();
-	return 0;
-}
-

@@ -21,8 +21,11 @@ std::vector<FeatureVector> MSDFeatureCreator::getVariableNumberFeatures(cv::Mat&
 
 	std::vector<cv::KeyPoint> keypoints;
 
-	if (onDepth)
-		detector->detect(depth, keypoints);
+	if (onDepth) {
+		cv::Mat d8U;
+		depth.convertTo(d8U, CV_8UC1, 255.0, 0);
+		detector->detect(d8U, keypoints);
+	}
 	else
 		detector->detect(rgb, keypoints);
 

@@ -4,7 +4,7 @@
 
 
 CornerFeatureCreator::CornerFeatureCreator(std::string& name, bool onDepth, int clusterSize)
-	: VariableNumberFeatureCreator(name,clusterSize), onDepth(onDepth) {
+	: VariableNumberFeatureCreator(name, clusterSize), onDepth(onDepth) {
 }
 
 
@@ -14,8 +14,12 @@ CornerFeatureCreator::~CornerFeatureCreator()
 
 std::vector<FeatureVector> CornerFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 	cv::Mat gray;
-	if(onDepth)
-		cv::cvtColor(depth, gray, CV_BGR2GRAY);
+	if (onDepth) {
+
+		cv::Mat d8U;
+		depth.convertTo(d8U, CV_8UC1,255.0, 0);
+		gray = d8U;
+	}
 	else
 		cv::cvtColor(rgb, gray, CV_BGR2GRAY);
 

@@ -22,8 +22,11 @@ std::vector<FeatureVector> SURFFeatureCreator::getVariableNumberFeatures(cv::Mat
 	std::vector<cv::KeyPoint> keypoints;
 
 	cv::Mat descriptors;
-	if (onDepth)
-		detector->detectAndCompute(depth, cv::noArray(),  keypoints, descriptors);
+	if (onDepth) {
+		cv::Mat d8U;
+		depth.convertTo(d8U, CV_8UC1, 255.0, 0);
+		detector->detectAndCompute(d8U, cv::noArray(), keypoints, descriptors);
+	}
 	else
 		detector->detectAndCompute(rgb, cv::noArray(), keypoints, descriptors);
 	

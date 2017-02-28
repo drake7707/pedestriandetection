@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "IFeatureCreator.h"
+#include "TrainingDataSet.h"
 
 class VariableNumberFeatureCreator : public IFeatureCreator
 {
@@ -11,7 +12,7 @@ private:
 
 public:
 
-	void prepare(std::string& datasetPath);
+	void prepare(TrainingDataSet& trainingDataSet);
 
 	virtual int getNumberOfFeatures() const;
 

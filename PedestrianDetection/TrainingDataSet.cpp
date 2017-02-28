@@ -52,7 +52,7 @@ void TrainingDataSet::load(std::string & path)
 		TrainingImage img;
 		img.number = number;
 		img.regions.reserve(count);
-	
+
 		for (int i = 0; i < count; i++)
 		{
 			int x, y, w, h, regionClass;
@@ -78,25 +78,28 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int idx)> canSelectFunc,
 		char nrStr[7];
 		sprintf(nrStr, "%06d", pair.second.number);
 
-		std::string rgbPath = baseDataSetPath + PATH_SEPARATOR + "rgb" + nrStr + ".png";
-		std::string depthPath = baseDataSetPath + PATH_SEPARATOR + "depth" + nrStr + ".png";
+		std::string rgbPath = baseDataSetPath + PATH_SEPARATOR + "rgb" + PATH_SEPARATOR + nrStr + ".png";
+		std::string depthPath = baseDataSetPath + PATH_SEPARATOR + "depth" + PATH_SEPARATOR + nrStr + ".png";
 
 		cv::Mat rgb = cv::imread(rgbPath);
 		cv::Mat depth = cv::imread(depthPath, CV_LOAD_IMAGE_ANYDEPTH);
 		depth.convertTo(depth, CV_32FC1, 1.0 / 0xFFFF, 0);
 
 		for (auto& r : pair.second.regions) {
+			cv::Mat regionRGB;
+			cv::resize(rgb(r.region), regionRGB, cv::Size2d(refWidth, refHeight));
 
-			cv::Mat rgbROI = rgb(r.region);
-			cv::Mat depthROI = depth(r.region);
+			cv::Mat regionDepth;
+			cv::resize(depth(r.region), regionDepth, cv::Size2d(refWidth, refHeight));
 
-			func(idx, r.regionClass, rgbROI, depthROI);
+
+			func(idx, r.regionClass, regionRGB, regionDepth);
 			idx++;
 
 			cv::Mat rgbFlipped;
 			cv::Mat depthFlipped;
-			cv::flip(rgbROI, rgbFlipped,1);
-			cv::flip(depthROI, depthFlipped,1);
+			cv::flip(regionRGB, rgbFlipped, 1);
+			cv::flip(regionDepth, depthFlipped, 1);
 			func(idx, r.regionClass, rgbFlipped, depthFlipped);
 			idx++;
 		}

@@ -46,7 +46,7 @@ void FeatureTester::prepareCreators() {
 	for (auto& pair : creators) {
 		if (dynamic_cast<VariableNumberFeatureCreator*>(pair.second) != nullptr) {
 			std::cout << "Preparing feature creator " << pair.second->getName() << std::endl;
-			dynamic_cast<VariableNumberFeatureCreator*>(pair.second)->prepare(trainingDataSet.getBaseDataSetPath());
+			dynamic_cast<VariableNumberFeatureCreator*>(pair.second)->prepare(trainingDataSet);
 		}
 	}
 }
@@ -118,7 +118,7 @@ void FeatureTester::runJobs(std::string& resultsFile) {
 	std::mutex resultsFileMutex;
 
 	// run 4 jobs concurrently
-	Semaphore semaphore(4);
+	Semaphore semaphore(nrOfConcurrentJobs);
 
 	std::vector<std::thread> threads;
 	while (jobs.size() > 0) {
@@ -133,7 +133,7 @@ void FeatureTester::runJobs(std::string& resultsFile) {
 
 			FeatureTester* ft = this;
 			threads.push_back(std::thread([job, &resultsFileMutex, &resultStream, &semaphore, &ft]() -> void {
-				try {
+			//	try {
 
 					std::cout << "Starting job " << job.featureSetName << std::endl;
 					std::vector<ClassifierEvaluation> results = job.run();
@@ -151,12 +151,12 @@ void FeatureTester::runJobs(std::string& resultsFile) {
 					resultsFileMutex.unlock();
 
 					semaphore.notify();
-				}
+				/*}
 				catch (std::exception e) {
 
 					std::cout << "Error: " << e.what() << std::endl;
 					semaphore.notify();
-				}
+				}*/
 			}));
 		}
 	}

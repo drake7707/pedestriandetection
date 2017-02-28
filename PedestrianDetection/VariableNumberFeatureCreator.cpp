@@ -12,7 +12,7 @@ VariableNumberFeatureCreator::~VariableNumberFeatureCreator()
 {
 }
 
-void VariableNumberFeatureCreator::prepare(std::string& datasetPath) {
+void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
 
 	// try and load first
 	loadCentroids(std::string("featurecache") + PATH_SEPARATOR);
@@ -26,7 +26,7 @@ void VariableNumberFeatureCreator::prepare(std::string& datasetPath) {
 
 	std::vector<FeatureVector> samples;
 
-	iterateDataSet(datasetPath, [](int idx) -> bool { return true; },
+	trainingDataSet.iterateDataSet([](int idx) -> bool { return true; },
 		[&](int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		// aggregate vectors

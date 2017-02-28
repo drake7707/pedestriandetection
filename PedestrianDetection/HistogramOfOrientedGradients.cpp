@@ -101,7 +101,9 @@ namespace hog {
 	HistogramResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
 
 		cv::Mat mat = img.clone();
-		cv::cvtColor(img, mat, cv::COLOR_RGB2GRAY);
+
+		if (mat.type() != CV_32FC1)
+			cv::cvtColor(img, mat, cv::COLOR_RGB2GRAY);
 
 		cv::Mat gx, gy;
 		cv::Sobel(mat, gx, CV_32F, 1, 0, 1);
@@ -211,7 +213,7 @@ namespace hog {
 		cv::Mat hog;
 
 		hog = cv::Mat(mat.rows, mat.cols, CV_8UC3, cv::Scalar(0));
-		
+
 		for (int y = 0; y < nrOfCellsHeight; y++) {
 			for (int x = 0; x < nrOfCellsWidth; x++) {
 
@@ -241,9 +243,9 @@ namespace hog {
 
 	HistogramResult getHistogramsOfDepthDifferences(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
 
-		cv::Mat depth;
-		cvtColor(img, depth, CV_BGR2GRAY);
-		depth.convertTo(depth, CV_32FC1, 1 / 255.0, 0);
+		cv::Mat depth = img; // depth is already in CV_32FC1
+		//cvtColor(img, depth, CV_BGR2GRAY);
+		//depth.convertTo(depth, CV_32FC1, 1 / 255.0, 0);
 
 		cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
 		cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
@@ -253,24 +255,24 @@ namespace hog {
 		{
 			for (int i = 1; i < depth.cols - 1; i++)
 			{
-				
+
 				float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
 				float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
 
-				float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j+1,i);
-				float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j-1, i);
+				float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
+				float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
 
-				float dx = (r-l) / 2;
-				float dy = (b-t) / 2;
+				float dx = (r - l) / 2;
+				float dy = (b - t) / 2;
 
 				double anglePixel = atan2(dy, dx);
 				// don't limit to 0-pi, but instead use 0-2pi range
-				anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI /2;
+				anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
 				if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
 
 				double magPixel = sqrt((dx*dx) + (dy*dy));
 				magnitude.at<float>(j, i) = magPixel;
-				angle.at<float>(j, i) = anglePixel / (2*CV_PI);
+				angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
 			}
 		}
 		return getHistogramsOfX(magnitude, angle, patchSize, binSize, createImage, l2normalize);
@@ -408,7 +410,7 @@ namespace hog {
 			}
 		}
 
-	//	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(flattenedCells, nrOfCellsWidth, nrOfCellsHeight, binSize, l2normalize);
+		//	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(flattenedCells, nrOfCellsWidth, nrOfCellsHeight, binSize, l2normalize);
 
 		cv::Mat hog;
 		if (createImage) {

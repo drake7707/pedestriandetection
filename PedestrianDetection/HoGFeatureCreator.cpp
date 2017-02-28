@@ -22,9 +22,9 @@ FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const
 
 	hog::HistogramResult result;
 	if(onDepth)
-		result = hog::getHistogramsOfOrientedGradient(rgb, patchSize, binSize, false, true);
-	else
 		result = hog::getHistogramsOfOrientedGradient(depth, patchSize, binSize, false, true);
+	else
+		result = hog::getHistogramsOfOrientedGradient(rgb, patchSize, binSize, false, true);
 
 	return result.getFeatureArray();
 }

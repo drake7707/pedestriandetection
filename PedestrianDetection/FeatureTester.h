@@ -46,6 +46,7 @@ public:
 	FeatureTester(TrainingDataSet& trainingDataSet);
 	~FeatureTester();
 
+	int nrOfConcurrentJobs = 4;
 
 	void addAvailableCreator(IFeatureCreator* creator);
 	std::vector<IFeatureCreator*> getAvailableCreators() const;

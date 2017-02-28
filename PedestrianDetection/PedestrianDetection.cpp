@@ -365,7 +365,7 @@ int main()
 	tSet.save(std::string("train0.txt"));
 
 */
-	TrainingDataSet tSet(baseDatasetPath);
+	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(std::string("train0.txt"));
 
 	//testClassifier();
@@ -390,6 +390,8 @@ int main()
 
 
 	FeatureTester tester(tSet);
+	tester.nrOfConcurrentJobs = 8;
+
 	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));

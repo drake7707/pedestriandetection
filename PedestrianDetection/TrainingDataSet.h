@@ -21,6 +21,9 @@ class TrainingDataSet
 	std::string baseDataSetPath;
 	std::map<int, TrainingImage> images;
 
+	int refWidth = 64;
+	int refHeight = 128;
+
 public:
 	TrainingDataSet(std::string& baseDataSetPath);
 	~TrainingDataSet();

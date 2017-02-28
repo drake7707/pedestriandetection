@@ -20,11 +20,11 @@ int HDDFeatureCreator::getNumberOfFeatures() const {
 
 FeatureVector HDDFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 
-	hog::HOGResult result;
+	hog::HistogramResult result;
 	result = hog::getHistogramsOfDepthDifferences(depth, patchSize, binSize, false, true);
 	return result.getFeatureArray();
 }
 
 std::string HDDFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " " + hog::explainHOGFeature(featureIndex, featureValue, refWidth, refHeight, patchSize, binSize);
+	return getName() + " TODO";
 }

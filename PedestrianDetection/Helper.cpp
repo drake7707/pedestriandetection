@@ -76,20 +76,24 @@ void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int i
 			cv::Mat rgb;
 			cv::Mat depth;
 			rgb = cv::imread(rgbTP);
-			depth = cv::imread(depthTP);
+			depth = cv::imread(depthTP, CV_LOAD_IMAGE_ANYDEPTH);
+			
 			if (rgb.cols == 0 || rgb.rows == 0 || depth.cols == 0 || depth.rows == 0) {
 				stop = true;
 				break;
 			}
+			depth.convertTo(depth, CV_32FC1, 1.0 / 0xFFFF, 0);
 
 			func(i, 1, rgb, depth);
 
 			rgb = cv::imread(rgbTN);
-			depth = cv::imread(depthTN);
+			depth = cv::imread(depthTN, CV_LOAD_IMAGE_ANYDEPTH);
 			if (rgb.cols == 0 || rgb.rows == 0 || depth.cols == 0 || depth.rows == 0) {
 				stop = true;
 				break;
 			}
+			depth.convertTo(depth, CV_32FC1, 1.0 / 0xFFFF, 0);
+
 
 			func(i, -1, rgb, depth);
 		}

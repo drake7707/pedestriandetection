@@ -44,5 +44,5 @@ FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const
 }
 
 std::string LBPFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " " + hog::explainHOGFeature(featureIndex, featureValue, refWidth, refHeight, patchSize, binSize);
+	return getName() + " TODO";
 }

@@ -1,7 +1,7 @@
 #include "Histogram.h"
 
 
-float Histogram::getS2() {
+float Histogram::getS2() const {
 	double avg = 0;
 	for (float el : *this) {
 		avg += el;

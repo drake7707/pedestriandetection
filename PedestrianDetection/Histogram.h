@@ -11,6 +11,6 @@ public:
 
 	}
 
-	float getS2();
+	float getS2() const;
 };
 

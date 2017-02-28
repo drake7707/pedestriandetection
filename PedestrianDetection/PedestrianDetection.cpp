@@ -30,6 +30,7 @@
 #include "FASTFeatureCreator.h"
 #include "HDDFeatureCreator.h"
 #include "LBPFeatureCreator.h"
+#include "HONVFeatureCreator.h"
 
 
 #include "ModelEvaluator.h"
@@ -42,11 +43,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -430,86 +431,129 @@ Mat watershedWithMarkers(Mat input) {
 }
 
 
+void testFeature() {
+	int nr = 0;
+	while (true) {
+		char nrStr[7];
+		sprintf(nrStr, "%06d", nr);
+
+		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
+		cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png", CV_LOAD_IMAGE_ANYDEPTH);
+		//cv::Mat tp = cv::imread("D:\\test.png", CV_LOAD_IMAGE_ANYDEPTH);
+		tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
+
+		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
+
+		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
+
+
+
+			//hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
+			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
+			std::vector<cv::KeyPoint> keypoints;
+
+
+			cv::Mat descriptors;
+			detector->detect(img, keypoints);
+
+
+			//detector->compute(img, keypoints, descriptors);
+
+			cv::Mat imgKeypoints;
+			cv::drawKeypoints(img, keypoints, imgKeypoints);
+			*/
+
+			cv::Mat depth;
+			int d = img.depth();
+			if (img.type() != CV_32FC1) {
+				img.convertTo(depth, CV_32FC1, 1, 0);
+			}
+			else
+				depth = img;
+
+			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+			Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+
+			//depth = depth * 255;
+			for (int y = 1; y < depth.rows; y++)
+			{
+				for (int x = 1; x < depth.cols; x++)
+				{
+
+
+					float r = x + 1 >= depth.cols ? depth.at<float>(y, x) : depth.at<float>(y, x + 1);
+					float l = x - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y, x - 1);
+
+					float b = y + 1 >= depth.rows ? depth.at<float>(y, x) : depth.at<float>(y + 1, x);
+					float t = y - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y - 1, x);
+
+
+					float dzdx = (r - l) / 2.0;
+					float dzdy = (b - t) / 2.0;
+
+					Vec3f d(-dzdx, -dzdy, 1.0f);
+
+					Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
+					Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
+					Vec3f c(x, y, depth.at<float>(y, x));
+
+					Vec3f d2 = (ll - c).cross(tt - c);
+
+
+					Vec3f n = normalize(d);
+
+					double azimuth = atan2(-d2[1], -d2[0]); // -pi -> pi
+					if (azimuth < 0)
+						azimuth += 2 * CV_PI;
+
+					double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
+
+					cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 1);
+					angleMat.at<cv::Vec3f>(y, x) = angles;
+
+					//normals.at<Vec3f>(y, x) = n;
+				}
+			}
+
+			auto& result = hog::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
+
+
+
+			//	cv::imshow(msg, normals);
+
+			//cvtColor(img, img, CV_BGR2GRAY);
+			//cv::Mat lbp = Algorithms::OLBP(img);
+			//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+
+			//cv::Mat padded;
+			//int padding = 1;
+			//padded.create(img.rows,img.cols, lbp.type());
+			//padded.setTo(cv::Scalar::all(0));
+			//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+
+			//
+			//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
+
+			cv::Mat tmp;
+			angleMat.convertTo(tmp, CV_8UC3, 255, 0);
+			cv::imshow(msg, result.combineHOGImage(tmp));
+		};
+
+		func(tp, "TP");
+
+		func(tn, "TN");
+
+		cv::waitKey(0);
+		nr++;
+	}
+
+}
+
 int main()
 {
 	//testClassifier();
-	//int nr = 0;
-	//while (true) {
-	//	char nrStr[7];
-	//	sprintf(nrStr, "%06d", nr);
-	//	//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
-	//	cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-	//	cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
-
-
-	//	std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
-
-
-
-	//		//hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
-	//		/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
-	//			std::vector<cv::KeyPoint> keypoints;
-
-
-	//			cv::Mat descriptors;
-	//			detector->detect(img, keypoints);
-
-
-	//			//detector->compute(img, keypoints, descriptors);
-
-	//			cv::Mat imgKeypoints;
-	//			cv::drawKeypoints(img, keypoints, imgKeypoints);
-	//			*/
-
-	//			/*cv::Mat depth;
-	//			cvtColor(img, img, CV_BGR2GRAY);
-
-	//			img.convertTo(depth, CV_32FC1, 1 , 0);
-
-	//			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-
-	//			for (int y = 1; y < depth.rows - 1; y++)
-	//			{
-	//				for (int x = 1; x < depth.cols - 1; x++)
-	//				{
-
-	//					Vec3f t(x, y - 1, depth.at<float>(y - 1, x));
-	//					Vec3f l(x - 1, y, depth.at<float>(y, x - 1));
-	//					Vec3f c(x, y, depth.at<float>(y, x));
-
-	//					Vec3f d = (l - c).cross(t - c);
-
-	//					Vec3f n = normalize(d);
-	//					normals.at<Vec3f>(y, x) = n;
-	//				}
-	//			}
-
-	//			*/
-
-	//		cvtColor(img, img, CV_BGR2GRAY);
-	//		cv::Mat lbp = Algorithms::OLBP(img);
-	//		lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
-
-	//		cv::Mat padded;
-	//		int padding = 1;
-	//		padded.create(img.rows,img.cols, lbp.type());
-	//		padded.setTo(cv::Scalar::all(0));
-	//		lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
-
-	//		
-	//		auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
-
-	//		cv::imshow(msg, result.combineHOGImage(img));
-	//	};
-
-	//	func(tp, "TP");
-
-	//	func(tn, "TN");
-
-	//	cv::waitKey(0);
-	//	nr++;
-	//}
-
+	//testFeature();
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	//testClassifier();
 	//saveTNTP();
@@ -554,6 +598,7 @@ int main()
 
 	tester.addAvailableCreator(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight));
 	tester.addAvailableCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
+	tester.addAvailableCreator(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight));
 
 
 

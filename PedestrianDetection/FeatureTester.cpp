@@ -29,7 +29,7 @@ std::vector<ClassifierEvaluation> FeatureTesterJob::run() const {
 	long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 		evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
 	});
-	std::cout << "Evaluation complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
+	std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << this->featureSetName << std::endl;
 	return evaluations;
 }
 

@@ -125,7 +125,7 @@ void ModelEvaluator::train()
 
 	if (!boost->isTrained())
 		throw std::exception("Boost training failed");
-
+	
 	model.boost = boost;
 
 	//auto& roots = boost->getRoots();
@@ -227,7 +227,7 @@ EvaluationResult ModelEvaluator::evaluateFeatures(FeatureVector& v, double value
 		sum += nodes[prev].value;
 	}
 
-	float result = model.boost->predict(v.toMat(), cv::noArray());
+	//float result = model.boost->predict(v.toMat(), cv::noArray());
 
 	return EvaluationResult(sum + valueShift > 0 ? 1 : -1, sum);
 }

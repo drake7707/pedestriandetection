@@ -2105,3 +2105,4 @@ HDD;4408;4337;10623;0;1.000000;0.710094;0.293261;1.000000;0.453521;0.629544;9.80
 Name;TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;EvaluationTimePerWindowMS;ValueShift;
 Name;TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;EvaluationTimePerWindowMS;ValueShift;
 Name;TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;EvaluationTimePerWindowMS;ValueShift;
+Name;TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;EvaluationTimePerWindowMS;ValueShift;

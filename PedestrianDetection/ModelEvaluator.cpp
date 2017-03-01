@@ -234,6 +234,9 @@ EvaluationResult ModelEvaluator::evaluateFeatures(FeatureVector& v, double value
 
 
 void ModelEvaluator::saveModel(std::string& path) {
+	if (!model.boost->isTrained())
+		throw std::exception("Model is not trained");
+
 	std::string filename = path;
 
 	cv::FileStorage fs(filename, cv::FileStorage::WRITE);

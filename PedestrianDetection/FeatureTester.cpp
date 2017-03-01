@@ -144,30 +144,30 @@ void FeatureTester::runJobs(std::string& resultsFile) {
 
 			FeatureTester* ft = this;
 			threads.push_back(std::thread([job, &resultsFileMutex, &resultStream, &semaphore, &ft]() -> void {
-				//	try {
+				try {
 
-				std::cout << "Starting job " << job.featureSetName << std::endl;
-				std::vector<ClassifierEvaluation> results = job.run();
+					std::cout << "Starting job " << job.featureSetName << std::endl;
+					std::vector<ClassifierEvaluation> results = job.run();
 
-				resultsFileMutex.lock();
-				for (auto& eval : results) {
-					resultStream << job.featureSetName << ";";
-					eval.toCSVLine(resultStream, false);
-					resultStream << ";" << std::endl;
+					resultsFileMutex.lock();
+					for (auto& eval : results) {
+						resultStream << job.featureSetName << ";";
+						eval.toCSVLine(resultStream, false);
+						resultStream << ";" << std::endl;
+					}
+
+					std::string name = job.featureSetName;
+					ft->markFeatureSetProcessed(name);
+
+					resultsFileMutex.unlock();
+
+					semaphore.notify();
 				}
-
-				std::string name = job.featureSetName;
-				ft->markFeatureSetProcessed(name);
-
-				resultsFileMutex.unlock();
-
-				semaphore.notify();
-				/*}
 				catch (std::exception e) {
 
 					std::cout << "Error: " << e.what() << std::endl;
 					semaphore.notify();
-				}*/
+				}
 			}));
 		}
 	}

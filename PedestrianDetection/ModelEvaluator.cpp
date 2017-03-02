@@ -1,5 +1,8 @@
 #include "ModelEvaluator.h"
 #include "Helper.h"
+#include <queue>
+
+#include "KITTIDataSet.h"
 
 ModelEvaluator::ModelEvaluator(const TrainingDataSet& trainingDataSet, const FeatureSet& set)
 	: trainingDataSet(trainingDataSet), set(set)
@@ -21,7 +24,7 @@ void ModelEvaluator::train()
 	std::vector<FeatureVector> trueNegativeFeatures;
 
 
-	trainingDataSet.iterateDataSet([](int idx) -> bool { return idx % 2 != 0; },
+	trainingDataSet.iterateDataSet([&](int idx) -> bool { return idx % trainEveryXImage != 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v = set.getFeatures(rgb, depth);
@@ -118,14 +121,14 @@ void ModelEvaluator::train()
 
 	std::cout << "Training boost classifier on " << N << " samples, feature size " << featureSize << std::endl;
 
-	trainingTimeMS = measure<std::chrono::milliseconds>::execution([&]() -> void {
+	double trainingTimeMS = measure<std::chrono::milliseconds>::execution([&]() -> void {
 		boost->train(tdata);
 	});
 	//std::cout << "Done training, took " << trainingTimeMS << "ms" << std::endl;
 
 	if (!boost->isTrained())
 		throw std::exception("Boost training failed");
-	
+
 	model.boost = boost;
 
 	//auto& roots = boost->getRoots();
@@ -143,7 +146,7 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluateDataSet(int nrOfEvalua
 	std::vector<int> nrRegions(nrOfEvaluations, 0);
 	double featureBuildTime = 0;
 
-	trainingDataSet.iterateDataSet([](int idx) -> bool { return idx % 2 == 0; },
+	trainingDataSet.iterateDataSet([&](int idx) -> bool { return idx % trainEveryXImage == 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		FeatureVector v;
@@ -230,6 +233,105 @@ EvaluationResult ModelEvaluator::evaluateFeatures(FeatureVector& v, double value
 	//float result = model.boost->predict(v.toMat(), cv::noArray());
 
 	return EvaluationResult(sum + valueShift > 0 ? 1 : -1, sum);
+}
+
+
+EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOfEvaluations, int trainingRound, float valueShiftForFalsePosOrNegCollection, int maxNrOfFalsePosOrNeg) {
+
+	EvaluationSlidingWindowResult swresult;
+	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation());
+
+	std::vector<double> sumTimes(nrOfEvaluations, 0);
+	std::vector<int> nrRegions(nrOfEvaluations, 0);
+	double featureBuildTime = 0;
+
+	auto comp = [](std::pair<float, SlidingWindowRegion> a, std::pair<float, SlidingWindowRegion> b) { return a.first > b.first; };
+	std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)> worstFalsePositives(comp);
+	std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)> worstFalseNegatives(comp);
+
+
+	trainingDataSet.iterateDataSetWithSlidingWindow([&](int idx) -> bool { return (idx + trainingRound) % slidingWindowEveryXImage == 0; },
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb) -> void {
+
+		FeatureVector v;
+		featureBuildTime += measure<std::chrono::milliseconds>::execution([&]() -> void {
+			v = set.getFeatures(rgb, depth);
+			v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
+		});
+
+		// get datapoints, ranging from -10 to 10
+		for (int i = 0; i < nrOfEvaluations; i++)
+		{
+			double valueShift = 1.0 * i / nrOfEvaluations * 20 - 10;
+			swresult.evaluations[i].valueShift = valueShift;
+			sumTimes[i] += measure<std::chrono::milliseconds>::execution([&]() -> void {
+
+				EvaluationResult result = evaluateFeatures(v, valueShift);
+				bool correct;
+				if (resultClass == result.resultClass) {
+					if (resultClass == -1)
+						swresult.evaluations[i].nrOfTrueNegatives++;
+					else {
+						swresult.evaluations[i].nrOfTruePositives++;
+						if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
+							cv::rectangle(fullrgb, region, cv::Scalar(0, 255, 0), 1);
+					}
+
+					correct = true;
+				}
+				else {
+					if (resultClass == -1 && result.resultClass == 1) {
+						swresult.evaluations[i].nrOfFalsePositives++;
+
+						if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
+							cv::rectangle(fullrgb, region, cv::Scalar(0, 0, 255), 1);
+					}
+					else
+						swresult.evaluations[i].nrOfFalseNegatives++;
+
+					correct = false;
+				}
+
+				if (valueShift == valueShiftForFalsePosOrNegCollection && !correct) {
+					if (result.resultClass == 1) {
+						worstFalsePositives.push(std::pair<int, SlidingWindowRegion>(result.rawResponse, SlidingWindowRegion(imageNumber, region)));
+
+						if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
+							worstFalsePositives.pop();
+					}
+					else {
+						worstFalseNegatives.push(std::pair<int, SlidingWindowRegion>(result.rawResponse, SlidingWindowRegion(imageNumber, region)));
+						if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
+							worstFalsePositives.pop();
+					}
+				}
+			});
+			nrRegions[i]++;
+		}
+
+
+	});
+	for (int i = 0; i < nrOfEvaluations; i++)
+		swresult.evaluations[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes[i]) / nrRegions[i];
+
+
+	swresult.worstFalsePositives.reserve(worstFalsePositives.size());
+	swresult.worstFalseNegatives.reserve(worstFalseNegatives.size());
+	
+	while (worstFalsePositives.size() > 0) {
+		auto pair = worstFalsePositives.top();
+		worstFalsePositives.pop();
+		std::cout << "Worst FP region score= " << pair.first << " image= " << pair.second.imageNumber << " bbox=" << pair.second.bbox.x << "," << pair.second.bbox.y << " " << pair.second.bbox.width << "x" << pair.second.bbox.height << std::endl;
+		swresult.worstFalsePositives.push_back(pair.second);
+	}
+	while (worstFalseNegatives.size() > 0) {
+		auto pair = worstFalseNegatives.top();
+		worstFalseNegatives.pop();
+		std::cout << "Worst FN region score= " << pair.first << " image= " << pair.second.imageNumber << " bbox=" << pair.second.bbox.x << "," << pair.second.bbox.y << " " << pair.second.bbox.width << "x" << pair.second.bbox.height << std::endl;
+		swresult.worstFalseNegatives.push_back(pair.second);
+	}
+	
+	return swresult;
 }
 
 

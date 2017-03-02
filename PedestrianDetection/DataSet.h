@@ -13,7 +13,7 @@ public:
 
 	virtual std::vector<DataSetLabel> getLabels() const = 0;
 
-	virtual std::vector<cv::Mat> getImagesForNumber(const std::string& number) const = 0;
+	virtual std::vector<cv::Mat> getImagesForNumber(int number) const = 0;
 
 };
 

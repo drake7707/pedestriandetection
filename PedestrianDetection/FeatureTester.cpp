@@ -25,7 +25,7 @@ std::vector<ClassifierEvaluation> FeatureTesterJob::run() const {
 	// save it to a file
 	evaluator.saveModel("models\\" + this->featureSetName + ".xml");
 
-	std::cout << "Started evaluation of" << this->featureSetName << std::endl;
+	std::cout << "Started evaluation of " << this->featureSetName << std::endl;
 	long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 		evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
 	});

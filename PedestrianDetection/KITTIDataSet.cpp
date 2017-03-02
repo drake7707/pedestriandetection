@@ -47,12 +47,23 @@ std::vector<DataSetLabel> KITTIDataSet::getLabels() const {
 	return labels;
 }
 
-std::vector<cv::Mat> KITTIDataSet::getImagesForNumber(const std::string& number) const {
-	std::string rgbPath = folderPath + PATH_SEPARATOR + "rgb" + PATH_SEPARATOR + number + ".png";
-	std::string depthPath = folderPath + PATH_SEPARATOR + "depth" + PATH_SEPARATOR + number + ".png";
+std::vector<cv::Mat> KITTIDataSet::getImagesForNumber(int number) const {
+	char nrStr[7];
+	sprintf(nrStr, "%06d", number);
+
+	std::string rgbPath = folderPath + PATH_SEPARATOR + "rgb" + PATH_SEPARATOR + nrStr + ".png";
+	std::string depthPath = folderPath + PATH_SEPARATOR + "depth" + PATH_SEPARATOR + nrStr + ".png";
 
 	cv::Mat rgb = cv::imread(rgbPath);
-	cv::Mat depth = cv::imread(depthPath);
+	cv::Mat depth = cv::imread(depthPath, CV_LOAD_IMAGE_UNCHANGED);
+	depth.convertTo(depth, CV_32FC1, 1.0 / 0xFFFF, 0);
+
+	if (rgb.rows == 0 || rgb.cols == 0) {
+		throw std::exception(std::string("RGB image " + rgbPath + " is corrupt").c_str());
+	}
+	if (depth.rows == 0 || depth.cols == 0) {
+		throw std::exception(std::string("Depth image " + depthPath + " is corrupt").c_str());
+	}
 
 	return{ rgb, depth };
 }

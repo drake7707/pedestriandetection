@@ -1,17 +1,29 @@
 #include "TrainingDataSet.h"
 #include <fstream>
 #include "Helper.h"
+#include "KITTIDataSet.h"
 
 
 TrainingDataSet::TrainingDataSet(std::string& baseDataSetPath)
 	: baseDataSetPath(baseDataSetPath)
 {
 }
-
+TrainingDataSet::TrainingDataSet(const TrainingDataSet& dataSet) {
+	this->baseDataSetPath = dataSet.baseDataSetPath;
+	this->images = dataSet.images;
+}
 
 TrainingDataSet::~TrainingDataSet()
 {
 }
+
+void TrainingDataSet::addTrainingRegion(int imageNumber,TrainingRegion& region)
+{
+	auto& img = images.find(imageNumber);
+	if (img != images.end())
+		img->second.regions.push_back(region);
+}
+
 
 void TrainingDataSet::addTrainingImage(TrainingImage & img)
 {
@@ -72,32 +84,18 @@ void TrainingDataSet::load(std::string & path)
 }
 
 void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth)> func) const {
+
+	KITTIDataSet dataSet(baseDataSetPath);
+
 	int idx = 0;
 	for (auto& pair : images) {
 
 		if (canSelectFunc(pair.first)) {
-			char nrStr[7];
-			sprintf(nrStr, "%06d", pair.second.number);
-
-			std::string rgbPath = baseDataSetPath + PATH_SEPARATOR + "rgb" + PATH_SEPARATOR + nrStr + ".png";
-			std::string depthPath = baseDataSetPath + PATH_SEPARATOR + "depth" + PATH_SEPARATOR + nrStr + ".png";
-
-			cv::Mat rgb = cv::imread(rgbPath);
-			cv::Mat depth = cv::imread(depthPath, CV_LOAD_IMAGE_UNCHANGED);
-			depth.convertTo(depth, CV_32FC1, 1.0 / 0xFFFF, 0);
-
-
-			if (rgb.rows == 0 || rgb.cols == 0) {
-				throw std::exception(std::string("RGB image " + rgbPath + " is corrupt").c_str());
-			}
-			if (depth.rows == 0 || depth.cols == 0) {
-				throw std::exception(std::string("Depth image " + depthPath + " is corrupt").c_str());
-			}
+			auto imgs = dataSet.getImagesForNumber(pair.first);
+			cv::Mat rgb = imgs[0];
+			cv::Mat depth = imgs[1];
 
 			for (auto& r : pair.second.regions) {
-				
-
-
 
 				cv::Mat regionRGB;
 				cv::resize(rgb(r.region), regionRGB, cv::Size2d(refWidth, refHeight));
@@ -118,6 +116,59 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 			}
 		}
 	}
+}
+
+
+void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb)> func) const {
+
+	KITTIDataSet dataSet(baseDataSetPath);
+	int idx = 0;
+	for (auto& pair : images) {
+
+		if (canSelectFunc(pair.first)) {
+			auto imgs = dataSet.getImagesForNumber(pair.first);
+			cv::Mat mRGB = imgs[0];
+			cv::Mat mDepth = imgs[1];
+
+
+			std::vector<cv::Rect> truePositiveRegions;
+			for (auto& r : pair.second.regions) {
+				if (r.regionClass == 1)
+					truePositiveRegions.push_back(r.region);
+			}
+
+			cv::Mat tmp = mRGB.clone();
+			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
+				cv::Mat regionRGB;
+				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+
+				cv::Mat regionDepth;
+				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+
+
+				int resultClass = -1;
+				bool overlapsWithTruePositive = false;
+				for (int i = 0; i < truePositiveRegions.size() && !overlapsWithTruePositive; i++)
+				{
+					cv::Rect tp = truePositiveRegions[i];
+					double intersectionRect = (tp & bbox).area();
+					double unionRect = (tp | bbox).area();
+					if (unionRect > 0 && intersectionRect / unionRect > 0.5) {
+						resultClass = 1;
+						overlapsWithTruePositive = true;
+					}
+
+				}
+				func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp);
+				idx++;
+			}, 0.5, 2, 16);
+			//cv::imshow("Temp", tmp);
+			//cv::waitKey(0);
+
+
+		}
+	}
+
 }
 
 std::string TrainingDataSet::getBaseDataSetPath() const

@@ -38,11 +38,12 @@ int ceilTo(double val, double target) {
 	return ceil(val / target) * target;
 }
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect2d bbox)> func, double minScaleReduction , double maxScaleReduction, int slidingWindowStep, int refWidth, int refHeight) {
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, double minScaleReduction , double maxScaleReduction, int slidingWindowStep, int refWidth, int refHeight) {
 	int slidingWindowWidth = 64;
 	int slidingWindowHeight = 128;
 //	int slidingWindowStep = 8;
 
+	double topOffset = 0.3 * imgHeight;
 
 	double invscale = minScaleReduction;
 	while (invscale < maxScaleReduction) {
@@ -50,14 +51,15 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect2d bbox
 		double iHeight = 1.0* imgHeight / invscale;
 		double rectWidth = 1.0 * slidingWindowWidth / invscale;
 		double rectHeight = 1.0 * slidingWindowHeight / invscale;
-		for (double j  = 0; j < imgHeight - rectHeight; j += slidingWindowStep / invscale) {
+		
+		for (double j  = topOffset; j < imgHeight - rectHeight; j += slidingWindowStep / invscale) {
 			for (double i  = 0; i < imgWidth - rectWidth; i += slidingWindowStep / invscale) {
 				
 				cv::Rect windowRect(i,j,rectWidth, rectHeight);
 				func(windowRect);
 			}
 		}
-		invscale *= 2;
+		invscale *=2;
 	}
 }
 

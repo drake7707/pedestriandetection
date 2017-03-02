@@ -153,8 +153,10 @@ namespace hog {
 								tEnd += CV_PI / binSize;
 							}*/
 
-						histogram[bin1] += magPixel * (tEnd - anglePixel) / (tEnd - tBegin);
-						histogram[bin2] += magPixel * (anglePixel - tBegin) / (tEnd - tBegin);
+						// linear interpolation [ u ][ 1-u ]
+						float u = (tEnd - anglePixel) / (tEnd - tBegin);
+						histogram[bin1] += magPixel * u;
+						histogram[bin2] += magPixel * (1 - u);
 
 
 					}
@@ -317,8 +319,9 @@ namespace hog {
 						float tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
 						float tEnd = bin2 == 0 ? max : bin2 * max / binSize;
 
-						histogram[bin1] += weight * (tEnd - anglePixel) / (tEnd - tBegin);
-						histogram[bin2] += weight * (anglePixel - tBegin) / (tEnd - tBegin);
+						float u = (tEnd - anglePixel) / (tEnd - tBegin);
+						histogram[bin1] += weight * u;
+						histogram[bin2] += weight * (1 - u);
 					}
 				}
 			}

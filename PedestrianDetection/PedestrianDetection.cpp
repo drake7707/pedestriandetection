@@ -134,22 +134,21 @@ TrainingDataSet saveTNTP() {
 
 
 	std::vector<DataSetLabel> labels = dataSet.getLabels();
-	
+
 	std::vector<std::vector<DataSetLabel>> labelsPerNumber(dataSet.getNrOfImages(), std::vector<DataSetLabel>());
 	for (auto& l : labels)
 		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
 
 	int sizeVariance = 4;
 	int nrOfTNPerImage = 2;
-	
+
 	for (int i = 0; i < labelsPerNumber.size(); i++)
 	{
 		TrainingImage tImg;
 		tImg.number = i;
 
-		char nrStr[7];
-		sprintf(nrStr, "%06d", i);
-		std::vector<cv::Mat> currentImages = dataSet.getImagesForNumber(nrStr);
+		
+		std::vector<cv::Mat> currentImages = dataSet.getImagesForNumber(i);
 		std::vector<cv::Rect2d> selectedRegions;
 
 		for (auto& l : labelsPerNumber[i]) {
@@ -166,7 +165,7 @@ TrainingDataSet saveTNTP() {
 			}
 		}
 
-		
+
 		for (int k = 0; k < nrOfTNPerImage; k++)
 		{
 			cv::Mat rgbTN;
@@ -195,50 +194,145 @@ TrainingDataSet saveTNTP() {
 
 		trainingSet.addTrainingImage(tImg);
 	}
-	
+
 	return trainingSet;
 }
 
 
 
-void testClassifier() {
-	FeatureSet testSet;
-	/*testSet.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	testSet.addCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));*/
-	testSet.addCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+void trainDetailedClassifier() {
+
 	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(std::string("train0.txt"));
 
-	ModelEvaluator model(tSet, testSet);
+	FeatureSet setFinal;
+	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	setFinal.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
+	
+	ModelEvaluator modelFinal(tSet, setFinal);
+	modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB).xml"));
 
-	//model.train();
-	//model.saveModel(std::string("testmodel.xml"));
-	model.loadModel(std::string("testmodel.xml"));
+
+	int trainingRound = 1;
+	// parameters, number of additional TN/TP
+	std::ofstream str("results\\round1.csv");
+	EvaluationSlidingWindowResult result = modelFinal.evaluateWithSlidingWindow(100, trainingRound, 0, 1000);
+	for (auto& result : result.evaluations) {
+		result.toCSVLine(str, false);
+		str << std::endl;
+	}
+
+	TrainingDataSet newTrainingSet = tSet;
+	for (auto& swregion : result.worstFalsePositives) {
+
+		TrainingRegion r;
+		r.region = swregion.bbox;
+		r.regionClass = -1; // it was a negative but positive was specified
+		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+	}
+
+	for (auto& swregion : result.worstFalseNegatives) {
+
+		TrainingRegion r;
+		r.region = swregion.bbox;
+		r.regionClass = 1; // it was a positive but negative was specified
+		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+	}
+	newTrainingSet.save("train" + std::to_string(trainingRound) + ".txt");
+}
+
+void testClassifier() {
+
+	TrainingDataSet tSet(kittiDatasetPath);
+	tSet.load(std::string("train0.txt"));
+
+
+	std::vector<FeatureSet> cascadeFeatureSets;
+	std::vector<ModelEvaluator> cascadeEvaluators;
+	std::vector<double> valueShifts;
+
+	//FeatureSet set2;
+	//set2.addCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
+	//cascadeFeatureSets.push_back(set2);
+	//ModelEvaluator model2(tSet, set2);
+	//model2.loadModel(std::string("models\\Histogram(Depth).xml"));
+	//cascadeEvaluators.push_back(model2);
+	//valueShifts.push_back(7);
+
+
+
+	//FeatureSet set1;
+	//set1.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
+	//cascadeFeatureSets.push_back(set1);
+	//ModelEvaluator model1(tSet, set1);
+	//model1.loadModel(std::string("models\\LBP(RGB).xml"));
+	//cascadeEvaluators.push_back(model1);
+	//valueShifts.push_back(7.4);
+
+
+	FeatureSet setFinal;
+	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	setFinal.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
+	cascadeFeatureSets.push_back(setFinal);
+	ModelEvaluator modelFinal(tSet, setFinal);
+	modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB).xml"));
+	cascadeEvaluators.push_back(modelFinal);
+	valueShifts.push_back(2.2);
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
 
-	cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");
-	cv::Mat mDepth = cv::imread(kittiDatasetPath + "\\depth\\000000.png");
-	mDepth.convertTo(mDepth, CV_32FC1, 1.0 / 0xFFFF, 0);
+	int nr = 0;
+	while (true) {
+		char nrStr[7];
+		sprintf(nrStr, "%06d", nr);
 
-	slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect2d bbox) -> void {
-		cv::Mat regionRGB;
-		cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+		cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\rgb\\" + nrStr + ".png");
+		cv::Mat mDepth = cv::imread(kittiDatasetPath + "\\depth\\" + nrStr + ".png");
+		mDepth.convertTo(mDepth, CV_32FC1, 1.0 / 0xFFFF, 0);
 
-		cv::Mat regionDepth;
-		cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
 
-		FeatureVector v = testSet.getFeatures(regionRGB, regionDepth);
-		EvaluationResult result = model.evaluateWindow(regionRGB, regionDepth, -5);
-		if (result.resultClass == 1 && result.rawResponse > 8)
-			cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
-		
-	}, 0.5,1, 8);
-	cv::imshow("Test", mRGB);
+		int nrOfWindowsEvaluated = 0;
+		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 
-	// this will leak because creators are never disposed!
-	cv::waitKey(0);
+
+
+			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
+				cv::Mat regionRGB;
+				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+
+				cv::Mat regionDepth;
+				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+
+				bool isPositive = true;
+				for (int i = 0; i < cascadeEvaluators.size(); i++)
+				{
+					FeatureVector v = cascadeFeatureSets[i].getFeatures(regionRGB, regionDepth);
+					EvaluationResult result = cascadeEvaluators[i].evaluateWindow(regionRGB, regionDepth, valueShifts[i]);
+					if (result.resultClass == -1) {
+						isPositive = false;
+						break;
+					}
+
+				}
+
+				if (isPositive)
+					cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
+
+				nrOfWindowsEvaluated++;
+			}, 0.5, 2, 16);
+
+		});
+
+		cv::imshow("Test", mRGB);
+
+		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " in " << slidingWindowTime << "ms" << std::endl;
+		// this will leak because creators are never disposed!
+		cv::waitKey(0);
+		nr++;
+	}
 }
 
 
@@ -363,6 +457,7 @@ void testFeature() {
 
 int main()
 {
+	trainDetailedClassifier();
 	//testFeature();
 	/*TrainingDataSet tSet = saveTNTP();
 
@@ -372,7 +467,7 @@ int main()
 	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(std::string("train0.txt"));
 
-	//testClassifier();
+
 	//testFeature();
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
 	//testClassifier();
@@ -696,3 +791,5 @@ Mat watershedWithMarkers(Mat input) {
 
 	return wshed;
 }
+
+

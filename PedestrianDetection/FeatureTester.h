@@ -17,11 +17,12 @@ class FeatureTesterJob {
 
 	FeatureSet featureSet;
 	int nrOfEvaluations;
+	int nrOfTrainingRounds;
 
 public:
 	std::string featureSetName;
 
-	FeatureTesterJob(std::string& featureSetName, FeatureSet& set, TrainingDataSet& trainingDataSet, int nrOfEvaluations);
+	FeatureTesterJob(std::string& featureSetName, FeatureSet& set, TrainingDataSet& trainingDataSet, int nrOfEvaluations, int nrOfTrainingRounds);
 	std::vector<ClassifierEvaluation> run() const;
 
 };
@@ -51,7 +52,7 @@ public:
 	void addAvailableCreator(IFeatureCreator* creator);
 	std::vector<IFeatureCreator*> getAvailableCreators() const;
 
-	void addJob(std::set<std::string>& set, int nrOfEvaluations);
+	void addJob(std::set<std::string>& set, int nrOfEvaluations, int nrOfTrainingRounds = 1);
 
 	void runJobs(std::string& resultsFile = std::string("results.csv"));
 };

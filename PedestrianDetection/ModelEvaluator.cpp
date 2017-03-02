@@ -273,8 +273,8 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 						swresult.evaluations[i].nrOfTrueNegatives++;
 					else {
 						swresult.evaluations[i].nrOfTruePositives++;
-						if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
-							cv::rectangle(fullrgb, region, cv::Scalar(0, 255, 0), 1);
+						//if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
+						//	cv::rectangle(fullrgb, region, cv::Scalar(0, 255, 0), 1);
 					}
 
 					correct = true;
@@ -283,8 +283,8 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 					if (resultClass == -1 && result.resultClass == 1) {
 						swresult.evaluations[i].nrOfFalsePositives++;
 
-						if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
-							cv::rectangle(fullrgb, region, cv::Scalar(0, 0, 255), 1);
+						//if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
+						//	cv::rectangle(fullrgb, region, cv::Scalar(0, 0, 255), 1);
 					}
 					else
 						swresult.evaluations[i].nrOfFalseNegatives++;
@@ -294,13 +294,14 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 
 				if (valueShift == valueShiftForFalsePosOrNegCollection && !correct) {
 					if (result.resultClass == 1) {
-						worstFalsePositives.push(std::pair<int, SlidingWindowRegion>(result.rawResponse, SlidingWindowRegion(imageNumber, region)));
-
+						worstFalsePositives.push(std::pair<int, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
+						// smallest numbers will be popped
 						if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
 							worstFalsePositives.pop();
 					}
 					else {
-						worstFalseNegatives.push(std::pair<int, SlidingWindowRegion>(result.rawResponse, SlidingWindowRegion(imageNumber, region)));
+						worstFalseNegatives.push(std::pair<int, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
+						// smallest numbers will be popped
 						if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
 							worstFalsePositives.pop();
 					}

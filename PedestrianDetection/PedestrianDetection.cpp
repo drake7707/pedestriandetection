@@ -202,19 +202,21 @@ TrainingDataSet saveTNTP() {
 
 void trainDetailedClassifier() {
 
+	int trainingRound = 1;
 	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(std::string("train0.txt"));
 
+	std::string featureSetName = "HoG(Depth)+HoG(RGB)+LBP(RGB)";
 	FeatureSet setFinal;
 	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
 	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
 	setFinal.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
 	
 	ModelEvaluator modelFinal(tSet, setFinal);
-	modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB).xml"));
+	modelFinal.loadModel(std::string("models\\" + featureSetName + ".xml"));
 
 
-	int trainingRound = 1;
+	
 	// parameters, number of additional TN/TP
 	std::ofstream str("results\\round1.csv");
 	EvaluationSlidingWindowResult result = modelFinal.evaluateWithSlidingWindow(100, trainingRound, 0, 1000);
@@ -239,7 +241,7 @@ void trainDetailedClassifier() {
 		r.regionClass = 1; // it was a positive but negative was specified
 		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
 	}
-	newTrainingSet.save("train" + std::to_string(trainingRound) + ".txt");
+	newTrainingSet.save(featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
 }
 
 void testClassifier() {

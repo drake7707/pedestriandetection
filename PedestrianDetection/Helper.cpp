@@ -102,3 +102,8 @@ void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int i
 		i++;
 	}
 }
+
+bool FileExists(const std::string &Filename)
+{
+	return access(Filename.c_str(), 0) == 0;
+}

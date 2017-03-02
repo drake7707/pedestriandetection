@@ -13,7 +13,12 @@
 #else 
 #define PATH_SEPARATOR "/" 
 #endif 
-
+#ifdef _WIN32
+#include <io.h> 
+#define access    _access_s
+#else
+#include <unistd.h>
+#endif
 
 void showHistogram(Histogram& hist, std::string title = "Histogram");
 
@@ -25,6 +30,10 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func);
 
+
+
+
+bool FileExists(const std::string &Filename);
 
 template<typename TimeT = std::chrono::milliseconds>
 struct measure

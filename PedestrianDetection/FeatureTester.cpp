@@ -5,8 +5,8 @@
 
 
 
-FeatureTesterJob::FeatureTesterJob(std::string& featureSetName, FeatureSet& set, TrainingDataSet& trainingDataSet, int nrOfEvaluations)
-	: featureSetName(featureSetName), featureSet(set), trainingDataSet(trainingDataSet), nrOfEvaluations(nrOfEvaluations) {
+FeatureTesterJob::FeatureTesterJob(std::string& featureSetName, FeatureSet& set, TrainingDataSet& trainingDataSet, int nrOfEvaluations, int nrOfTrainingRounds)
+	: featureSetName(featureSetName), featureSet(set), trainingDataSet(trainingDataSet), nrOfEvaluations(nrOfEvaluations), nrOfTrainingRounds(nrOfTrainingRounds) {
 
 }
 
@@ -16,14 +16,21 @@ std::vector<ClassifierEvaluation> FeatureTesterJob::run() const {
 
 	ModelEvaluator evaluator(trainingDataSet, featureSet);
 
-	std::cout << "Started training of " << this->featureSetName << std::endl;
-	long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-		evaluator.train();
-	});
-	std::cout << "Training complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
+	if (FileExists("models\\" + this->featureSetName + ".xml")) {
+		std::cout << "Skipped training of " << this->featureSetName << ", loading from existing model instead" << std::endl;
+		evaluator.loadModel("models\\" + this->featureSetName + ".xml");
+	}
+	else {
+		std::cout << "Started training of " << this->featureSetName << std::endl;
+		long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			evaluator.train();
+		});
+		std::cout << "Training complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
 
-	// save it to a file
-	evaluator.saveModel("models\\" + this->featureSetName + ".xml");
+		// save it to a file
+		evaluator.saveModel("models\\" + this->featureSetName + ".xml");
+	}
+
 
 	std::cout << "Started evaluation of " << this->featureSetName << std::endl;
 	long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
@@ -93,7 +100,7 @@ std::vector<IFeatureCreator*> FeatureTester::getAvailableCreators() const {
 	return items;
 }
 
-void FeatureTester::addJob(std::set<std::string>& set, int nrOfEvaluations) {
+void FeatureTester::addJob(std::set<std::string>& set, int nrOfEvaluations, int nrOfTrainingRounds) {
 	FeatureSet featureSet;
 	std::string featureSetName("");
 	for (auto& name : set) {
@@ -108,7 +115,7 @@ void FeatureTester::addJob(std::set<std::string>& set, int nrOfEvaluations) {
 			featureSetName += name;
 	}
 
-	FeatureTesterJob job(featureSetName, featureSet, trainingDataSet, nrOfEvaluations);
+	FeatureTesterJob job(featureSetName, featureSet, trainingDataSet, nrOfEvaluations, nrOfTrainingRounds);
 	jobs.push(job);
 }
 

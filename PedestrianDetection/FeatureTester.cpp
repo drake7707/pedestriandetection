@@ -34,7 +34,7 @@ void FeatureTesterJob::run() const {
 	trainingDataSet.load(trainingRound == 0 ? (std::string("trainingsets") + PATH_SEPARATOR + "train0.txt") : (std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt"));
 
 	while (trainingRound < nrOfTrainingRounds) {
-		// ---------------- Build a feature set -----------------------
+		// ---------------- Build a feature set & prepare variable feature creators --------------------
 		FeatureSet featureSet;
 		for (auto& name : set) {
 			FactoryCreator creator = creators.find(name)->second;
@@ -43,11 +43,6 @@ void FeatureTesterJob::run() const {
 			if (dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()) != nullptr)
 				(dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()))->prepare(trainingDataSet, trainingRound);
 			featureSet.addCreator(std::move(featureCreator));
-
-			if (name != *(set.begin()))
-				featureSetName += "+" + name;
-			else
-				featureSetName += name;
 		}
 
 		ModelEvaluator evaluator(trainingDataSet, featureSet);
@@ -116,7 +111,7 @@ void FeatureTesterJob::run() const {
 			r.regionClass = 1; // it was a positive but negative was specified
 			newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
 		}
-		newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
+		newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound+1) + ".txt");
 		trainingDataSet = newTrainingSet;
 
 

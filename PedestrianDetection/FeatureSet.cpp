@@ -13,12 +13,12 @@ FeatureSet::~FeatureSet()
 }
 
 void FeatureSet::addCreator(std::unique_ptr<IFeatureCreator> creator) {
-//	this->creators.push_back(std::move(creator));
+	this->creators.push_back(std::move(creator));
 }
 
 FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 	if (creators.size() == 0)
-		throw std::exception("No feature creates were present");
+		throw std::exception("No feature creators were present");
 
 	FeatureVector v = creators[0]->getFeatures(rgb, depth);
 	for (int i = 1; i < creators.size(); i++)

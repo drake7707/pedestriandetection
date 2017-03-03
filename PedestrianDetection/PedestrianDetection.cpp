@@ -478,7 +478,7 @@ int main()
 	//saveTNTP();
 	//return 0;
 
-	int nrOfEvaluations = 100;
+	int nrOfEvaluations = 500;
 	std::set<std::string> set;
 
 
@@ -518,37 +518,42 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, patchSize, 20, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight))); }));
 
+
+	set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
+	tester.runJobs();
+
 	//evaluate each creator individually
-	for (auto& name : tester.getFeatureCreatorFactories()) {
-		set = { name };
-		tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
-	}
-	tester.runJobs();
+	//for (auto& name : tester.getFeatureCreatorFactories()) {
+	//	set = { name };
+	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
+	//}
+	//tester.runJobs();
 
-	// evaluate each creator combined with HOG(RGB)
-	for (auto& name : tester.getFeatureCreatorFactories()) {
-		if (name != "HoG(RGB)") {
-			set = { "HoG(RGB)", name };
-			tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
-		}
-	}
-	tester.runJobs();
+	//// evaluate each creator combined with HOG(RGB)
+	//for (auto& name : tester.getFeatureCreatorFactories()) {
+	//	if (name != "HoG(RGB)") {
+	//		set = { "HoG(RGB)", name };
+	//		tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
+	//	}
+	//}
+	//tester.runJobs();
 
-	for (auto& name : tester.getFeatureCreatorFactories()) {
-		if (name != "HoG(RGB)" && name != "HoG(Depth)") {
-			set = { "HoG(Depth)", "HoG(RGB)", name };
-			tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
-		}
-	}
-	tester.runJobs();
+	//for (auto& name : tester.getFeatureCreatorFactories()) {
+	//	if (name != "HoG(RGB)" && name != "HoG(Depth)") {
+	//		set = { "HoG(Depth)", "HoG(RGB)", name };
+	//		tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
+	//	}
+	//}
+	//tester.runJobs();
 
-	for (auto& name : tester.getFeatureCreatorFactories()) {
-		if (name != "HoG(RGB)" && name != "HoG(Depth)" && name != "LBP(RGB)") {
-			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  name };
-			tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
-		}
-	}
-	tester.runJobs();
+	//for (auto& name : tester.getFeatureCreatorFactories()) {
+	//	if (name != "HoG(RGB)" && name != "HoG(Depth)" && name != "LBP(RGB)") {
+	//		set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  name };
+	//		tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
+	//	}
+	//}
+	//tester.runJobs();
 
 	/*
 
@@ -604,7 +609,7 @@ int main()
 	//}
 
 
-	//getchar();
+	getchar();
 	return 0;
 }
 

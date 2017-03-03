@@ -15,7 +15,7 @@ VariableNumberFeatureCreator::~VariableNumberFeatureCreator()
 void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, int trainingRound) {
 
 	// try and load first
-	std::string featureCachePath = trainingRound == 0 ? std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml" : std::string("featurecache") + PATH_SEPARATOR + getName() + "_round" + std::to_string(trainingRound) + ".xml";
+	std::string featureCachePath = trainingRound == 0 ? (std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml") : (std::string("featurecache") + PATH_SEPARATOR + getName() + "_round" + std::to_string(trainingRound) + ".xml");
 	loadCentroids(featureCachePath);
 	if (centroids.size() > 0)
 		return;

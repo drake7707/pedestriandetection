@@ -16,7 +16,7 @@ void FeatureTesterJob::run() {
 	int trainingRound = 0;
 
 	// ---------------- Load a training set -----------------------
-	TrainingDataSet trainingDataSet(trainingRound == 0 ? std::string("trainingsets\\train0.txt") : "trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
+	TrainingDataSet trainingDataSet(trainingRound == 0 ? (std::string("trainingsets") + PATH_SEPARATOR + "train0.txt") : (std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt"));
 
 	while (trainingRound < nrOfTrainingRounds) {
 		// ---------------- Build a feature set -----------------------
@@ -39,7 +39,7 @@ void FeatureTesterJob::run() {
 		ModelEvaluator evaluator(trainingDataSet, featureSet);
 
 		// ---------------- Training -----------------------
-		std::string modelFile = trainingRound == 0 ? "models\\" + this->featureSetName + ".xml" : "models\\" + this->featureSetName + "_round" + std::to_string(trainingRound) + ".xml";
+		std::string modelFile = trainingRound == 0 ? std::string("models") + PATH_SEPARATOR + this->featureSetName + ".xml" : std::string("models") + PATH_SEPARATOR + this->featureSetName + "_round" + std::to_string(trainingRound) + ".xml";
 		if (FileExists(modelFile)) {
 			std::cout << "Skipped training of " << this->featureSetName << ", loading from existing model instead" << std::endl;
 			evaluator.loadModel(modelFile);
@@ -61,8 +61,9 @@ void FeatureTesterJob::run() {
 		long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 			evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
 		});
-		std::ofstream str("results\\" + featureSetName + "_round" + std::to_string(trainingRound) + ".csv");
+		std::ofstream str(std::string("results") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(trainingRound) + ".csv");
 		for (auto& result : evaluations) {
+			str << featureSetName << "_round" << trainingRound << ";";
 			result.toCSVLine(str, false);
 			str << std::endl;
 		}
@@ -75,8 +76,9 @@ void FeatureTesterJob::run() {
 		});
 		std::cout << "Evaluation of sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << this->featureSetName << std::endl;
 
-		str = std::ofstream("results\\" + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv");
+		str = std::ofstream(std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv");
 		for (auto& result : result.evaluations) {
+			str << featureSetName << "[S]_round" << trainingRound << ";";
 			result.toCSVLine(str, false);
 			str << std::endl;
 		}
@@ -98,7 +100,7 @@ void FeatureTesterJob::run() {
 			r.regionClass = 1; // it was a positive but negative was specified
 			newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
 		}
-		newTrainingSet.save("trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
+		newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
 		trainingDataSet = newTrainingSet;
 
 

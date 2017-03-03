@@ -204,22 +204,23 @@ void trainDetailedClassifier() {
 
 	int trainingRound = 1;
 	TrainingDataSet tSet(kittiDatasetPath);
-	tSet.load(std::string("train0.txt"));
+	tSet.load(std::string("trainingsets\\train0.txt"));
 
 	std::string featureSetName = "HoG(Depth)+HoG(RGB)+LBP(RGB)";
 	FeatureSet setFinal;
-	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
-	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	setFinal.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
-	
+
+	/*setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
+	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
+	*/
 	ModelEvaluator modelFinal(tSet, setFinal);
 	modelFinal.loadModel(std::string("models\\" + featureSetName + ".xml"));
 
 
 	
 	// parameters, number of additional TN/TP
-	std::ofstream str("results\\round1.csv");
-	EvaluationSlidingWindowResult result = modelFinal.evaluateWithSlidingWindow(100, trainingRound, 0, 1000);
+	std::ofstream str("results\\" + featureSetName + "_round" + std::to_string(trainingRound) + ".csv");
+	EvaluationSlidingWindowResult result = modelFinal.evaluateWithSlidingWindow(500, trainingRound, 0, 1000);
 	for (auto& result : result.evaluations) {
 		result.toCSVLine(str, false);
 		str << std::endl;
@@ -241,100 +242,101 @@ void trainDetailedClassifier() {
 		r.regionClass = 1; // it was a positive but negative was specified
 		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
 	}
-	newTrainingSet.save(featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
+	newTrainingSet.save("trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
 }
 
 void testClassifier() {
 
-	TrainingDataSet tSet(kittiDatasetPath);
-	tSet.load(std::string("train0.txt"));
-
-
-	std::vector<FeatureSet> cascadeFeatureSets;
-	std::vector<ModelEvaluator> cascadeEvaluators;
-	std::vector<double> valueShifts;
-
-	//FeatureSet set2;
-	//set2.addCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
-	//cascadeFeatureSets.push_back(set2);
-	//ModelEvaluator model2(tSet, set2);
-	//model2.loadModel(std::string("models\\Histogram(Depth).xml"));
-	//cascadeEvaluators.push_back(model2);
-	//valueShifts.push_back(7);
-
-
-
-	//FeatureSet set1;
-	//set1.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
-	//cascadeFeatureSets.push_back(set1);
-	//ModelEvaluator model1(tSet, set1);
-	//model1.loadModel(std::string("models\\LBP(RGB).xml"));
-	//cascadeEvaluators.push_back(model1);
-	//valueShifts.push_back(7.4);
-
-
-	FeatureSet setFinal;
-	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
-	setFinal.addCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	setFinal.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
-	cascadeFeatureSets.push_back(setFinal);
-	ModelEvaluator modelFinal(tSet, setFinal);
-	modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB).xml"));
-	cascadeEvaluators.push_back(modelFinal);
-	valueShifts.push_back(2.2);
-
-	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
-	eval.print(std::cout);*/
-
-	int nr = 0;
-	while (true) {
-		char nrStr[7];
-		sprintf(nrStr, "%06d", nr);
-
-		cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\rgb\\" + nrStr + ".png");
-		cv::Mat mDepth = cv::imread(kittiDatasetPath + "\\depth\\" + nrStr + ".png");
-		mDepth.convertTo(mDepth, CV_32FC1, 1.0 / 0xFFFF, 0);
-
-
-		int nrOfWindowsEvaluated = 0;
-		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-
-
-
-			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
-				cv::Mat regionRGB;
-				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
-
-				cv::Mat regionDepth;
-				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
-
-				bool isPositive = true;
-				for (int i = 0; i < cascadeEvaluators.size(); i++)
-				{
-					FeatureVector v = cascadeFeatureSets[i].getFeatures(regionRGB, regionDepth);
-					EvaluationResult result = cascadeEvaluators[i].evaluateWindow(regionRGB, regionDepth, valueShifts[i]);
-					if (result.resultClass == -1) {
-						isPositive = false;
-						break;
-					}
-
-				}
-
-				if (isPositive)
-					cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
-
-				nrOfWindowsEvaluated++;
-			}, 0.5, 2, 16);
-
-		});
-
-		cv::imshow("Test", mRGB);
-
-		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " in " << slidingWindowTime << "ms" << std::endl;
-		// this will leak because creators are never disposed!
-		cv::waitKey(0);
-		nr++;
-	}
+//	TrainingDataSet tSet(kittiDatasetPath);
+//	tSet.load(std::string("train0.txt"));
+//
+//
+//	std::vector<FeatureSet> cascadeFeatureSets;
+//	std::vector<ModelEvaluator> cascadeEvaluators;
+//	std::vector<double> valueShifts;
+//
+//	//FeatureSet set2;
+//	//set2.addCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
+//	//cascadeFeatureSets.push_back(set2);
+//	//ModelEvaluator model2(tSet, set2);
+//	//model2.loadModel(std::string("models\\Histogram(Depth).xml"));
+//	//cascadeEvaluators.push_back(model2);
+//	//valueShifts.push_back(7);
+//
+//
+//
+//	//FeatureSet set1;
+//	//set1.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
+//	//cascadeFeatureSets.push_back(set1);
+//	//ModelEvaluator model1(tSet, set1);
+//	//model1.loadModel(std::string("models\\LBP(RGB).xml"));
+//	//cascadeEvaluators.push_back(model1);
+//	//valueShifts.push_back(7.4);
+//
+//
+//	FeatureSet setFinal;
+//	/*setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+//	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
+//	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
+//*/
+//	cascadeFeatureSets.push_back(std::move(setFinal));
+//	ModelEvaluator modelFinal(tSet, setFinal);
+//	modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB).xml"));
+//	cascadeEvaluators.push_back(modelFinal);
+//	valueShifts.push_back(2.2);
+//
+//	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
+//	eval.print(std::cout);*/
+//
+//	int nr = 0;
+//	while (true) {
+//		char nrStr[7];
+//		sprintf(nrStr, "%06d", nr);
+//
+//		cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\rgb\\" + nrStr + ".png");
+//		cv::Mat mDepth = cv::imread(kittiDatasetPath + "\\depth\\" + nrStr + ".png");
+//		mDepth.convertTo(mDepth, CV_32FC1, 1.0 / 0xFFFF, 0);
+//
+//
+//		int nrOfWindowsEvaluated = 0;
+//		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+//
+//
+//
+//			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
+//				cv::Mat regionRGB;
+//				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+//
+//				cv::Mat regionDepth;
+//				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+//
+//				bool isPositive = true;
+//				for (int i = 0; i < cascadeEvaluators.size(); i++)
+//				{
+//					FeatureVector v = cascadeFeatureSets[i].getFeatures(regionRGB, regionDepth);
+//					EvaluationResult result = cascadeEvaluators[i].evaluateWindow(regionRGB, regionDepth, valueShifts[i]);
+//					if (result.resultClass == -1) {
+//						isPositive = false;
+//						break;
+//					}
+//
+//				}
+//
+//				if (isPositive)
+//					cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
+//
+//				nrOfWindowsEvaluated++;
+//			}, 0.5, 2, 16);
+//
+//		});
+//
+//		cv::imshow("Test", mRGB);
+//
+//		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " in " << slidingWindowTime << "ms" << std::endl;
+//		// this will leak because creators are never disposed!
+//		cv::waitKey(0);
+//		nr++;
+//	}
 }
 
 
@@ -467,7 +469,7 @@ int main()
 
 */
 	TrainingDataSet tSet(kittiDatasetPath);
-	tSet.load(std::string("train0.txt"));
+	tSet.load(std::string("trainingsets\\train0.txt"));
 
 
 	//testFeature();
@@ -490,79 +492,83 @@ int main()
 	//
 
 
-	FeatureTester tester(tSet);
+	FeatureTester tester;
 	tester.nrOfConcurrentJobs = 4;
 
-	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
-	tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
-	tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
-
-	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
-	tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
-	tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(RGB)"), 80, false));
-	tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(Depth)"), 80, true));
-	tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(RGB)"), 80, false));
-	tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(Depth)"), 80, true));
-	tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(RGB)"), 80, false));
-	tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(Depth)"), 80, true));
-	tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(RGB)"), 80, false));
-	tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(Depth)"), 80, true));
-	/*tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(RGB)"), 80, false)); // way too damn slow
-	tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(Depth)"), 80, true));*/
-	tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(RGB)"), 80, false));
-	tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(Depth)"), 80, true));
-
-	tester.addAvailableCreator(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight));
-	tester.addAvailableCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
-	tester.addAvailableCreator(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight));
+	std::unique_ptr<IFeatureCreator> ptr = std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string(""), false, patchSize, binSize, refWidth, refHeight));
 
 
+	tester.addAvailableCreator(FactoryCreator(std::string("HoG(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, false, patchSize, binSize, refWidth, refHeight))); }));
 
-	//evaluate each creator individually
-	for (auto& creator : tester.getAvailableCreators()) {
-		set = { creator->getName() };
-		tester.addJob(set, nrOfEvaluations);
-	}
-	tester.runJobs(std::string("results\\individualresults.csv"));
+	//tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
+	//tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
+	//tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
+	//tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
+	//tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
 
-	// evaluate each creator combined with HOG(RGB)
-	for (auto& creator : tester.getAvailableCreators()) {
-		if (creator->getName() != "HoG(RGB)") {
-			set = { "HoG(RGB)", creator->getName() };
-			tester.addJob(set, nrOfEvaluations);
-		}
-	}
-	tester.runJobs(std::string("results\\hogrgb_results.csv"));
+	//tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
+	//tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
+	//tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(RGB)"), 80, false));
+	//tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(Depth)"), 80, true));
+	//tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(RGB)"), 80, false));
+	//tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(Depth)"), 80, true));
+	//tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(RGB)"), 80, false));
+	//tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(Depth)"), 80, true));
+	//tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(RGB)"), 80, false));
+	//tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(Depth)"), 80, true));
+	///*tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(RGB)"), 80, false)); // way too damn slow
+	//tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(Depth)"), 80, true));*/
+	//tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(RGB)"), 80, false));
+	//tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(Depth)"), 80, true));
 
-	for (auto& creator : tester.getAvailableCreators()) {
-		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)") {
-			set = { "HoG(Depth)", "HoG(RGB)", creator->getName() };
-			tester.addJob(set, nrOfEvaluations);
-		}
-	}
-	tester.runJobs(std::string("results\\hogrgbhogdepth_results.csv"));
-
-
-	for (auto& creator : tester.getAvailableCreators()) {
-		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)") {
-			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  creator->getName() };
-			tester.addJob(set, nrOfEvaluations);
-		}
-	}
-	tester.runJobs(std::string("results\\hogrgbhogdepthlbprgb_results.csv"));
+	//tester.addAvailableCreator(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight));
+	//tester.addAvailableCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
+	//tester.addAvailableCreator(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight));
 
 
 
-	for (auto& creator : tester.getAvailableCreators()) {
-		if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)" && creator->getName() != "Histogram(Depth)") {
-			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)", "Histogram(Depth)",  creator->getName() };
-			tester.addJob(set, nrOfEvaluations);
-		}
-	}
-	tester.runJobs(std::string("results\\hogrgbhogdepthlbprgbhistogramdepth_results.csv"));
+	////evaluate each creator individually
+	//for (auto& creator : tester.getAvailableCreators()) {
+	//	set = { creator->getName() };
+	//	tester.addJob(set, nrOfEvaluations);
+	//}
+	//tester.runJobs(std::string("results\\individualresults.csv"));
+
+	//// evaluate each creator combined with HOG(RGB)
+	//for (auto& creator : tester.getAvailableCreators()) {
+	//	if (creator->getName() != "HoG(RGB)") {
+	//		set = { "HoG(RGB)", creator->getName() };
+	//		tester.addJob(set, nrOfEvaluations);
+	//	}
+	//}
+	//tester.runJobs(std::string("results\\hogrgb_results.csv"));
+
+	//for (auto& creator : tester.getAvailableCreators()) {
+	//	if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)") {
+	//		set = { "HoG(Depth)", "HoG(RGB)", creator->getName() };
+	//		tester.addJob(set, nrOfEvaluations);
+	//	}
+	//}
+	//tester.runJobs(std::string("results\\hogrgbhogdepth_results.csv"));
+
+
+	//for (auto& creator : tester.getAvailableCreators()) {
+	//	if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)") {
+	//		set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  creator->getName() };
+	//		tester.addJob(set, nrOfEvaluations);
+	//	}
+	//}
+	//tester.runJobs(std::string("results\\hogrgbhogdepthlbprgb_results.csv"));
+
+
+
+	//for (auto& creator : tester.getAvailableCreators()) {
+	//	if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)" && creator->getName() != "Histogram(Depth)") {
+	//		set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)", "Histogram(Depth)",  creator->getName() };
+	//		tester.addJob(set, nrOfEvaluations);
+	//	}
+	//}
+	//tester.runJobs(std::string("results\\hogrgbhogdepthlbprgbhistogramdepth_results.csv"));
 
 
 	/*

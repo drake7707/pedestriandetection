@@ -3,6 +3,7 @@
 
 
 FeatureSet::FeatureSet()
+	: creators(0)
 {
 }
 
@@ -11,8 +12,8 @@ FeatureSet::~FeatureSet()
 {
 }
 
-void FeatureSet::addCreator(IFeatureCreator* creator) {
-	this->creators.push_back(creator);
+void FeatureSet::addCreator(std::unique_ptr<IFeatureCreator> creator) {
+//	this->creators.push_back(std::move(creator));
 }
 
 FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
@@ -31,14 +32,14 @@ FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 
 int FeatureSet::getNumberOfFeatures() const {
 	int nrOfFeatures = 0;
-	for (auto & c : creators)
-		nrOfFeatures += c->getNumberOfFeatures();
+	for(int i = 0; i < creators.size(); i++)
+		nrOfFeatures += creators[i]->getNumberOfFeatures();
 	return nrOfFeatures;
 }
 
 std::string FeatureSet::explainFeature(int featureIndex, double splitValue) const {
 	int from = 0;
-	for (auto & c : creators) {
+	for (auto&& c : creators) {
 		int nrOfFeatures = c->getNumberOfFeatures();
 		int to = from + nrOfFeatures;
 

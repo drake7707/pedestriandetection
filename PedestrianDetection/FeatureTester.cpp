@@ -5,39 +5,96 @@
 
 
 
-FeatureTesterJob::FeatureTesterJob(std::string& featureSetName, FeatureSet& set, TrainingDataSet& trainingDataSet, int nrOfEvaluations, int nrOfTrainingRounds)
-	: featureSetName(featureSetName), featureSet(set), trainingDataSet(trainingDataSet), nrOfEvaluations(nrOfEvaluations), nrOfTrainingRounds(nrOfTrainingRounds) {
+FeatureTesterJob::FeatureTesterJob(std::unordered_map<std::string, FactoryCreator>& creators, std::set<std::string>& set, int nrOfEvaluations, int nrOfTrainingRounds)
+	: creators(creators), set(set), nrOfEvaluations(nrOfEvaluations), nrOfTrainingRounds(nrOfTrainingRounds) {
 
 }
 
-std::vector<ClassifierEvaluation> FeatureTesterJob::run() const {
+void FeatureTesterJob::run() {
 
-	std::vector<ClassifierEvaluation> evaluations;
+	FeatureSet featureSet;
+	std::string featureSetName("");
+	for (auto& name : set) {
 
+		FactoryCreator creator = creators.find(name)->second;
+		//featureSet.addCreator(std::move(creator.createInstance(creator.name)));
+
+		if (name != *(set.begin()))
+			featureSetName += "+" + name;
+		else
+			featureSetName += name;
+	}
+
+
+
+	int trainingRound = 0;
+
+	TrainingDataSet trainingDataSet(trainingRound == 0 ? std::string("trainingsets\\train0.txt") : "trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
 	ModelEvaluator evaluator(trainingDataSet, featureSet);
 
-	if (FileExists("models\\" + this->featureSetName + ".xml")) {
+	// ---------------- Training -----------------------
+	std::string modelFile = trainingRound == 0 ? "models\\" + this->featureSetName + ".xml" : "models\\" + this->featureSetName + "_round" + std::to_string(trainingRound) + ".xml";
+	if (FileExists(modelFile)) {
 		std::cout << "Skipped training of " << this->featureSetName << ", loading from existing model instead" << std::endl;
-		evaluator.loadModel("models\\" + this->featureSetName + ".xml");
+		evaluator.loadModel(modelFile);
 	}
 	else {
-		std::cout << "Started training of " << this->featureSetName << std::endl;
+		std::cout << "Started training of " << this->featureSetName << ", round " << trainingRound << std::endl;
 		long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 			evaluator.train();
 		});
-		std::cout << "Training complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
+		std::cout << "Training round " << trainingRound << " complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
 
 		// save it to a file
-		evaluator.saveModel("models\\" + this->featureSetName + ".xml");
+		evaluator.saveModel(modelFile);
 	}
 
-
+	// --------------- Evaluation --------------------
+	std::vector<ClassifierEvaluation> evaluations;
 	std::cout << "Started evaluation of " << this->featureSetName << std::endl;
 	long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 		evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
 	});
+	std::ofstream str("results\\" + featureSetName + "_round" + std::to_string(trainingRound) + ".csv");
+	for (auto& result : evaluations) {
+		result.toCSVLine(str, false);
+		str << std::endl;
+	}
 	std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << this->featureSetName << std::endl;
-	return evaluations;
+
+	// --------------- Evaluation sliding window --------------------
+	EvaluationSlidingWindowResult result;
+	long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+		result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, 0, 1000);
+	});
+	std::cout << "Evaluation of sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << this->featureSetName << std::endl;
+
+	str = std::ofstream("results\\" + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv");
+	for (auto& result : result.evaluations) {
+		result.toCSVLine(str, false);
+		str << std::endl;
+	}
+
+	// --------------- New training set --------------------
+	TrainingDataSet newTrainingSet = trainingDataSet;
+	for (auto& swregion : result.worstFalsePositives) {
+
+		TrainingRegion r;
+		r.region = swregion.bbox;
+		r.regionClass = -1; // it was a negative but positive was specified
+		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+	}
+
+	for (auto& swregion : result.worstFalseNegatives) {
+
+		TrainingRegion r;
+		r.region = swregion.bbox;
+		r.regionClass = 1; // it was a positive but negative was specified
+		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+	}
+	newTrainingSet.save("trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
+	trainingDataSet = newTrainingSet;
+
 }
 
 
@@ -45,7 +102,7 @@ std::vector<ClassifierEvaluation> FeatureTesterJob::run() const {
 
 
 
-FeatureTester::FeatureTester(TrainingDataSet& trainingDataSet) : trainingDataSet(trainingDataSet)
+FeatureTester::FeatureTester()
 {
 	loadProcessedFeatureSets();
 }
@@ -53,21 +110,8 @@ FeatureTester::FeatureTester(TrainingDataSet& trainingDataSet) : trainingDataSet
 
 FeatureTester::~FeatureTester()
 {
-	// delete creators
-	for (auto& pair : creators)
-		delete pair.second;
 }
 
-
-void FeatureTester::prepareCreators() {
-	// all variable number feature creators need to be prepared with the k-means centroids
-	for (auto& pair : creators) {
-		if (dynamic_cast<VariableNumberFeatureCreator*>(pair.second) != nullptr) {
-			std::cout << "Preparing feature creator " << pair.second->getName() << std::endl;
-			dynamic_cast<VariableNumberFeatureCreator*>(pair.second)->prepare(trainingDataSet);
-		}
-	}
-}
 
 void FeatureTester::loadProcessedFeatureSets() {
 	std::ifstream str("processedsets.txt");
@@ -89,49 +133,25 @@ void FeatureTester::markFeatureSetProcessed(std::string& featureSetName) {
 	str.flush();
 }
 
-void FeatureTester::addAvailableCreator(IFeatureCreator* creator) {
-	creators.emplace(creator->getName(), creator);
+void FeatureTester::addAvailableCreator(FactoryCreator& creator) {
+	creators.emplace(creator.name, creator);
 }
 
-std::vector<IFeatureCreator*> FeatureTester::getAvailableCreators() const {
-	std::vector<IFeatureCreator*> items;
-	for (auto& pair : creators)
-		items.push_back(pair.second);
-	return items;
+FactoryCreator FeatureTester::getAvailableCreator(std::string& name) const {
+	//@pre name is added in the map
+	return creators.find(name)->second;
 }
 
 void FeatureTester::addJob(std::set<std::string>& set, int nrOfEvaluations, int nrOfTrainingRounds) {
-	FeatureSet featureSet;
-	std::string featureSetName("");
-	for (auto& name : set) {
-		if (creators.find(name) == creators.end())
-			throw std::exception(("Unable for find feature creator with name " + name).c_str());
-
-		featureSet.addCreator(creators[name]);
-
-		if (name != *(set.begin()))
-			featureSetName += "+" + name;
-		else
-			featureSetName += name;
-	}
-
-	FeatureTesterJob job(featureSetName, featureSet, trainingDataSet, nrOfEvaluations, nrOfTrainingRounds);
+	FeatureTesterJob job(creators,set, nrOfEvaluations, nrOfTrainingRounds);
 	jobs.push(job);
 }
 
-void FeatureTester::runJobs(std::string& resultsFile) {
+void FeatureTester::runJobs() {
 
-	std::ofstream resultStream(resultsFile, std::ofstream::out | std::ofstream::app);
-	if (!resultStream.is_open())
-		throw std::exception("Unable to open or create results file");
-
-	resultStream << "Name;";
-	ClassifierEvaluation().toCSVLine(resultStream, true);
-	resultStream << ";";
-	resultStream << std::endl;
-
+	
 	// make sure all creates are ready to roll
-	prepareCreators();
+	//prepareCreators();
 
 	std::mutex resultsFileMutex;
 
@@ -150,24 +170,15 @@ void FeatureTester::runJobs(std::string& resultsFile) {
 			semaphore.wait();
 
 			FeatureTester* ft = this;
-			threads.push_back(std::thread([job, &resultsFileMutex, &resultStream, &semaphore, &ft]() -> void {
+			threads.push_back(std::thread([&job, &resultsFileMutex, &semaphore, &ft]() -> void {
 				try {
 
 					std::cout << "Starting job " << job.featureSetName << std::endl;
-					std::vector<ClassifierEvaluation> results = job.run();
-
+					job.run();
+					
 					resultsFileMutex.lock();
-					for (auto& eval : results) {
-						resultStream << job.featureSetName << ";";
-						eval.toCSVLine(resultStream, false);
-						resultStream << ";" << std::endl;
-					}
-
-					std::string name = job.featureSetName;
-					ft->markFeatureSetProcessed(name);
-
+					ft->markFeatureSetProcessed(std::string(job.featureSetName));
 					resultsFileMutex.unlock();
-
 					semaphore.notify();
 				}
 				catch (std::exception e) {

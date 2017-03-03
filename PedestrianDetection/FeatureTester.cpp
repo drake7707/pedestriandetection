@@ -80,7 +80,9 @@ void FeatureTesterJob::run() const {
 				evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
 			});
 			std::ofstream str(evaluationFile);
+			str << "Name" << ";";
 			ClassifierEvaluation().toCSVLine(str, true);
+			str << std::endl;
 			for (auto& result : evaluations) {
 				str << featureSetName << "_round" << trainingRound << ";";
 				result.toCSVLine(str, false);
@@ -105,7 +107,9 @@ void FeatureTesterJob::run() const {
 			std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 
 			std::ofstream str = std::ofstream(evaluationSlidingFile);
+			str << "Name" << ";";
 			ClassifierEvaluation().toCSVLine(str, true);
+			str << std::endl;
 			for (auto& result : result.evaluations) {
 				str << featureSetName << "[S]_round" << trainingRound << ";";
 				result.toCSVLine(str, false);

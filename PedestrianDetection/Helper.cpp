@@ -1,4 +1,5 @@
 #include "Helper.h"
+#include <map>
 
 
 
@@ -38,10 +39,34 @@ int ceilTo(double val, double target) {
 	return ceil(val / target) * target;
 }
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, double minScaleReduction , double maxScaleReduction, int slidingWindowStep, int refWidth, int refHeight) {
+
+void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> func) {
+	std::vector<std::thread> threads;
+	threads.reserve(nrOfThreads);
+
+
+	int blocks = ceil(1.0 * (to - from) / nrOfThreads);
+
+	for (int t = 0; t < nrOfThreads; t++)
+	{
+		threads.push_back(std::thread([&](int offset) -> void {
+			int length = offset + blocks >= to ? to : offset + blocks;
+			for (int i = offset; i < length; i++)
+			{
+				func(i);
+			}
+		}, t * blocks));
+	}
+
+	for (auto& t : threads)
+		t.join();
+}
+
+
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, double minScaleReduction, double maxScaleReduction, int slidingWindowStep, int refWidth, int refHeight) {
 	int slidingWindowWidth = 64;
 	int slidingWindowHeight = 128;
-//	int slidingWindowStep = 8;
+	//	int slidingWindowStep = 8;
 
 	double topOffset = 0.3 * imgHeight;
 
@@ -51,15 +76,15 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 		double iHeight = 1.0* imgHeight / invscale;
 		double rectWidth = 1.0 * slidingWindowWidth / invscale;
 		double rectHeight = 1.0 * slidingWindowHeight / invscale;
-		
-		for (double j  = topOffset; j < imgHeight - rectHeight; j += slidingWindowStep / invscale) {
-			for (double i  = 0; i < imgWidth - rectWidth; i += slidingWindowStep / invscale) {
-				
-				cv::Rect windowRect(i,j,rectWidth, rectHeight);
+
+		for (double j = topOffset; j < imgHeight - rectHeight; j += slidingWindowStep / invscale) {
+			for (double i = 0; i < imgWidth - rectWidth; i += slidingWindowStep / invscale) {
+
+				cv::Rect windowRect(i, j, rectWidth, rectHeight);
 				func(windowRect);
 			}
 		}
-		invscale *=2;
+		invscale *= 2;
 	}
 }
 
@@ -79,7 +104,7 @@ void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int i
 			cv::Mat depth;
 			rgb = cv::imread(rgbTP);
 			depth = cv::imread(depthTP, CV_LOAD_IMAGE_ANYDEPTH);
-			
+
 			if (rgb.cols == 0 || rgb.rows == 0 || depth.cols == 0 || depth.rows == 0) {
 				stop = true;
 				break;

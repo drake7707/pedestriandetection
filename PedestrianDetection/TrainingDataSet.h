@@ -3,6 +3,7 @@
 #include "opencv2/opencv.hpp"
 #include <map>
 #include <functional>
+#include "KITTIDataSet.h";
 
 struct TrainingRegion {
 	cv::Rect region;
@@ -24,7 +25,11 @@ class TrainingDataSet
 	int refWidth = 64;
 	int refHeight = 128;
 
+	KITTIDataSet dataSet;
+
 public:
+	int nrOfSamples = 0;
+
 	TrainingDataSet(std::string& baseDataSetPath);
 
 	TrainingDataSet(const TrainingDataSet& dataSet);
@@ -38,7 +43,7 @@ public:
 	void save(std::string& path);
 	void load(std::string& path);
 
-
+	int getNumberOfImages() const;
 
 	void iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth)> func) const;
 

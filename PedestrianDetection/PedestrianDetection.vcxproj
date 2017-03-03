@@ -184,6 +184,7 @@
     <ClInclude Include="CornerFeatureCreator.h" />
     <ClInclude Include="MSDFeatureCreator.h" />
     <ClInclude Include="ORBFeatureCreator.h" />
+    <ClInclude Include="ProgressWindow.h" />
     <ClInclude Include="SIFTFeatureCreator.h" />
     <ClInclude Include="SURFFeatureCreator.h" />
     <ClInclude Include="TrainingDataSet.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="ORBFeatureCreator.cpp" />
     <ClCompile Include="PedestrianDetection.cpp" />
     <ClCompile Include="CornerFeatureCreator.cpp" />
+    <ClCompile Include="ProgressWindow.cpp" />
     <ClCompile Include="SIFTFeatureCreator.cpp" />
     <ClCompile Include="SURFFeatureCreator.cpp" />
     <ClCompile Include="TrainingDataSet.cpp" />

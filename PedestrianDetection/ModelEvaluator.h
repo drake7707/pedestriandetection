@@ -7,7 +7,7 @@
 #include "Helper.h"
 #include "ClassifierEvaluation.h"
 #include "TrainingDataSet.h"
-
+#include "ProgressWindow.h"
 
 
 struct Model {
@@ -40,6 +40,7 @@ struct EvaluationSlidingWindowResult {
 class ModelEvaluator
 {
 private:
+	std::string name;
 	const TrainingDataSet& trainingDataSet;
 	const FeatureSet& set;
 
@@ -48,10 +49,10 @@ private:
 	EvaluationResult evaluateFeatures(FeatureVector& v, double valueShift = 0) const;
 
 	int trainEveryXImage = 2;
-	int slidingWindowEveryXImage = 10;
+	int slidingWindowEveryXImage = 1;
 
 public:
-	ModelEvaluator(const TrainingDataSet& trainingDataSet, const FeatureSet& set);
+	ModelEvaluator(std::string& name, const TrainingDataSet& trainingDataSet, const FeatureSet& set);
 	~ModelEvaluator();
 
 	

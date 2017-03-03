@@ -2,6 +2,7 @@
 #include "ModelEvaluator.h"
 #include "VariableNumberFeatureCreator.h"
 #include <fstream>
+#include "ProgressWindow.h"
 
 
 
@@ -25,6 +26,8 @@ std::string FeatureTesterJob::getFeatureName() const {
 
 void FeatureTesterJob::run() const {
 
+	int maxNrWorstPosNeg = 4000;
+
 	std::string featureSetName = getFeatureName();
 	int trainingRound = 0;
 
@@ -45,8 +48,9 @@ void FeatureTesterJob::run() const {
 			featureSet.addCreator(std::move(featureCreator));
 		}
 
-		ModelEvaluator evaluator(trainingDataSet, featureSet);
+		ModelEvaluator evaluator(featureSetName + " round " + std::to_string(trainingRound), trainingDataSet, featureSet);
 
+		
 		// ---------------- Training -----------------------
 		std::string modelFile = trainingRound == 0 ? std::string("models") + PATH_SEPARATOR + featureSetName + ".xml" : std::string("models") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(trainingRound) + ".xml";
 		if (FileExists(modelFile)) {
@@ -66,54 +70,70 @@ void FeatureTesterJob::run() const {
 
 		// --------------- Evaluation --------------------
 		std::vector<ClassifierEvaluation> evaluations;
-		std::cout << "Started evaluation of " << featureSetName << std::endl;
-		long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
-		});
-		std::ofstream str(std::string("results") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(trainingRound) + ".csv");
-		ClassifierEvaluation().toCSVLine(str, true);
-		for (auto& result : evaluations) {
-			str << featureSetName << "_round" << trainingRound << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
+		std::string evaluationFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(trainingRound) + ".csv";
+		if (FileExists(evaluationFile)) {
+			std::cout << "Skipped evaluation of " << featureSetName << ", evaluation was already done." << std::endl;
 		}
-		std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
-
+		else {
+			std::cout << "Started evaluation of " << featureSetName << std::endl;
+			long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+				evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
+			});
+			std::ofstream str(evaluationFile);
+			ClassifierEvaluation().toCSVLine(str, true);
+			for (auto& result : evaluations) {
+				str << featureSetName << "_round" << trainingRound << ";";
+				result.toCSVLine(str, false);
+				str << std::endl;
+			}
+			std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
+		}
 		// --------------- Evaluation sliding window --------------------
-		EvaluationSlidingWindowResult result;
-		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, 0, 1000);
-		});
-		std::cout << "Evaluation of sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
+		std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv";
+		std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt";
+		if (FileExists(evaluationSlidingFile) && FileExists(nextRoundTrainingFile)) {
+			std::cout << "Skipped evaluation with sliding window of " << featureSetName << ", evaluation was already done and next training set was already present." << std::endl;
+			// load the training set for next round
+			trainingDataSet.load(nextRoundTrainingFile);
+		}
+		else {
+			std::cout << "Started evaluation with sliding window of " << featureSetName << std::endl;
+			EvaluationSlidingWindowResult result;
+			long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+				result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, 0, maxNrWorstPosNeg);
+			});
+			std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 
-		str = std::ofstream(std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv");
-		ClassifierEvaluation().toCSVLine(str, true);
-		for (auto& result : result.evaluations) {
-			str << featureSetName << "[S]_round" << trainingRound << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
+			std::ofstream str = std::ofstream(evaluationSlidingFile);
+			ClassifierEvaluation().toCSVLine(str, true);
+			for (auto& result : result.evaluations) {
+				str << featureSetName << "[S]_round" << trainingRound << ";";
+				result.toCSVLine(str, false);
+				str << std::endl;
+			}
+
+			// --------------- New training set --------------------
+			TrainingDataSet newTrainingSet = trainingDataSet;
+			for (auto& swregion : result.worstFalsePositives) {
+
+				TrainingRegion r;
+				r.region = swregion.bbox;
+				r.regionClass = -1; // it was a negative but positive was specified
+				newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+			}
+
+			for (auto& swregion : result.worstFalseNegatives) {
+
+				TrainingRegion r;
+				r.region = swregion.bbox;
+				r.regionClass = 1; // it was a positive but negative was specified
+				newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+			}
+			newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt");
+			trainingDataSet = newTrainingSet;
 		}
 
-		// --------------- New training set --------------------
-		TrainingDataSet newTrainingSet = trainingDataSet;
-		for (auto& swregion : result.worstFalsePositives) {
-
-			TrainingRegion r;
-			r.region = swregion.bbox;
-			r.regionClass = -1; // it was a negative but positive was specified
-			newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-		}
-
-		for (auto& swregion : result.worstFalseNegatives) {
-
-			TrainingRegion r;
-			r.region = swregion.bbox;
-			r.regionClass = 1; // it was a positive but negative was specified
-			newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-		}
-		newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound+1) + ".txt");
-		trainingDataSet = newTrainingSet;
-
+		ProgressWindow::getInstance()->finish(featureSetName + " round " + std::to_string(trainingRound));
 
 		trainingRound++;
 	}

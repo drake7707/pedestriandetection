@@ -30,10 +30,52 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func);
 
+void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> func);
 
 
 
 bool FileExists(const std::string &Filename);
+
+
+template <typename T, typename T2>
+void parallel_foreach(const std::map<T, T2>& map, int nrOfThreads, std::function<void(std::pair<T, T2>&)> func);
+
+
+template <typename T, typename T2>
+void parallel_foreach(const std::map<T, T2>& map, int nrOfThreads, std::function<void(std::pair<T, T2>&)> func) {
+	std::mutex lock;
+	std::vector<std::thread> threads;
+	threads.reserve(nrOfThreads);
+
+	auto it = map.begin();
+	for (int t = 0; t < nrOfThreads; t++)
+	{
+		threads.push_back(std::thread([&]() -> void {
+			bool stop = false;
+			while (!stop) {
+				std::pair<T, T2> pair;
+				lock.lock();
+				if (it != map.end()) {
+					pair = *it;
+					it++;
+
+					lock.unlock();
+					func(pair);
+				}
+				else {
+					lock.unlock();
+					stop = true;
+				}
+			}
+		}));
+	}
+
+	for (auto& t : threads)
+		t.join();
+}
+
+
+
 
 template<typename TimeT = std::chrono::milliseconds>
 struct measure

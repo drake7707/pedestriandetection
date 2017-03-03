@@ -12,6 +12,9 @@
 #include <iostream>
 #include <fstream>
 
+#include "ProgressWindow.h"
+
+#include "Helper.h"
 #include "TrainingDataSet.h"
 
 #include "HistogramOfOrientedGradients.h"
@@ -45,11 +48,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -213,7 +216,7 @@ void trainDetailedClassifier() {
 	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
 	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
 	
-	ModelEvaluator modelFinal(tSet, setFinal);
+	ModelEvaluator modelFinal(featureSetName, tSet, setFinal);
 	modelFinal.loadModel(std::string("models\\" + featureSetName + ".xml"));
 
 
@@ -459,6 +462,9 @@ void testFeature() {
 
 }
 
+
+
+
 int main()
 {
 	//trainDetailedClassifier();
@@ -466,11 +472,15 @@ int main()
 	/*TrainingDataSet tSet = saveTNTP();
 
 	tSet.save(std::string("train0.txt"));
-
 */
+
+	ProgressWindow* wnd = ProgressWindow::getInstance();
+	wnd->run();
+
+	std::cout << std::endl;
+	std::cout.flush();
 	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(std::string("trainingsets\\train0.txt"));
-
 
 	//testFeature();
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
@@ -520,7 +530,7 @@ int main()
 
 
 	set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	//evaluate each creator individually

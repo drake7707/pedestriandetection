@@ -5,19 +5,20 @@
 
 
 TrainingDataSet::TrainingDataSet(std::string& baseDataSetPath)
-	: baseDataSetPath(baseDataSetPath)
+	: baseDataSetPath(baseDataSetPath) , dataSet(baseDataSetPath)
 {
 }
-TrainingDataSet::TrainingDataSet(const TrainingDataSet& dataSet) {
-	this->baseDataSetPath = dataSet.baseDataSetPath;
-	this->images = dataSet.images;
+
+TrainingDataSet::TrainingDataSet(const TrainingDataSet& trainingDataSet) : dataSet(trainingDataSet.baseDataSetPath) {
+	this->baseDataSetPath = trainingDataSet.baseDataSetPath;
+	this->images = trainingDataSet.images;
 }
 
 TrainingDataSet::~TrainingDataSet()
 {
 }
 
-void TrainingDataSet::addTrainingRegion(int imageNumber,TrainingRegion& region)
+void TrainingDataSet::addTrainingRegion(int imageNumber, TrainingRegion& region)
 {
 	auto& img = images.find(imageNumber);
 	if (img != images.end())
@@ -54,7 +55,7 @@ void TrainingDataSet::load(std::string & path)
 		throw std::exception("Unable to open file");
 
 	images.clear();
-
+	nrOfSamples = 0;
 	while (!str.eof()) {
 		int number;
 		int count;
@@ -77,16 +78,20 @@ void TrainingDataSet::load(std::string & path)
 			region.region = cv::Rect(x, y, w, h);
 			region.regionClass = regionClass;
 			img.regions.push_back(region);
+			nrOfSamples++;
 		}
 
 		images.emplace(img.number, img);
 	}
 }
 
+int TrainingDataSet::getNumberOfImages() const {
+	return dataSet.getNrOfImages();
+}
+
 void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth)> func) const {
 
-	KITTIDataSet dataSet(baseDataSetPath);
-
+	
 	int idx = 0;
 	for (auto& pair : images) {
 
@@ -123,7 +128,10 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 
 	KITTIDataSet dataSet(baseDataSetPath);
 	int idx = 0;
-	for (auto& pair : images) {
+
+	int parallization = 7;
+	parallel_foreach<int,TrainingImage>(images, parallization, [&](std::pair<int, TrainingImage> pair) -> void {
+		//for (auto& pair : images) {
 
 		if (canSelectFunc(pair.first)) {
 			auto imgs = dataSet.getImagesForNumber(pair.first);
@@ -167,8 +175,8 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 
 
 		}
-	}
-
+		//}
+	});
 }
 
 std::string TrainingDataSet::getBaseDataSetPath() const

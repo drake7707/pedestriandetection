@@ -12,89 +12,98 @@ FeatureTesterJob::FeatureTesterJob(std::unordered_map<std::string, FactoryCreato
 
 void FeatureTesterJob::run() {
 
-	FeatureSet featureSet;
-	std::string featureSetName("");
-	for (auto& name : set) {
-
-		FactoryCreator creator = creators.find(name)->second;
-		//featureSet.addCreator(std::move(creator.createInstance(creator.name)));
-
-		if (name != *(set.begin()))
-			featureSetName += "+" + name;
-		else
-			featureSetName += name;
-	}
-
-
-
+	
 	int trainingRound = 0;
 
+	// ---------------- Load a training set -----------------------
 	TrainingDataSet trainingDataSet(trainingRound == 0 ? std::string("trainingsets\\train0.txt") : "trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
-	ModelEvaluator evaluator(trainingDataSet, featureSet);
 
-	// ---------------- Training -----------------------
-	std::string modelFile = trainingRound == 0 ? "models\\" + this->featureSetName + ".xml" : "models\\" + this->featureSetName + "_round" + std::to_string(trainingRound) + ".xml";
-	if (FileExists(modelFile)) {
-		std::cout << "Skipped training of " << this->featureSetName << ", loading from existing model instead" << std::endl;
-		evaluator.loadModel(modelFile);
-	}
-	else {
-		std::cout << "Started training of " << this->featureSetName << ", round " << trainingRound << std::endl;
-		long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			evaluator.train();
+	while (trainingRound < nrOfTrainingRounds) {
+		// ---------------- Build a feature set -----------------------
+		FeatureSet featureSet;
+		std::string featureSetName("");
+		for (auto& name : set) {
+			FactoryCreator creator = creators.find(name)->second;
+
+			std::unique_ptr<IFeatureCreator> featureCreator = creator.createInstance(creator.name);
+			if (dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()) != nullptr)
+				(dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()))->prepare(trainingDataSet, trainingRound);
+			featureSet.addCreator(std::move(featureCreator));
+
+			if (name != *(set.begin()))
+				featureSetName += "+" + name;
+			else
+				featureSetName += name;
+		}
+
+		ModelEvaluator evaluator(trainingDataSet, featureSet);
+
+		// ---------------- Training -----------------------
+		std::string modelFile = trainingRound == 0 ? "models\\" + this->featureSetName + ".xml" : "models\\" + this->featureSetName + "_round" + std::to_string(trainingRound) + ".xml";
+		if (FileExists(modelFile)) {
+			std::cout << "Skipped training of " << this->featureSetName << ", loading from existing model instead" << std::endl;
+			evaluator.loadModel(modelFile);
+		}
+		else {
+			std::cout << "Started training of " << this->featureSetName << ", round " << trainingRound << std::endl;
+			long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+				evaluator.train();
+			});
+			std::cout << "Training round " << trainingRound << " complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
+
+			// save it to a file
+			evaluator.saveModel(modelFile);
+		}
+
+		// --------------- Evaluation --------------------
+		std::vector<ClassifierEvaluation> evaluations;
+		std::cout << "Started evaluation of " << this->featureSetName << std::endl;
+		long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
 		});
-		std::cout << "Training round " << trainingRound << " complete after " << elapsedTrainingTime << "ms for " << this->featureSetName << std::endl;
+		std::ofstream str("results\\" + featureSetName + "_round" + std::to_string(trainingRound) + ".csv");
+		for (auto& result : evaluations) {
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+		std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << this->featureSetName << std::endl;
 
-		// save it to a file
-		evaluator.saveModel(modelFile);
+		// --------------- Evaluation sliding window --------------------
+		EvaluationSlidingWindowResult result;
+		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, 0, 1000);
+		});
+		std::cout << "Evaluation of sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << this->featureSetName << std::endl;
+
+		str = std::ofstream("results\\" + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv");
+		for (auto& result : result.evaluations) {
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+
+		// --------------- New training set --------------------
+		TrainingDataSet newTrainingSet = trainingDataSet;
+		for (auto& swregion : result.worstFalsePositives) {
+
+			TrainingRegion r;
+			r.region = swregion.bbox;
+			r.regionClass = -1; // it was a negative but positive was specified
+			newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+		}
+
+		for (auto& swregion : result.worstFalseNegatives) {
+
+			TrainingRegion r;
+			r.region = swregion.bbox;
+			r.regionClass = 1; // it was a positive but negative was specified
+			newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+		}
+		newTrainingSet.save("trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
+		trainingDataSet = newTrainingSet;
+
+
+		trainingRound++;
 	}
-
-	// --------------- Evaluation --------------------
-	std::vector<ClassifierEvaluation> evaluations;
-	std::cout << "Started evaluation of " << this->featureSetName << std::endl;
-	long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-		evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
-	});
-	std::ofstream str("results\\" + featureSetName + "_round" + std::to_string(trainingRound) + ".csv");
-	for (auto& result : evaluations) {
-		result.toCSVLine(str, false);
-		str << std::endl;
-	}
-	std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << this->featureSetName << std::endl;
-
-	// --------------- Evaluation sliding window --------------------
-	EvaluationSlidingWindowResult result;
-	long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-		result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, 0, 1000);
-	});
-	std::cout << "Evaluation of sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << this->featureSetName << std::endl;
-
-	str = std::ofstream("results\\" + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv");
-	for (auto& result : result.evaluations) {
-		result.toCSVLine(str, false);
-		str << std::endl;
-	}
-
-	// --------------- New training set --------------------
-	TrainingDataSet newTrainingSet = trainingDataSet;
-	for (auto& swregion : result.worstFalsePositives) {
-
-		TrainingRegion r;
-		r.region = swregion.bbox;
-		r.regionClass = -1; // it was a negative but positive was specified
-		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-	}
-
-	for (auto& swregion : result.worstFalseNegatives) {
-
-		TrainingRegion r;
-		r.region = swregion.bbox;
-		r.regionClass = 1; // it was a positive but negative was specified
-		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-	}
-	newTrainingSet.save("trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
-	trainingDataSet = newTrainingSet;
-
 }
 
 
@@ -133,9 +142,18 @@ void FeatureTester::markFeatureSetProcessed(std::string& featureSetName) {
 	str.flush();
 }
 
-void FeatureTester::addAvailableCreator(FactoryCreator& creator) {
+void FeatureTester::addFeatureCreatorFactory(FactoryCreator& creator) {
 	creators.emplace(creator.name, creator);
 }
+
+std::vector<std::string> FeatureTester::getFeatureCreatorFactories() const {
+	std::vector<std::string> factories;
+	for (auto& pair : creators) {
+		factories.push_back(pair.first);
+	}
+	return factories;
+}
+
 
 FactoryCreator FeatureTester::getAvailableCreator(std::string& name) const {
 	//@pre name is added in the map

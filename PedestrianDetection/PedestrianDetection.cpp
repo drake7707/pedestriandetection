@@ -495,81 +495,60 @@ int main()
 	FeatureTester tester;
 	tester.nrOfConcurrentJobs = 4;
 
-	std::unique_ptr<IFeatureCreator> ptr = std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string(""), false, patchSize, binSize, refWidth, refHeight));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HoG(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, false, patchSize, binSize, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("S2HoG(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGHistogramVarianceFeatureCreator(name, false, patchSize, binSize, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HoG(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, true, patchSize, binSize, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, true))); }));
 
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Histogram(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HistogramDepthFeatureCreator(name))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 80, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 80, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 80, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 80, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, 80, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HDD"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, patchSize, 20, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight))); }));
 
-	tester.addAvailableCreator(FactoryCreator(std::string("HoG(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, false, patchSize, binSize, refWidth, refHeight))); }));
+	//evaluate each creator individually
+	for (auto& name : tester.getFeatureCreatorFactories()) {
+		set = { name };
+		tester.addJob(set, nrOfEvaluations);
+	}
+	tester.runJobs();
 
-	//tester.addAvailableCreator(new HOGHistogramVarianceFeatureCreator(std::string("S2HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight));
-	//tester.addAvailableCreator(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight));
-	//tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(RGB)"), false));
-	//tester.addAvailableCreator(new CornerFeatureCreator(std::string("Corner(Depth)"), true));
-	//tester.addAvailableCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
+	// evaluate each creator combined with HOG(RGB)
+	for (auto& name : tester.getFeatureCreatorFactories()) {
+		if (name != "HoG(RGB)") {
+			set = { "HoG(RGB)", name };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs();
 
-	//tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(RGB)"), 80, false));
-	//tester.addAvailableCreator(new SURFFeatureCreator(std::string("SURF(Depth)"), 80, true));
-	//tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(RGB)"), 80, false));
-	//tester.addAvailableCreator(new ORBFeatureCreator(std::string("ORB(Depth)"), 80, true));
-	//tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(RGB)"), 80, false));
-	//tester.addAvailableCreator(new SIFTFeatureCreator(std::string("SIFT(Depth)"), 80, true));
-	//tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(RGB)"), 80, false));
-	//tester.addAvailableCreator(new CenSurEFeatureCreator(std::string("CenSurE(Depth)"), 80, true));
-	//tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(RGB)"), 80, false));
-	//tester.addAvailableCreator(new MSDFeatureCreator(std::string("MSD(Depth)"), 80, true));
-	///*tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(RGB)"), 80, false)); // way too damn slow
-	//tester.addAvailableCreator(new BRISKFeatureCreator(std::string("BRISK(Depth)"), 80, true));*/
-	//tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(RGB)"), 80, false));
-	//tester.addAvailableCreator(new FASTFeatureCreator(std::string("FAST(Depth)"), 80, true));
+	for (auto& name : tester.getFeatureCreatorFactories()) {
+		if (name != "HoG(RGB)" && name != "HoG(Depth)") {
+			set = { "HoG(Depth)", "HoG(RGB)", name };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs();
 
-	//tester.addAvailableCreator(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight));
-	//tester.addAvailableCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
-	//tester.addAvailableCreator(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight));
-
-
-
-	////evaluate each creator individually
-	//for (auto& creator : tester.getAvailableCreators()) {
-	//	set = { creator->getName() };
-	//	tester.addJob(set, nrOfEvaluations);
-	//}
-	//tester.runJobs(std::string("results\\individualresults.csv"));
-
-	//// evaluate each creator combined with HOG(RGB)
-	//for (auto& creator : tester.getAvailableCreators()) {
-	//	if (creator->getName() != "HoG(RGB)") {
-	//		set = { "HoG(RGB)", creator->getName() };
-	//		tester.addJob(set, nrOfEvaluations);
-	//	}
-	//}
-	//tester.runJobs(std::string("results\\hogrgb_results.csv"));
-
-	//for (auto& creator : tester.getAvailableCreators()) {
-	//	if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)") {
-	//		set = { "HoG(Depth)", "HoG(RGB)", creator->getName() };
-	//		tester.addJob(set, nrOfEvaluations);
-	//	}
-	//}
-	//tester.runJobs(std::string("results\\hogrgbhogdepth_results.csv"));
-
-
-	//for (auto& creator : tester.getAvailableCreators()) {
-	//	if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)") {
-	//		set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  creator->getName() };
-	//		tester.addJob(set, nrOfEvaluations);
-	//	}
-	//}
-	//tester.runJobs(std::string("results\\hogrgbhogdepthlbprgb_results.csv"));
-
-
-
-	//for (auto& creator : tester.getAvailableCreators()) {
-	//	if (creator->getName() != "HoG(RGB)" && creator->getName() != "HoG(Depth)" && creator->getName() != "LBP(RGB)" && creator->getName() != "Histogram(Depth)") {
-	//		set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)", "Histogram(Depth)",  creator->getName() };
-	//		tester.addJob(set, nrOfEvaluations);
-	//	}
-	//}
-	//tester.runJobs(std::string("results\\hogrgbhogdepthlbprgbhistogramdepth_results.csv"));
-
+	for (auto& name : tester.getFeatureCreatorFactories()) {
+		if (name != "HoG(RGB)" && name != "HoG(Depth)" && name != "LBP(RGB)") {
+			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  name };
+			tester.addJob(set, nrOfEvaluations);
+		}
+	}
+	tester.runJobs();
 
 	/*
 

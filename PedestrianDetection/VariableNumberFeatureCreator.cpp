@@ -12,10 +12,11 @@ VariableNumberFeatureCreator::~VariableNumberFeatureCreator()
 {
 }
 
-void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
+void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, int trainingRound) {
 
 	// try and load first
-	loadCentroids(std::string("featurecache") + PATH_SEPARATOR);
+	std::string featureCachePath = trainingRound == 0 ? std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml" : std::string("featurecache") + PATH_SEPARATOR + getName() + "_round" + std::to_string(trainingRound) + ".xml";
+	loadCentroids(featureCachePath);
 	if (centroids.size() > 0)
 		return;
 
@@ -63,46 +64,42 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
 
 
 
-	//	// visualize to check if it's correct:
-	//	cv::Mat test(128, 64, CV_8UC3, cv::Scalar(0));
+		//	// visualize to check if it's correct:
+		//	cv::Mat test(128, 64, CV_8UC3, cv::Scalar(0));
 
-	//	std::vector<cv::Scalar> colors;
-	//	for (int i = 0; i < centroids.size(); i++)
-	//	{
-	//		colors.push_back(cv::Scalar(1.0 * rand() / RAND_MAX * 255, 1.0 * rand() / RAND_MAX * 255, 1.0 * rand() / RAND_MAX * 255));
-	//	}
+		//	std::vector<cv::Scalar> colors;
+		//	for (int i = 0; i < centroids.size(); i++)
+		//	{
+		//		colors.push_back(cv::Scalar(1.0 * rand() / RAND_MAX * 255, 1.0 * rand() / RAND_MAX * 255, 1.0 * rand() / RAND_MAX * 255));
+		//	}
 
-	//	for (int j = 0; j < samples.size(); j++)
-	//	{
-	//		float x = samples[j][0];
-	//		float y = samples[j][1];
+		//	for (int j = 0; j < samples.size(); j++)
+		//	{
+		//		float x = samples[j][0];
+		//		float y = samples[j][1];
 
-	//		double minDistance = std::numeric_limits<double>().max();
-	//		int closestCentroidIndex = -1;
-	//		for (int c = 0; c < centroids.size(); c++)
-	//		{
-	//			double distance = samples[j].distanceToSquared(centroids[c]);
-	//			if (minDistance > distance) {
-	//				closestCentroidIndex = c;
-	//				minDistance = distance;
-	//			}
-	//		}
-	//		cv::circle(test, cv::Point(x, y), 2, colors[closestCentroidIndex], -1);
-	//	}
+		//		double minDistance = std::numeric_limits<double>().max();
+		//		int closestCentroidIndex = -1;
+		//		for (int c = 0; c < centroids.size(); c++)
+		//		{
+		//			double distance = samples[j].distanceToSquared(centroids[c]);
+		//			if (minDistance > distance) {
+		//				closestCentroidIndex = c;
+		//				minDistance = distance;
+		//			}
+		//		}
+		//		cv::circle(test, cv::Point(x, y), 2, colors[closestCentroidIndex], -1);
+		//	}
 
-	//	for (int c = 0; c < centroids.size(); c++)
-	//	{
-	//		cv::circle(test, cv::Point(centroids[c][0], centroids[c][1]), 4, cv::Scalar(255, 0, 0), -1);
-	//	}
-	//	cv::imshow("test", test);
-	//	cv::waitKey(0);
-	
-	
+		//	for (int c = 0; c < centroids.size(); c++)
+		//	{
+		//		cv::circle(test, cv::Point(centroids[c][0], centroids[c][1]), 4, cv::Scalar(255, 0, 0), -1);
+		//	}
+		//	cv::imshow("test", test);
+		//	cv::waitKey(0);
 	}
 
-
-
-	saveCentroids(std::string("featurecache") + PATH_SEPARATOR);
+	saveCentroids(featureCachePath);
 }
 
 FeatureVector VariableNumberFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
@@ -148,14 +145,14 @@ std::string VariableNumberFeatureCreator::explainFeature(int featureIndex, doubl
 
 void VariableNumberFeatureCreator::saveCentroids(std::string& path) {
 
-	cv::FileStorage fs(path + getName() + ".xml", cv::FileStorage::WRITE);
+	cv::FileStorage fs(path, cv::FileStorage::WRITE);
 	fs << "centroids" << centroids;
 	fs.release();
 }
 
 void VariableNumberFeatureCreator::loadCentroids(std::string& path) {
 
-	cv::FileStorage fsRead(path + getName() + ".xml", cv::FileStorage::READ);
+	cv::FileStorage fsRead(path, cv::FileStorage::READ);
 	fsRead["centroids"] >> centroids;
 	fsRead.release();
 }

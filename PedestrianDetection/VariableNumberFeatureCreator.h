@@ -12,7 +12,7 @@ private:
 
 public:
 
-	void prepare(TrainingDataSet& trainingDataSet);
+	void prepare(TrainingDataSet& trainingDataSet, int trainingRound);
 
 	virtual int getNumberOfFeatures() const;
 

@@ -55,8 +55,10 @@ public:
 
 	int nrOfConcurrentJobs = 4;
 
-	void addAvailableCreator(FactoryCreator& creator);
+	void addFeatureCreatorFactory(FactoryCreator& creator);
 	FactoryCreator getAvailableCreator(std::string& name) const;
+
+	std::vector<std::string> getFeatureCreatorFactories() const;
 
 	void addJob(std::set<std::string>& set, int nrOfEvaluations, int nrOfTrainingRounds = 1);
 

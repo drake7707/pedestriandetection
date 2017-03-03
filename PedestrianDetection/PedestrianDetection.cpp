@@ -209,10 +209,10 @@ void trainDetailedClassifier() {
 	std::string featureSetName = "HoG(Depth)+HoG(RGB)+LBP(RGB)";
 	FeatureSet setFinal;
 
-	/*setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
 	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
 	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
-	*/
+	
 	ModelEvaluator modelFinal(tSet, setFinal);
 	modelFinal.loadModel(std::string("models\\" + featureSetName + ".xml"));
 
@@ -461,7 +461,7 @@ void testFeature() {
 
 int main()
 {
-	trainDetailedClassifier();
+	//trainDetailedClassifier();
 	//testFeature();
 	/*TrainingDataSet tSet = saveTNTP();
 
@@ -521,7 +521,7 @@ int main()
 	//evaluate each creator individually
 	for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { name };
-		tester.addJob(set, nrOfEvaluations);
+		tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
 	}
 	tester.runJobs();
 
@@ -529,7 +529,7 @@ int main()
 	for (auto& name : tester.getFeatureCreatorFactories()) {
 		if (name != "HoG(RGB)") {
 			set = { "HoG(RGB)", name };
-			tester.addJob(set, nrOfEvaluations);
+			tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
 		}
 	}
 	tester.runJobs();
@@ -537,7 +537,7 @@ int main()
 	for (auto& name : tester.getFeatureCreatorFactories()) {
 		if (name != "HoG(RGB)" && name != "HoG(Depth)") {
 			set = { "HoG(Depth)", "HoG(RGB)", name };
-			tester.addJob(set, nrOfEvaluations);
+			tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
 		}
 	}
 	tester.runJobs();
@@ -545,7 +545,7 @@ int main()
 	for (auto& name : tester.getFeatureCreatorFactories()) {
 		if (name != "HoG(RGB)" && name != "HoG(Depth)" && name != "LBP(RGB)") {
 			set = { "HoG(Depth)", "HoG(RGB)", "LBP(RGB)",  name };
-			tester.addJob(set, nrOfEvaluations);
+			tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
 		}
 	}
 	tester.runJobs();

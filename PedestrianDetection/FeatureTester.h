@@ -25,14 +25,14 @@ class FeatureTesterJob {
 	
 	std::unordered_map<std::string, FactoryCreator> creators;
 	std::set<std::string> set;
+	std::string baseDataSetPath;
 	int nrOfEvaluations;
 	int nrOfTrainingRounds;
 
 public:
-	std::string featureSetName;
-
-	FeatureTesterJob(std::unordered_map<std::string, FactoryCreator>& creators, std::set<std::string>& set, int nrOfEvaluations, int nrOfTrainingRounds);
-	void run();
+	FeatureTesterJob(std::unordered_map<std::string, FactoryCreator>& creators, std::set<std::string>& set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds);
+	std::string FeatureTesterJob::getFeatureName() const;
+	void run() const;
 
 };
 
@@ -43,7 +43,6 @@ private:
 	std::unordered_map<std::string, FactoryCreator> creators;
 	
 	std::queue<FeatureTesterJob> jobs;
-
 
 	std::set<std::string> processedFeatureSets;
 	void loadProcessedFeatureSets();
@@ -60,7 +59,7 @@ public:
 
 	std::vector<std::string> getFeatureCreatorFactories() const;
 
-	void addJob(std::set<std::string>& set, int nrOfEvaluations, int nrOfTrainingRounds = 1);
+	void addJob(std::set<std::string>& set, std::string& baseDataSetPath, int nrOfEvaluations, int nrOfTrainingRounds = 1);
 
 	void runJobs();
 };

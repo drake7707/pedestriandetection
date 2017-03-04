@@ -124,7 +124,7 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 }
 
 
-void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb)> func, int parallization) const {
+void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func, int parallization) const {
 
 	KITTIDataSet dataSet(baseDataSetPath);
 	int idx = 0;
@@ -156,17 +156,21 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 
 				int resultClass = -1;
 				bool overlapsWithTruePositive = false;
-				for (int i = 0; i < truePositiveRegions.size() && !overlapsWithTruePositive; i++)
+				for (int i = 0; i < truePositiveRegions.size(); i++)
 				{
 					cv::Rect tp = truePositiveRegions[i];
 					double intersectionRect = (tp & bbox).area();
 					double unionRect = (tp | bbox).area();
+					if (intersectionRect > 0)
+						overlapsWithTruePositive = true;
+
 					if (unionRect > 0 && intersectionRect / unionRect > 0.5) {
 						resultClass = 1;
-						overlapsWithTruePositive = true;
+						break;
 					}
+					
 				}
-				func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp);
+				func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
 				idx++;
 			}, 0.5, 4, 16);
 			//cv::imshow("Temp", tmp);

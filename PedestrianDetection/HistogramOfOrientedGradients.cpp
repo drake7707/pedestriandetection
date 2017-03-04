@@ -128,6 +128,7 @@ namespace hog {
 
 						// calculate the correct unoriented angle: e.g. PI/4 and 3* PI / 4 are the same
 						// this will map the angles on a [0-PI] range
+
 						double anglePixel = atan2(sy, sx);
 						anglePixel = anglePixel > 0 ? abs(anglePixel) : abs(CV_PI - abs(anglePixel)); // CV_PI is not that accurate, must abs!
 

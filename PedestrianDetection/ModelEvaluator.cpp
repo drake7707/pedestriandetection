@@ -263,7 +263,7 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 	};;
 
 	trainingDataSet.iterateDataSetWithSlidingWindow([&](int idx) -> bool { return (idx + trainingRound) % slidingWindowEveryXImage == 0; },
-		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb) -> void {
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating with sliding window (") + std::to_string(imageNumber) + ")");
@@ -328,18 +328,22 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 					correct = false;
 				}
 
-				if (valueShift == valueShiftForFalsePosOrNegCollection && !correct) {
-					if (result.resultClass == 1) {
-						worstFalsePositives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
-						// smallest numbers will be popped
-						if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
-							worstFalsePositives.pop();
-					}
-					else {
-						worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
-						// smallest numbers will be popped
-						if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
-							worstFalsePositives.pop();
+				// don't consider adding hard negatives or positives if it overlaps with a true positive
+				// because it will add samples to the negative set that are really really strong and should probably be considered positive
+				if (!overlapsWithTruePositive) {
+					if (valueShift == valueShiftForFalsePosOrNegCollection && !correct) {
+						if (result.resultClass == 1) {
+							worstFalsePositives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
+							// smallest numbers will be popped
+							if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
+								worstFalsePositives.pop();
+						}
+						else {
+							worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
+							// smallest numbers will be popped
+							if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
+								worstFalsePositives.pop();
+						}
 					}
 				}
 				nrRegions[i]++;

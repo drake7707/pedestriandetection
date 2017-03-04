@@ -467,6 +467,20 @@ void testFeature() {
 
 int main()
 {
+
+	/*TrainingDataSet testTrainingSet(kittiDatasetPath);
+	testTrainingSet.load(std::string("trainingsets\\HoG(Depth)+HoG(RGB)+LBP(RGB)_train1.txt"));
+
+	
+	testTrainingSet.iterateDataSet([](int idx) -> bool { return true; }, [&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
+		if(resultClass == 1)
+			cv::imshow("TP", rgb);
+		else
+			cv::imshow("TN", rgb);
+		
+		cv::waitKey(0);
+
+	});*/
 	//trainDetailedClassifier();
 	//testFeature();
 	/*TrainingDataSet tSet = saveTNTP();

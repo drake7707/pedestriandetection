@@ -25,7 +25,8 @@ void ModelEvaluator::train()
 	trainingDataSet.iterateDataSet([&](int idx) -> bool { return idx % trainEveryXImage != 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
-		ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Building feature vectors (") + std::to_string(imageNumber) + ")");
+		if (idx % 100 == 0)
+			ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Building feature vectors (") + std::to_string(imageNumber) + ")");
 
 		FeatureVector v = set.getFeatures(rgb, depth);
 		if (resultClass == 1)
@@ -151,7 +152,8 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluateDataSet(int nrOfEvalua
 	trainingDataSet.iterateDataSet([&](int idx) -> bool { return idx % trainEveryXImage == 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
-		ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating training set regions (") + std::to_string(imageNumber) + ")");
+		if (idx % 100 == 0)
+			ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating training set regions (") + std::to_string(imageNumber) + ")");
 
 		FeatureVector v;
 		featureBuildTime += measure<std::chrono::milliseconds>::execution([&]() -> void {
@@ -263,7 +265,8 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 	trainingDataSet.iterateDataSetWithSlidingWindow([&](int idx) -> bool { return (idx + trainingRound) % slidingWindowEveryXImage == 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb) -> void {
 
-		ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating with sliding window (") + std::to_string(imageNumber) +")");
+		if (idx % 100 == 0)
+			ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating with sliding window (") + std::to_string(imageNumber) + ")");
 
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {

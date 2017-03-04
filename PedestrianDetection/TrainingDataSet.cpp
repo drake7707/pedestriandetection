@@ -164,8 +164,8 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 					if (unionRect > 0 && intersectionRect / unionRect > 0.5) {
 						resultClass = 1;
 						overlapsWithTruePositive = true;
+						break;
 					}
-
 				}
 				func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp);
 				idx++;

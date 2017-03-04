@@ -6,9 +6,12 @@
 
 
 
-FeatureTesterJob::FeatureTesterJob(std::unordered_map<std::string, FactoryCreator>& creators, std::set<std::string>& set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds)
-	: creators(creators), baseDataSetPath(baseDataPath), set(set), nrOfEvaluations(nrOfEvaluations), nrOfTrainingRounds(nrOfTrainingRounds) {
+FeatureTesterJob::FeatureTesterJob(std::unordered_map<std::string, FactoryCreator>& creators, std::set<std::string>& set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow)
+	: creators(creators), baseDataSetPath(baseDataPath), set(set), nrOfEvaluations(nrOfEvaluations), nrOfTrainingRounds(nrOfTrainingRounds), evaluateOnSlidingWindow(evaluateOnSlidingWindow) {
 
+	if (nrOfTrainingRounds > 1 && !evaluateOnSlidingWindow) {
+		throw std::exception("Evaluate on sliding window is required when running multiple training rounds");
+	}
 }
 
 
@@ -43,8 +46,9 @@ void FeatureTesterJob::run() const {
 			FactoryCreator creator = creators.find(name)->second;
 
 			std::unique_ptr<IFeatureCreator> featureCreator = creator.createInstance(creator.name);
-			if (dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()) != nullptr)
+			if (dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()) != nullptr) {
 				(dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()))->prepare(trainingDataSet, trainingRound);
+			}
 			featureSet.addCreator(std::move(featureCreator));
 		}
 
@@ -91,53 +95,56 @@ void FeatureTesterJob::run() const {
 			std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
 		}
 		// --------------- Evaluation sliding window --------------------
-		std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv";
-		std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt";
-		if (FileExists(evaluationSlidingFile) && FileExists(nextRoundTrainingFile)) {
-			std::cout << "Skipped evaluation with sliding window of " << featureSetName << ", evaluation was already done and next training set was already present." << std::endl;
-			// load the training set for next round
-			trainingDataSet.load(nextRoundTrainingFile);
-		}
-		else {
-			std::cout << "Started evaluation with sliding window of " << featureSetName << std::endl;
-			EvaluationSlidingWindowResult result;
-			long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, 0, maxNrWorstPosNeg);
-			});
-			std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
+		if (evaluateOnSlidingWindow) {
+			std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv";
+			std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt";
+			if (FileExists(evaluationSlidingFile) && FileExists(nextRoundTrainingFile)) {
+				std::cout << "Skipped evaluation with sliding window of " << featureSetName << ", evaluation was already done and next training set was already present." << std::endl;
+				// load the training set for next round
+				trainingDataSet.load(nextRoundTrainingFile);
+			}
+			else {
+				std::cout << "Started evaluation with sliding window of " << featureSetName << std::endl;
+				EvaluationSlidingWindowResult result;
+				long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+					result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, 0, maxNrWorstPosNeg);
+				});
+				std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 
-			std::ofstream str = std::ofstream(evaluationSlidingFile);
-			str << "Name" << ";";
-			ClassifierEvaluation().toCSVLine(str, true);
-			str << std::endl;
-			for (auto& result : result.evaluations) {
-				str << featureSetName << "[S]_round" << trainingRound << ";";
-				result.toCSVLine(str, false);
+				std::ofstream str = std::ofstream(evaluationSlidingFile);
+				str << "Name" << ";";
+				ClassifierEvaluation().toCSVLine(str, true);
 				str << std::endl;
+				for (auto& result : result.evaluations) {
+					str << featureSetName << "[S]_round" << trainingRound << ";";
+					result.toCSVLine(str, false);
+					str << std::endl;
+				}
+
+				// --------------- New training set --------------------
+				TrainingDataSet newTrainingSet = trainingDataSet;
+				for (auto& swregion : result.worstFalsePositives) {
+
+					TrainingRegion r;
+					r.region = swregion.bbox;
+					r.regionClass = -1; // it was a negative but positive was specified
+					newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+				}
+
+				// don't add more true positives because it starts skewing the results
+				//for (auto& swregion : result.worstFalseNegatives) {
+
+				//	TrainingRegion r;
+				//	r.region = swregion.bbox;
+				//	r.regionClass = 1; // it was a positive but negative was specified
+				//	newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+				//}
+				newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt");
+				trainingDataSet = newTrainingSet;
 			}
-
-			// --------------- New training set --------------------
-			TrainingDataSet newTrainingSet = trainingDataSet;
-			for (auto& swregion : result.worstFalsePositives) {
-
-				TrainingRegion r;
-				r.region = swregion.bbox;
-				r.regionClass = -1; // it was a negative but positive was specified
-				newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-			}
-
-			// don't add more true positives because it starts skewing the results
-			//for (auto& swregion : result.worstFalseNegatives) {
-
-			//	TrainingRegion r;
-			//	r.region = swregion.bbox;
-			//	r.regionClass = 1; // it was a positive but negative was specified
-			//	newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-			//}
-			newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt");
-			trainingDataSet = newTrainingSet;
 		}
 
+		// round is finished
 		ProgressWindow::getInstance()->finish(featureSetName + " round " + std::to_string(trainingRound));
 
 		trainingRound++;
@@ -198,8 +205,8 @@ FactoryCreator FeatureTester::getAvailableCreator(std::string& name) const {
 	return creators.find(name)->second;
 }
 
-void FeatureTester::addJob(std::set<std::string>& set, std::string& baseDataSetPath, int nrOfEvaluations, int nrOfTrainingRounds) {
-	FeatureTesterJob job(creators,set, baseDataSetPath, nrOfEvaluations,  nrOfTrainingRounds);
+void FeatureTester::addJob(std::set<std::string>& set, std::string& baseDataSetPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow) {
+	FeatureTesterJob job(creators,set, baseDataSetPath, nrOfEvaluations,  nrOfTrainingRounds, evaluateOnSlidingWindow);
 	jobs.push(job);
 }
 

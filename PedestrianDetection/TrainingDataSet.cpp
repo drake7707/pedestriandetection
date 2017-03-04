@@ -89,6 +89,16 @@ int TrainingDataSet::getNumberOfImages() const {
 	return dataSet.getNrOfImages();
 }
 
+
+void TrainingDataSet::iterateDataSetImages(std::function<void(int imageNumber, cv::Mat&rgb, cv::Mat&depth, const std::vector<TrainingRegion>& regions)> func) const {
+	for (auto& pair : images) {
+		auto imgs = dataSet.getImagesForNumber(pair.first);
+		cv::Mat rgb = imgs[0];
+		cv::Mat depth = imgs[1];
+		func(pair.first, rgb, depth, pair.second.regions);
+	}
+}
+
 void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth)> func) const {
 
 	

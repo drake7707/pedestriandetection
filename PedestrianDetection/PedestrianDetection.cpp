@@ -135,6 +135,7 @@ TrainingDataSet saveTNTP() {
 
 	srand(7707);
 
+	ProgressWindow::getInstance()->updateStatus(std::string("Initial training set (train0)"), 0, "Loading KITTI dataset labels");
 
 	std::vector<DataSetLabel> labels = dataSet.getLabels();
 
@@ -142,7 +143,7 @@ TrainingDataSet saveTNTP() {
 	for (auto& l : labels)
 		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
 
-	int sizeVariance = 4;
+	int sizeVariance = 8; // from 0.25 to 2 times the refWidth and refHeight ( so anything between 16x32 - 32x64 - 64x128 - 128x256, more scales might be evaluated later )
 	int nrOfTNPerImage = 2;
 
 	for (int i = 0; i < labelsPerNumber.size(); i++)
@@ -153,6 +154,9 @@ TrainingDataSet saveTNTP() {
 
 		std::vector<cv::Mat> currentImages = dataSet.getImagesForNumber(i);
 		std::vector<cv::Rect2d> selectedRegions;
+
+
+		ProgressWindow::getInstance()->updateStatus(std::string("Initial training set (train0)"), 1.0 * i / labelsPerNumber.size(), "Building training set (" + std::to_string(i) + ")");
 
 		for (auto& l : labelsPerNumber[i]) {
 
@@ -168,7 +172,6 @@ TrainingDataSet saveTNTP() {
 			}
 		}
 
-
 		for (int k = 0; k < nrOfTNPerImage; k++)
 		{
 			cv::Mat rgbTN;
@@ -176,7 +179,7 @@ TrainingDataSet saveTNTP() {
 
 			int iteration = 0;
 			do {
-				double sizeMultiplier = (1 + rand() * 1.0 / RAND_MAX * sizeVariance);
+				double sizeMultiplier = 0.25 * (1 + rand() * 1.0 / RAND_MAX * sizeVariance);
 				double width = refWidth * sizeMultiplier;
 				double height = refHeight * sizeMultiplier;
 				rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - width), randBetween(0, currentImages[0].rows - height), width, height);
@@ -198,6 +201,7 @@ TrainingDataSet saveTNTP() {
 		trainingSet.addTrainingImage(tImg);
 	}
 
+	ProgressWindow::getInstance()->finish(std::string("Initial training set (train0)"));
 	return trainingSet;
 }
 
@@ -494,8 +498,28 @@ void testSlidingWindow() {
 }
 
 
+void browseThroughDataSet(std::string& trainingFile) {
+	TrainingDataSet tSet(kittiDatasetPath);
+	tSet.load(trainingFile);
+
+	cv::namedWindow("TrainingSet");
+	tSet.iterateDataSetImages([](int imgNr, cv::Mat& rgb, cv::Mat& depth, const std::vector<TrainingRegion>& regions) -> void {
+
+		cv::Mat tmp = rgb.clone();
+
+		for (auto& r : regions) {
+			if (r.regionClass == 1)
+				cv::rectangle(tmp, r.region, cv::Scalar(0, 255, 0));
+			else
+				cv::rectangle(tmp, r.region, cv::Scalar(0, 0, 255));
+		}
+		cv::imshow("TrainingSet", tmp);
+		cv::waitKey(0);
+	});
+}
 int main()
 {
+	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
 //	testSlidingWindow();
 
 	/*TrainingDataSet testTrainingSet(kittiDatasetPath);
@@ -513,18 +537,12 @@ int main()
 	});*/
 	//trainDetailedClassifier();
 	//testFeature();
-	/*TrainingDataSet tSet = saveTNTP();
 
-	tSet.save(std::string("train0.txt"));
-*/
 
+
+	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
-
-	std::cout << std::endl;
-	std::cout.flush();
-	TrainingDataSet tSet(kittiDatasetPath);
-	tSet.load(std::string("trainingsets\\train0.txt"));
 
 	//testFeature();
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
@@ -536,15 +554,16 @@ int main()
 	std::set<std::string> set;
 
 
-	//for (int i = 10; i < 100; i+=5)
-	//{
-	//	tester.addAvailableCreator(std::string("SURF(RGB)_") + std::to_string(i), new SURFFeatureCreator(std::string("SURF(RGB)_") + std::to_string(i), i));
 
-	//	set = { std::string("SURF(RGB)_") + std::to_string(i) };
-	//	tester.addJob(set, nrOfEvaluations);
-	//}
-	//
 
+
+	// --------- Build initial training set file if it does not exist ----------
+	std::string initialTrain0File = std::string("trainingsets") + PATH_SEPARATOR + "train0.txt";
+	if (!FileExists(initialTrain0File)) {
+		std::cout << "The initial train0 file does not exist, building training set";
+		TrainingDataSet initialSet = saveTNTP();
+		initialSet.save(initialTrain0File);
+	}
 
 	FeatureTester tester;
 	tester.nrOfConcurrentJobs = 4;
@@ -573,16 +592,40 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight))); }));
 
 
-	set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	//evaluate each creator individually, but don't do a sliding window evaluation yet
+	tester.nrOfConcurrentJobs = 6;
+	for (auto& name : tester.getFeatureCreatorFactories()) {
+		set = { name };
+		tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
+	}
 	tester.runJobs();
 
-	//evaluate each creator individually
-	//for (auto& name : tester.getFeatureCreatorFactories()) {
-	//	set = { name };
-	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
-	//}
+
+
+	//set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
+	//tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	//tester.runJobs();
+
+	
+	tester.nrOfConcurrentJobs = 1;
+	set = { "HoG(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+	set = { "HoG(Depth)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+	set = { "HONV" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+	set = { "LBP(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+	set = { "HDD" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+
+	tester.runJobs();
+
+	/*for (auto& name : tester.getFeatureCreatorFactories()) {
+		set = { name };
+		tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+	}
+	tester.runJobs();*/
 
 	//// evaluate each creator combined with HOG(RGB)
 	//for (auto& name : tester.getFeatureCreatorFactories()) {

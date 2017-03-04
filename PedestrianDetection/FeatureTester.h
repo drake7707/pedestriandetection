@@ -28,9 +28,10 @@ class FeatureTesterJob {
 	std::string baseDataSetPath;
 	int nrOfEvaluations;
 	int nrOfTrainingRounds;
+	bool evaluateOnSlidingWindow;
 
 public:
-	FeatureTesterJob(std::unordered_map<std::string, FactoryCreator>& creators, std::set<std::string>& set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds);
+	FeatureTesterJob(std::unordered_map<std::string, FactoryCreator>& creators, std::set<std::string>& set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow);
 	std::string FeatureTesterJob::getFeatureName() const;
 	void run() const;
 
@@ -59,7 +60,7 @@ public:
 
 	std::vector<std::string> getFeatureCreatorFactories() const;
 
-	void addJob(std::set<std::string>& set, std::string& baseDataSetPath, int nrOfEvaluations, int nrOfTrainingRounds = 1);
+	void addJob(std::set<std::string>& set, std::string& baseDataSetPath, int nrOfEvaluations, int nrOfTrainingRounds = 1, bool evaluateOnSlidingWindow = true);
 
 	void runJobs();
 };

@@ -90,7 +90,7 @@ public:
 					cv::imshow("Progress", img);
 				}
 				else
-					cv::imshow("Progress", cv::Mat(100,300, CV_8UC3, cv::Scalar(255)));
+					cv::imshow("Progress", cv::Mat(100,300, CV_8UC3, cv::Scalar(255, 255,255)));
 				cv::waitKey(100);
 			}
 		});

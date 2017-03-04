@@ -1,5 +1,6 @@
 #include "VariableNumberFeatureCreator.h"
 #include "Helper.h"
+#include "ProgressWindow.h"
 
 
 VariableNumberFeatureCreator::VariableNumberFeatureCreator(std::string& creatorName, int clusterSize)
@@ -13,6 +14,8 @@ VariableNumberFeatureCreator::~VariableNumberFeatureCreator()
 }
 
 void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, int trainingRound) {
+
+	std::string name = "Feature " + this->getName() + " preparation round " + std::to_string(trainingRound);
 
 	// try and load first
 	std::string featureCachePath = trainingRound == 0 ? (std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml") : (std::string("featurecache") + PATH_SEPARATOR + getName() + "_round" + std::to_string(trainingRound) + ".xml");
@@ -29,6 +32,9 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, int
 
 	trainingDataSet.iterateDataSet([](int idx) -> bool { return true; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
+
+		if (idx % 100 == 0)
+			ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Aggregating feature vectors (") + std::to_string(imageNumber) + ")");
 
 		// aggregate vectors
 
@@ -47,6 +53,9 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, int
 				kmeansData.at<float>(s, f) = samples[s][f];
 		}
 
+
+		ProgressWindow::getInstance()->updateStatus(name, 0, std::string("Running k-means clustering"));
+
 		cv::Mat labels;
 		cv::Mat centers;
 		double result = cv::kmeans(kmeansData, k, labels, criteria, attempts, flags, centers);
@@ -61,8 +70,7 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, int
 			this->centroids.push_back(centroid);
 		}
 
-
-
+		ProgressWindow::getInstance()->finish(name);
 
 		//	// visualize to check if it's correct:
 		//	cv::Mat test(128, 64, CV_8UC3, cv::Scalar(0));

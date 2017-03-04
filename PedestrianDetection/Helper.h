@@ -43,35 +43,47 @@ void parallel_foreach(const std::map<T, T2>& map, int nrOfThreads, std::function
 
 template <typename T, typename T2>
 void parallel_foreach(const std::map<T, T2>& map, int nrOfThreads, std::function<void(std::pair<T, T2>&)> func) {
-	std::mutex lock;
-	std::vector<std::thread> threads;
-	threads.reserve(nrOfThreads);
 
-	auto it = map.begin();
-	for (int t = 0; t < nrOfThreads; t++)
-	{
-		threads.push_back(std::thread([&]() -> void {
-			bool stop = false;
-			while (!stop) {
-				std::pair<T, T2> pair;
-				lock.lock();
-				if (it != map.end()) {
-					pair = *it;
-					it++;
-
-					lock.unlock();
-					func(pair);
-				}
-				else {
-					lock.unlock();
-					stop = true;
-				}
-			}
-		}));
+	if (nrOfThreads == 1) {
+		// just do it on the main thread
+		auto it = map.begin();
+		while (it != map.end()) {
+			std::pair<T, T2> pair = *it;
+			func(pair);
+			it++;
+		}
 	}
+	else {
+		std::mutex lock;
+		std::vector<std::thread> threads;
+		threads.reserve(nrOfThreads);
 
-	for (auto& t : threads)
-		t.join();
+		auto it = map.begin();
+		for (int t = 0; t < nrOfThreads; t++)
+		{
+			threads.push_back(std::thread([&]() -> void {
+				bool stop = false;
+				while (!stop) {
+					std::pair<T, T2> pair;
+					lock.lock();
+					if (it != map.end()) {
+						pair = *it;
+						it++;
+
+						lock.unlock();
+						func(pair);
+					}
+					else {
+						lock.unlock();
+						stop = true;
+					}
+				}
+			}));
+		}
+
+		for (auto& t : threads)
+			t.join();
+	}
 }
 
 

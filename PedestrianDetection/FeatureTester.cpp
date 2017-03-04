@@ -126,13 +126,14 @@ void FeatureTesterJob::run() const {
 				newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
 			}
 
-			for (auto& swregion : result.worstFalseNegatives) {
+			// don't add more true positives because it starts skewing the results
+			//for (auto& swregion : result.worstFalseNegatives) {
 
-				TrainingRegion r;
-				r.region = swregion.bbox;
-				r.regionClass = 1; // it was a positive but negative was specified
-				newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-			}
+			//	TrainingRegion r;
+			//	r.region = swregion.bbox;
+			//	r.regionClass = 1; // it was a positive but negative was specified
+			//	newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+			//}
 			newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt");
 			trainingDataSet = newTrainingSet;
 		}

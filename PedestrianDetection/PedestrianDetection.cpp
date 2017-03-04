@@ -462,11 +462,38 @@ void testFeature() {
 
 }
 
+void testSlidingWindow() {
 
+	TrainingDataSet tSet(kittiDatasetPath);
+	tSet.load(std::string("trainingsets\\train0.txt"));
+
+	cv::namedWindow("Test");
+
+	int oldNumber = -1;
+	cv::Mat tmp;
+	tSet.iterateDataSetWithSlidingWindow([&](int idx) -> bool { return true; },
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb) -> void {
+
+		if (imageNumber != oldNumber) {
+			if (tmp.rows > 0) {
+				cv::imshow("Test", tmp);
+				cv::waitKey(0);
+			}
+			tmp = fullrgb.clone();
+			oldNumber = imageNumber;
+		}
+
+		if (resultClass == 1)
+			cv::rectangle(tmp, region, cv::Scalar(0, 255, 0), 3);
+		else
+			cv::rectangle(tmp, region, cv::Scalar(0, 0, 255), 1);
+	}, 1);
+}
 
 
 int main()
 {
+	//testSlidingWindow();
 
 	/*TrainingDataSet testTrainingSet(kittiDatasetPath);
 	testTrainingSet.load(std::string("trainingsets\\HoG(Depth)+HoG(RGB)+LBP(RGB)_train1.txt"));

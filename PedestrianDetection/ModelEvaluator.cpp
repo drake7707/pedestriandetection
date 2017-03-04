@@ -274,66 +274,82 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 			v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 		});
 
-		// lock to ensure consistency over multiple threads, getFeatures is the heaviest anyway and can be calculated concurrently
-		lock([&]() -> void {
+		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
 			featureBuildTime += buildTime;
+		});
 
+		// prepare vectors locally to a single thread
+		std::vector<EvaluationResult> results;
+		std::vector<long> resultTimes;
+		results.reserve(nrOfEvaluations);
+		resultTimes.reserve(nrOfEvaluations);
+		for (int i = 0; i < nrOfEvaluations; i++)
+		{
 			// get datapoints, ranging from -10 to 10
+			double valueShift = 1.0 * i / nrOfEvaluations * 20 - 10;
+			long time = measure<std::chrono::milliseconds>::execution([&]() -> void {
+				EvaluationResult result = evaluateFeatures(v, valueShift);
+				results.push_back(result);
+			});
+			resultTimes.push_back(time);
+		}
+
+		// now update everything that is shared across threads from the built vectors
+		lock([&]() -> void {
 			for (int i = 0; i < nrOfEvaluations; i++)
 			{
+				sumTimes[i] += resultTimes[i];
 				double valueShift = 1.0 * i / nrOfEvaluations * 20 - 10;
 				swresult.evaluations[i].valueShift = valueShift;
-				sumTimes[i] += measure<std::chrono::milliseconds>::execution([&]() -> void {
 
-					EvaluationResult result = evaluateFeatures(v, valueShift);
-					bool correct;
-					if (resultClass == result.resultClass) {
-						if (resultClass == -1)
-							swresult.evaluations[i].nrOfTrueNegatives++;
-						else {
-							swresult.evaluations[i].nrOfTruePositives++;
-							//if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
-							//	cv::rectangle(fullrgb, region, cv::Scalar(0, 255, 0), 1);
-						}
+				EvaluationResult result = results[i];
+				bool correct;
+				if (resultClass == result.resultClass) {
+					if (resultClass == -1)
+						swresult.evaluations[i].nrOfTrueNegatives++;
+					else {
+						swresult.evaluations[i].nrOfTruePositives++;
+						//if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
+						//	cv::rectangle(fullrgb, region, cv::Scalar(0, 255, 0), 1);
+					}
 
-						correct = true;
+					correct = true;
+				}
+				else {
+					if (resultClass == -1 && result.resultClass == 1) {
+						swresult.evaluations[i].nrOfFalsePositives++;
+
+						//if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
+						//	cv::rectangle(fullrgb, region, cv::Scalar(0, 0, 255), 1);
+					}
+					else
+						swresult.evaluations[i].nrOfFalseNegatives++;
+
+					correct = false;
+				}
+
+				if (valueShift == valueShiftForFalsePosOrNegCollection && !correct) {
+					if (result.resultClass == 1) {
+						worstFalsePositives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
+						// smallest numbers will be popped
+						if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
+							worstFalsePositives.pop();
 					}
 					else {
-						if (resultClass == -1 && result.resultClass == 1) {
-							swresult.evaluations[i].nrOfFalsePositives++;
-
-							//if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
-							//	cv::rectangle(fullrgb, region, cv::Scalar(0, 0, 255), 1);
-						}
-						else
-							swresult.evaluations[i].nrOfFalseNegatives++;
-
-						correct = false;
+						worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
+						// smallest numbers will be popped
+						if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
+							worstFalsePositives.pop();
 					}
-
-					if (valueShift == valueShiftForFalsePosOrNegCollection && !correct) {
-						if (result.resultClass == 1) {
-							worstFalsePositives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
-							// smallest numbers will be popped
-							if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
-								worstFalsePositives.pop();
-						}
-						else {
-							worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
-							// smallest numbers will be popped
-							if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
-								worstFalsePositives.pop();
-						}
-					}
-				});
+				}
 				nrRegions[i]++;
 			}
 		});
-
 	});
+
+	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
 	for (int i = 0; i < nrOfEvaluations; i++)
 		swresult.evaluations[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes[i]) / nrRegions[i];
-
 
 	swresult.worstFalsePositives.reserve(worstFalsePositives.size());
 	swresult.worstFalseNegatives.reserve(worstFalseNegatives.size());

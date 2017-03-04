@@ -593,12 +593,12 @@ int main()
 
 
 	//evaluate each creator individually, but don't do a sliding window evaluation yet
-	tester.nrOfConcurrentJobs = 6;
-	for (auto& name : tester.getFeatureCreatorFactories()) {
-		set = { name };
-		tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
-	}
-	tester.runJobs();
+	//tester.nrOfConcurrentJobs = 6;
+	//for (auto& name : tester.getFeatureCreatorFactories()) {
+	//	set = { name };
+	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
+	//}
+	//tester.runJobs();
 
 
 
@@ -617,6 +617,8 @@ int main()
 	set = { "LBP(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
 	set = { "HDD" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+	set = { "S2HoG" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
 
 	tester.runJobs();

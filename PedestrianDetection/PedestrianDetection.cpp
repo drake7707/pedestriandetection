@@ -60,8 +60,6 @@ int refWidth = 64;
 int refHeight = 128;
 
 
-
-
 void cornerFeatureTest() {
 	cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\test.jpg");
 
@@ -254,96 +252,91 @@ void trainDetailedClassifier() {
 
 void testClassifier() {
 
-	//	TrainingDataSet tSet(kittiDatasetPath);
-	//	tSet.load(std::string("train0.txt"));
-	//
-	//
-	//	std::vector<FeatureSet> cascadeFeatureSets;
-	//	std::vector<ModelEvaluator> cascadeEvaluators;
-	//	std::vector<double> valueShifts;
-	//
-	//	//FeatureSet set2;
-	//	//set2.addCreator(new HistogramDepthFeatureCreator(std::string("Histogram(Depth)")));
-	//	//cascadeFeatureSets.push_back(set2);
-	//	//ModelEvaluator model2(tSet, set2);
-	//	//model2.loadModel(std::string("models\\Histogram(Depth).xml"));
-	//	//cascadeEvaluators.push_back(model2);
-	//	//valueShifts.push_back(7);
-	//
-	//
-	//
-	//	//FeatureSet set1;
-	//	//set1.addCreator(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight));
-	//	//cascadeFeatureSets.push_back(set1);
-	//	//ModelEvaluator model1(tSet, set1);
-	//	//model1.loadModel(std::string("models\\LBP(RGB).xml"));
-	//	//cascadeEvaluators.push_back(model1);
-	//	//valueShifts.push_back(7.4);
-	//
-	//
-	//	FeatureSet setFinal;
-	//	/*setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
-	//	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
-	//	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
-	//*/
-	//	cascadeFeatureSets.push_back(std::move(setFinal));
-	//	ModelEvaluator modelFinal(tSet, setFinal);
-	//	modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB).xml"));
-	//	cascadeEvaluators.push_back(modelFinal);
-	//	valueShifts.push_back(2.2);
-	//
-	//	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
-	//	eval.print(std::cout);*/
-	//
-	//	int nr = 0;
-	//	while (true) {
-	//		char nrStr[7];
-	//		sprintf(nrStr, "%06d", nr);
-	//
-	//		cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\rgb\\" + nrStr + ".png");
-	//		cv::Mat mDepth = cv::imread(kittiDatasetPath + "\\depth\\" + nrStr + ".png");
-	//		mDepth.convertTo(mDepth, CV_32FC1, 1.0 / 0xFFFF, 0);
-	//
-	//
-	//		int nrOfWindowsEvaluated = 0;
-	//		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-	//
-	//
-	//
-	//			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
-	//				cv::Mat regionRGB;
-	//				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
-	//
-	//				cv::Mat regionDepth;
-	//				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
-	//
-	//				bool isPositive = true;
-	//				for (int i = 0; i < cascadeEvaluators.size(); i++)
-	//				{
-	//					FeatureVector v = cascadeFeatureSets[i].getFeatures(regionRGB, regionDepth);
-	//					EvaluationResult result = cascadeEvaluators[i].evaluateWindow(regionRGB, regionDepth, valueShifts[i]);
-	//					if (result.resultClass == -1) {
-	//						isPositive = false;
-	//						break;
-	//					}
-	//
-	//				}
-	//
-	//				if (isPositive)
-	//					cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
-	//
-	//				nrOfWindowsEvaluated++;
-	//			}, 0.5, 2, 16);
-	//
-	//		});
-	//
-	//		cv::imshow("Test", mRGB);
-	//
-	//		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " in " << slidingWindowTime << "ms" << std::endl;
-	//		// this will leak because creators are never disposed!
-	//		cv::waitKey(0);
-	//		nr++;
-	//	}
+	TrainingDataSet tSet(kittiDatasetPath);
+	tSet.load(std::string("trainingsets\\train0.txt"));
+
+
+	FeatureSet fset;
+	/*fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));*/
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
+
+	ModelEvaluator modelFinal(std::string("Test"), tSet, fset);
+	modelFinal.loadModel(std::string("models\\HDD.xml"));
+
+
+	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
+	eval.print(std::cout);*/
+
+	KITTIDataSet dataSet(kittiDatasetPath);
+
+	int nr = 0;
+	while (true) {
+
+		auto imgs = dataSet.getImagesForNumber(nr);
+		cv::Mat mRGB = imgs[0];
+		cv::Mat mDepth = imgs[1];
+
+		int nrOfWindowsEvaluated = 0;
+		int nrOfWindowsSkipped = 0;
+		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+
+
+
+			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
+				cv::Mat regionRGB;
+				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+
+				cv::Mat regionDepth;
+				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+
+				bool mustContinue = true;
+
+
+
+				double depthSum = 0;
+				int depthCount = 0;
+				int xOffset = bbox.x + bbox.width / 2;
+				for (int y = bbox.y; y < bbox.y + bbox.height; y++)
+				{
+					for (int i = xOffset - 1; i <= xOffset + 1; i++)
+					{
+						float depth = mDepth.at<float>(y, i);
+						depthSum += depth;
+						depthCount++;
+					}
+				}
+				double depthAvg = (depthSum / depthCount);
+
+				if (dataSet.isWithinValidDepthRange(bbox.height, depthAvg)) {
+					// falls within range where TP can lie, continue
+				}
+				else {
+					// reject outright, will most likely never be TP
+					mustContinue = false;
+					nrOfWindowsSkipped++;
+				}
+
+
+
+				if (mustContinue) {
+					EvaluationResult result = modelFinal.evaluateWindow(regionRGB, regionDepth, 0);
+					if (result.resultClass == 1)
+						cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
+				}
+				nrOfWindowsEvaluated++;
+			}, 0.5, 4, 16, 2);
+
+		});
+
+		cv::imshow("Test", mRGB);
+
+		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") in " << slidingWindowTime << "ms" << std::endl;
+		// this will leak because creators are never disposed!
+		cv::waitKey(0);
+		nr++;
+	}
 }
 
 
@@ -517,8 +510,58 @@ void browseThroughDataSet(std::string& trainingFile) {
 		cv::waitKey(0);
 	});
 }
+
+
+void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstream& str) {
+	TrainingDataSet tSet(kittiDatasetPath);
+	tSet.load(trainingFile);
+
+	str << std::fixed;
+	str << "height" << ";" << "avgdepth" << std::endl;
+
+	tSet.iterateDataSetImages([&](int imgNr, cv::Mat& rgb, cv::Mat& depth, const std::vector<TrainingRegion>& regions) -> void {
+
+		cv::Mat tmp = rgb.clone();
+
+
+
+		ProgressWindow::getInstance()->updateStatus(std::string("Height/Depth correlation"), 1.0 * imgNr / tSet.getNumberOfImages(), "Iterating true positives of training set (" + std::to_string(imgNr) + ")");
+
+		for (auto& r : regions) {
+			if (r.regionClass == -1) {
+				// correlate the region height with the average depth
+
+				int xOffset = r.region.x + r.region.width / 2;
+				double depthSum = 0;
+				int depthCount = 0;
+				for (int y = r.region.y; y < r.region.y + r.region.height; y++)
+				{
+					for (int i = xOffset - 1; i <= xOffset; i++)
+					{
+						depthSum += depth.at<float>(y, i);
+						depthCount++;
+					}
+				}
+				double depthAvg = depthSum / depthCount;
+				str << r.region.height << ";" << depthAvg << std::endl;
+			}
+		}
+	});
+
+	str.flush();
+}
+
 int main()
 {
+	testClassifier();
+
+	// show progress window
+	ProgressWindow* wnd = ProgressWindow::getInstance();
+	wnd->run();
+
+	/*std::ofstream str("heightdepthvaluesTN.csv");
+	printHeightVerticalAvgDepthRelation(std::string("trainingsets\\train0.txt"), str);*/
+	//testClassifier();
 	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
 //	testSlidingWindow();
 
@@ -540,9 +583,7 @@ int main()
 
 
 
-	// show progress window
-	ProgressWindow* wnd = ProgressWindow::getInstance();
-	wnd->run();
+
 
 	//testFeature();
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
@@ -606,7 +647,7 @@ int main()
 	//tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	//tester.runJobs();
 
-	
+
 	tester.nrOfConcurrentJobs = 1;
 	set = { "HoG(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
@@ -884,3 +925,8 @@ Mat watershedWithMarkers(Mat input) {
 }
 
 
+/*
+
+
+
+*/

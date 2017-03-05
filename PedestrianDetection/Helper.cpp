@@ -63,7 +63,7 @@ void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> fu
 }
 
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, double minScaleReduction, double maxScaleReduction, int slidingWindowStep, int refWidth, int refHeight) {
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, double minScaleReduction, double maxScaleReduction, int slidingWindowStep, float multiplicationFactor, int refWidth, int refHeight) {
 	int slidingWindowWidth = 64;
 	int slidingWindowHeight = 128;
 	//	int slidingWindowStep = 8;
@@ -84,7 +84,7 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 				func(windowRect);
 			}
 		}
-		invscale *= 2;
+		invscale *= multiplicationFactor;
 	}
 }
 

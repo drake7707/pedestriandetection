@@ -163,25 +163,41 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 				cv::Mat regionDepth;
 				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
 
-
-				int resultClass = -1;
-				bool overlapsWithTruePositive = false;
-				for (int i = 0; i < truePositiveRegions.size(); i++)
+				double depthSum = 0;
+				int depthCount = 0;
+				int xOffset = bbox.x + bbox.width / 2;
+				for (int y = bbox.y; y < bbox.y + bbox.height; y++)
 				{
-					cv::Rect tp = truePositiveRegions[i];
-					double intersectionRect = (tp & bbox).area();
-					double unionRect = (tp | bbox).area();
-					if (intersectionRect > 0)
-						overlapsWithTruePositive = true;
-
-					if (unionRect > 0 && intersectionRect / unionRect > 0.5) {
-						resultClass = 1;
-						break;
+					for (int i = xOffset - 1; i <= xOffset + 1; i++)
+					{
+						depthSum += mDepth.at<float>(y, i);
+						depthCount++;
 					}
-					
 				}
-				func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
-				idx++;
+				double depthAvg = (depthSum / depthCount);
+				// only evaluate windows that fall within the depth range to speed up the evaluation
+				if (isWithinValidDepthRange(bbox.height, depthAvg)) {
+
+					int resultClass = -1;
+					bool overlapsWithTruePositive = false;
+					for (int i = 0; i < truePositiveRegions.size(); i++)
+					{
+						cv::Rect tp = truePositiveRegions[i];
+						double intersectionRect = (tp & bbox).area();
+						double unionRect = (tp | bbox).area();
+						if (intersectionRect > 0)
+							overlapsWithTruePositive = true;
+
+						if (unionRect > 0 && intersectionRect / unionRect > 0.5) {
+							resultClass = 1;
+							break;
+						}
+
+					}
+
+					func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
+					idx++;
+				}
 			}, 0.5, 4, 16);
 			//cv::imshow("Temp", tmp);
 			//cv::waitKey(0);
@@ -195,4 +211,8 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 std::string TrainingDataSet::getBaseDataSetPath() const
 {
 	return baseDataSetPath;
+}
+
+bool TrainingDataSet::isWithinValidDepthRange(int height, float depthAverage) const {
+	return dataSet.isWithinValidDepthRange(height, depthAverage);
 }

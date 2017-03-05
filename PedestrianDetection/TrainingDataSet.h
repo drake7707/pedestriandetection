@@ -52,5 +52,7 @@ public:
 	void iterateDataSetWithSlidingWindow(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func, int parallization = 8) const;
 
 	std::string getBaseDataSetPath() const;
+
+	bool isWithinValidDepthRange(int height, float depthAverage) const;
 };
 

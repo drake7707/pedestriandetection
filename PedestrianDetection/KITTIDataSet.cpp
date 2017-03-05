@@ -72,3 +72,20 @@ int KITTIDataSet::getNrOfImages() const
 {
 	return 7480;
 }
+
+bool KITTIDataSet::isWithinValidDepthRange(int height, float depthAverage) const {
+	// scale to 0-80
+	int idx = height;
+	if (idx >= 0 && idx < validdepthrange.size()) {
+		double depthAvg = 80 - 80 * (depthAverage);
+		if (depthAvg >= validdepthrange[idx].first && depthAvg < validdepthrange[idx].second) {
+			// falls within range where TP can lie, continue
+			return true;
+		}
+		else {
+			// reject outright, will most likely never be TP
+			return false;
+		}
+	}
+	return true;
+}

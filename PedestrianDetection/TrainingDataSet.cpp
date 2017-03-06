@@ -163,20 +163,20 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 				cv::Mat regionDepth;
 				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
 
-				double depthSum = 0;
-				int depthCount = 0;
-				int xOffset = bbox.x + bbox.width / 2;
-				for (int y = bbox.y; y < bbox.y + bbox.height; y++)
-				{
-					for (int i = xOffset - 1; i <= xOffset + 1; i++)
-					{
-						depthSum += mDepth.at<float>(y, i);
-						depthCount++;
-					}
-				}
-				double depthAvg = (depthSum / depthCount);
+				//double depthSum = 0;
+				//int depthCount = 0;
+				//int xOffset = bbox.x + bbox.width / 2;
+				//for (int y = bbox.y; y < bbox.y + bbox.height; y++)
+				//{
+				//	for (int i = xOffset - 1; i <= xOffset + 1; i++)
+				//	{
+				//		depthSum += mDepth.at<float>(y, i);
+				//		depthCount++;
+				//	}
+				//}
+				//double depthAvg = (depthSum / depthCount);
 				// only evaluate windows that fall within the depth range to speed up the evaluation
-				if (isWithinValidDepthRange(bbox.height, depthAvg)) {
+				//if (isWithinValidDepthRange(bbox.height, depthAvg)) {
 
 					int resultClass = -1;
 					bool overlapsWithTruePositive = false;
@@ -197,7 +197,7 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 
 					func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
 					idx++;
-				}
+				//}
 			}, 0.5, 4, 16);
 			//cv::imshow("Temp", tmp);
 			//cv::waitKey(0);

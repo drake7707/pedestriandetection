@@ -18,7 +18,6 @@ FeatureTesterJob::FeatureTesterJob(std::unordered_map<std::string, FactoryCreato
 std::string FeatureTesterJob::getFeatureName() const {
 	std::string featureSetName("");
 	for (auto& name : set) {
-		FactoryCreator creator = creators.find(name)->second;
 		if (name != *(set.begin()))
 			featureSetName += "+" + name;
 		else
@@ -30,6 +29,7 @@ std::string FeatureTesterJob::getFeatureName() const {
 void FeatureTesterJob::run() const {
 
 	int maxNrWorstPosNeg = 4000;
+	float requiredTPRRate = 0.95;
 
 	std::string featureSetName = getFeatureName();
 	int trainingRound = 0;
@@ -54,7 +54,7 @@ void FeatureTesterJob::run() const {
 
 		ModelEvaluator evaluator(featureSetName + " round " + std::to_string(trainingRound), trainingDataSet, featureSet);
 
-		
+
 		// ---------------- Training -----------------------
 		std::string modelFile = trainingRound == 0 ? std::string("models") + PATH_SEPARATOR + featureSetName + ".xml" : std::string("models") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(trainingRound) + ".xml";
 		if (FileExists(modelFile)) {
@@ -73,27 +73,42 @@ void FeatureTesterJob::run() const {
 		}
 
 		// --------------- Evaluation --------------------
+
+		double valueShiftRequiredForTPR95Percent = 0;
+
 		std::vector<ClassifierEvaluation> evaluations;
 		std::string evaluationFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(trainingRound) + ".csv";
-		if (FileExists(evaluationFile)) {
-			std::cout << "Skipped evaluation of " << featureSetName << ", evaluation was already done." << std::endl;
-		}
-		else {
-			std::cout << "Started evaluation of " << featureSetName << std::endl;
-			long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
-			});
-			std::ofstream str(evaluationFile);
-			str << "Name" << ";";
-			ClassifierEvaluation().toCSVLine(str, true);
+		//if (FileExists(evaluationFile)) {
+		//	std::cout << "Skipped evaluation of " << featureSetName << ", evaluation was already done." << std::endl;
+		//}
+		//else {
+		std::cout << "Started evaluation of " << featureSetName << std::endl;
+		long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
+		});
+		std::ofstream str(evaluationFile);
+		str << "Name" << ";";
+		ClassifierEvaluation().toCSVLine(str, true);
+		str << std::endl;
+		for (auto& result : evaluations) {
+			str << featureSetName << "_round" << trainingRound << ";";
+			result.toCSVLine(str, false);
 			str << std::endl;
-			for (auto& result : evaluations) {
-				str << featureSetName << "_round" << trainingRound << ";";
-				result.toCSVLine(str, false);
-				str << std::endl;
-			}
-			std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
 		}
+		std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
+
+
+		std::sort(evaluations.begin(), evaluations.end(), [](const ClassifierEvaluation& a, const ClassifierEvaluation& b) -> bool { return a.getTPR() > b.getTPR(); });
+
+		for (auto& eval : evaluations) {
+			if (eval.getTPR() > requiredTPRRate)
+				valueShiftRequiredForTPR95Percent = eval.valueShift;
+			else
+				break; // all evaluations lower will be lower TPR
+		}
+		std::cout << "Chosen " << valueShiftRequiredForTPR95Percent << " as decision boundary shift to attain TPR of " << requiredTPRRate << std::endl;
+		//}
+
 		// --------------- Evaluation sliding window --------------------
 		if (evaluateOnSlidingWindow) {
 			std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv";
@@ -107,7 +122,7 @@ void FeatureTesterJob::run() const {
 				std::cout << "Started evaluation with sliding window of " << featureSetName << std::endl;
 				EvaluationSlidingWindowResult result;
 				long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-					result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, 0, maxNrWorstPosNeg);
+					result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, valueShiftRequiredForTPR95Percent, maxNrWorstPosNeg);
 				});
 				std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 
@@ -206,13 +221,13 @@ FactoryCreator FeatureTester::getAvailableCreator(std::string& name) const {
 }
 
 void FeatureTester::addJob(std::set<std::string>& set, std::string& baseDataSetPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow) {
-	FeatureTesterJob job(creators,set, baseDataSetPath, nrOfEvaluations,  nrOfTrainingRounds, evaluateOnSlidingWindow);
+	FeatureTesterJob job(creators, set, baseDataSetPath, nrOfEvaluations, nrOfTrainingRounds, evaluateOnSlidingWindow);
 	jobs.push(job);
 }
 
 void FeatureTester::runJobs() {
 
-	
+
 	// make sure all creates are ready to roll
 	//prepareCreators();
 
@@ -240,7 +255,7 @@ void FeatureTester::runJobs() {
 
 					std::cout << "Starting job " << featureSetName << std::endl;
 					job.run();
-					
+
 					resultsFileMutex.lock();
 					ft->markFeatureSetProcessed(std::string(featureSetName));
 					resultsFileMutex.unlock();

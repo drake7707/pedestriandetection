@@ -48,11 +48,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -142,7 +142,7 @@ TrainingDataSet saveTNTP() {
 		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
 
 	int sizeVariance = 8; // from 0.25 to 2 times the refWidth and refHeight ( so anything between 16x32 - 32x64 - 64x128 - 128x256, more scales might be evaluated later )
-	int nrOfTNPerImage = 2;
+	int nrOfTNPerImage = 10;
 
 	for (int i = 0; i < labelsPerNumber.size(); i++)
 	{
@@ -257,13 +257,13 @@ void testClassifier() {
 
 
 	FeatureSet fset;
-	/*fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
 	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));*/
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
+	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
 
 	ModelEvaluator modelFinal(std::string("Test"), tSet, fset);
-	modelFinal.loadModel(std::string("models\\HDD.xml"));
+	modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB)_round2.xml"));
 
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
@@ -553,8 +553,10 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 
 int main()
 {
-	testClassifier();
+	//browseThroughDataSet(std::string("trainingsets\\LBP(RGB)_train1.txt"));
+	//testClassifier();
 
+	
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
@@ -642,10 +644,13 @@ int main()
 	//tester.runJobs();
 
 
+	set = { "LBP(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
 
-	//set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
-	//tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
-	//tester.runJobs();
+	/*set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();*/
 
 
 	tester.nrOfConcurrentJobs = 1;
@@ -659,7 +664,7 @@ int main()
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
 	set = { "HDD" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
-	set = { "S2HoG" };
+	set = { "S2HoG(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
 
 	tester.runJobs();

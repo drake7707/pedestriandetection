@@ -51,19 +51,19 @@ struct ClassifierEvaluation {
 
 	}
 
-	double getTPR() {
+	double getTPR() const {
 		return 1.0 * nrOfTruePositives / (nrOfTruePositives + nrOfFalseNegatives);
 	}
-	double getFPR() {
+	double getFPR() const {
 		return 1.0 *nrOfFalsePositives / (nrOfFalsePositives + nrOfTrueNegatives);
 	}
-	double getPrecision() {
+	double getPrecision() const {
 		return 1.0 *nrOfTruePositives / (nrOfTruePositives + nrOfFalsePositives);
 	}
-	double getRecall() {
+	double getRecall()const {
 		return getTPR();
 	}
-	double getFScore(double beta) {
+	double getFScore(double beta) const {
 		double betabeta = beta * beta;
 		double precision = getPrecision();
 		double recall = getRecall();

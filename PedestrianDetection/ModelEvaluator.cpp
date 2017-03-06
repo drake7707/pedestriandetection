@@ -109,10 +109,12 @@ void ModelEvaluator::train()
 	cv::Ptr<cv::ml::TrainData> tdata = cv::ml::TrainData::create(trainingMat, cv::ml::SampleTypes::ROW_SAMPLE, trainingLabels,
 		cv::noArray(), cv::noArray(), cv::noArray(), cv::noArray());
 
-
 	std::vector<double>	priors(2);
-	priors[0] = trueNegativeFeatures.size();
-	priors[1] = truePositiveFeatures.size();
+
+	double tnWeight = trueNegativeFeatures.size();// *1.0 / N;
+	double tpWeight = truePositiveFeatures.size();// *1.0 / N;
+	priors[0] = tnWeight;
+	priors[1] = tpWeight;
 
 	boost->setPriors(cv::Mat(priors));
 	boost->setWeakCount(200);
@@ -238,7 +240,7 @@ EvaluationResult ModelEvaluator::evaluateFeatures(FeatureVector& v, double value
 
 	//float result = model.boost->predict(v.toMat(), cv::noArray());
 
-	return EvaluationResult((sum + valueShift) > 0 ? 1 : -1, sum);
+	return EvaluationResult((sum + valueShift) > 0 ? 1 : -1, (sum + valueShift));
 }
 
 
@@ -261,6 +263,8 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 		func();
 		mutex.unlock();
 	};;
+
+	double worstFalsePositiveValue = std::numeric_limits<double>().min();
 
 	trainingDataSet.iterateDataSetWithSlidingWindow([&](int idx) -> bool { return (idx + trainingRound) % slidingWindowEveryXImage == 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
@@ -331,8 +335,12 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 				// don't consider adding hard negatives or positives if it overlaps with a true positive
 				// because it will add samples to the negative set that are really really strong and should probably be considered positive
 				if (!overlapsWithTruePositive) {
-					if (valueShift == valueShiftForFalsePosOrNegCollection && !correct) {
+					if (abs(valueShift - valueShiftForFalsePosOrNegCollection) < 0.0001 && !correct) {
 						if (result.resultClass == 1) {
+
+							if (abs(result.rawResponse) > worstFalsePositiveValue)
+								worstFalsePositiveValue = abs(result.rawResponse);
+
 							worstFalsePositives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
 							// smallest numbers will be popped
 							if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
@@ -355,6 +363,7 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 	for (int i = 0; i < nrOfEvaluations; i++)
 		swresult.evaluations[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes[i]) / nrRegions[i];
 
+	std::cout << "Worst false positive result: " << worstFalsePositiveValue << std::endl;
 	swresult.worstFalsePositives.reserve(worstFalsePositives.size());
 	swresult.worstFalseNegatives.reserve(worstFalseNegatives.size());
 

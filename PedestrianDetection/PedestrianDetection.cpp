@@ -48,11 +48,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -321,8 +321,8 @@ void testClassifier() {
 
 
 				if (mustContinue) {
-					EvaluationResult result = modelFinal.evaluateWindow(regionRGB, regionDepth, 0);
-					if (result.resultClass == 1)
+					double result = modelFinal.evaluateWindow(regionRGB, regionDepth);
+					if (result > 0 ? 1 : -1 == 1)
 						cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
 				}
 				nrOfWindowsEvaluated++;

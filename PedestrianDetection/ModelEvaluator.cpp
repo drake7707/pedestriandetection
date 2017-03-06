@@ -117,7 +117,7 @@ void ModelEvaluator::train()
 	priors[1] = tpWeight;
 
 	boost->setPriors(cv::Mat(priors));
-	boost->setWeakCount(200);
+	boost->setWeakCount(500);
 	//boost->setWeightTrimRate(0.95);
 	//boost->setMaxDepth(5);
 	//boost->setUseSurrogates(false);
@@ -147,8 +147,8 @@ void ModelEvaluator::train()
 std::vector<ClassifierEvaluation> ModelEvaluator::evaluateDataSet(int nrOfEvaluations, bool includeRawResponses) {
 	std::vector<ClassifierEvaluation> evals(nrOfEvaluations, ClassifierEvaluation());
 
-	std::vector<double> sumTimes(nrOfEvaluations, 0);
-	std::vector<int> nrRegions(nrOfEvaluations, 0);
+	double sumTimes = 0;
+	int nrRegions = 0;
 	double featureBuildTime = 0;
 
 	trainingDataSet.iterateDataSet([&](int idx) -> bool { return idx % trainEveryXImage == 0; },
@@ -165,82 +165,86 @@ std::vector<ClassifierEvaluation> ModelEvaluator::evaluateDataSet(int nrOfEvalua
 
 
 		// get datapoints, ranging from -10 to 10
+
+		double resultSum;
+		sumTimes += measure<std::chrono::milliseconds>::execution([&]() -> void {
+			resultSum = evaluateFeatures(v);
+		});
+		nrRegions++;
 		for (int i = 0; i < nrOfEvaluations; i++)
 		{
 			double valueShift = 1.0 * i / nrOfEvaluations * 20 - 10;
 			evals[i].valueShift = valueShift;
-			sumTimes[i] += measure<std::chrono::milliseconds>::execution([&]() -> void {
 
-				EvaluationResult result = evaluateFeatures(v, valueShift);
-				bool correct;
-				if (resultClass == result.resultClass) {
-					if (resultClass == -1)
-						evals[i].nrOfTrueNegatives++;
-					else
-						evals[i].nrOfTruePositives++;
+			int evaluationClass = resultSum+valueShift > 0 ? 1 : -1;
 
-					correct = true;
-				}
-				else {
-					if (resultClass == -1 && result.resultClass == 1)
-						evals[i].nrOfFalsePositives++;
-					else
-						evals[i].nrOfFalseNegatives++;
+			bool correct;
+			if (resultClass == evaluationClass) {
+				if (resultClass == -1)
+					evals[i].nrOfTrueNegatives++;
+				else
+					evals[i].nrOfTruePositives++;
 
-					correct = false;
-				}
+				correct = true;
+			}
+			else {
+				if (resultClass == -1 && evaluationClass == 1)
+					evals[i].nrOfFalsePositives++;
+				else
+					evals[i].nrOfFalseNegatives++;
 
-				if (includeRawResponses)
-					evals[i].rawValues.push_back(RawEvaluationEntry(imageNumber, region, result.rawResponse, correct));
-			});
-			nrRegions[i]++;
+				correct = false;
+			}
+
+			if (includeRawResponses)
+				evals[i].rawValues.push_back(RawEvaluationEntry(imageNumber, region, resultSum+valueShift, correct));
+
+			
 		}
 	});
 
 	for (int i = 0; i < nrOfEvaluations; i++)
-		evals[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes[i]) / nrRegions[i];
+		evals[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes) / nrRegions;
 
 	return evals;
 }
 
-EvaluationResult ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift) const {
+double ModelEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const {
 
 	FeatureVector v = set.getFeatures(rgb, depth);
 	v.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
-	return evaluateFeatures(v, valueShift);
+	return evaluateFeatures(v);
 }
 
 
-EvaluationResult ModelEvaluator::evaluateFeatures(FeatureVector& v, double valueShift) const {
+double ModelEvaluator::evaluateFeatures(FeatureVector& featureVector) const {
 
 	auto& nodes = model.boost->getNodes();
 	auto& roots = model.boost->getRoots();
 	auto& splits = model.boost->getSplits();
 
 	double sum = 0.;
+	// iterate all trees starting from their root
 	for (auto& r : roots) {
 
-		int nidx = r, prev = nidx, c = 0;
+		int nidx = r, prev = nidx;
 
-
+		// traverse path to leaf, selecting the corresponding value from the feature vector
 		while (true) {
-			auto& n = nodes[r];
 			prev = nidx;
 			const cv::ml::DTrees::Node& node = nodes[nidx];
-			if (node.split < 0)
+			if (node.split < 0) // no more split, reached leaf
 				break;
 			const cv::ml::DTrees::Split& split = splits[node.split];
-			int vi = split.varIdx;
-			float val = v[vi];
-			nidx = val <= split.c ? node.left : node.right;
+			float val = featureVector[split.varIdx];
+			nidx = (val <= split.c) ? node.left : node.right;
 		}
 		sum += nodes[prev].value;
 	}
 
 	//float result = model.boost->predict(v.toMat(), cv::noArray());
-
-	return EvaluationResult((sum + valueShift) > 0 ? 1 : -1, (sum + valueShift));
+	return sum;
 }
 
 
@@ -249,8 +253,8 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 	EvaluationSlidingWindowResult swresult;
 	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation());
 
-	std::vector<double> sumTimes(nrOfEvaluations, 0);
-	std::vector<int> nrRegions(nrOfEvaluations, 0);
+	double sumTimesRegions = 0;
+	int nrRegions = 0;
 	double featureBuildTime = 0;
 
 	auto comp = [](std::pair<float, SlidingWindowRegion> a, std::pair<float, SlidingWindowRegion> b) { return a.first > b.first; };
@@ -280,35 +284,26 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 
 		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
 			featureBuildTime += buildTime;
+			nrRegions++;
 		});
-
-		// prepare vectors locally to a single thread
-		std::vector<EvaluationResult> results;
-		std::vector<long> resultTimes;
-		results.reserve(nrOfEvaluations);
-		resultTimes.reserve(nrOfEvaluations);
-		for (int i = 0; i < nrOfEvaluations; i++)
-		{
-			// get datapoints, ranging from -10 to 10
-			double valueShift = 1.0 * i / nrOfEvaluations * 20 - 10;
-			long time = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				EvaluationResult result = evaluateFeatures(v, valueShift);
-				results.push_back(result);
-			});
-			resultTimes.push_back(time);
-		}
+	
+		// just evaluate it once and shift it
+		double baseEvaluationSum;
+		long time = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			baseEvaluationSum = evaluateFeatures(v);
+		});
 
 		// now update everything that is shared across threads from the built vectors
 		lock([&]() -> void {
 			for (int i = 0; i < nrOfEvaluations; i++)
 			{
-				sumTimes[i] += resultTimes[i];
 				double valueShift = 1.0 * i / nrOfEvaluations * 20 - 10;
 				swresult.evaluations[i].valueShift = valueShift;
 
-				EvaluationResult result = results[i];
+				double evaluationResult = baseEvaluationSum + valueShift;
+				double evaluationClass = evaluationResult > 0 ? 1 : -1;
 				bool correct;
-				if (resultClass == result.resultClass) {
+				if (resultClass == evaluationClass) {
 					if (resultClass == -1)
 						swresult.evaluations[i].nrOfTrueNegatives++;
 					else {
@@ -320,7 +315,7 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 					correct = true;
 				}
 				else {
-					if (resultClass == -1 && result.resultClass == 1) {
+					if (resultClass == -1 && evaluationClass == 1) {
 						swresult.evaluations[i].nrOfFalsePositives++;
 
 						//if (valueShift == valueShiftForFalsePosOrNegCollection) // TODO TMP REMOVE
@@ -335,33 +330,34 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 				// don't consider adding hard negatives or positives if it overlaps with a true positive
 				// because it will add samples to the negative set that are really really strong and should probably be considered positive
 				if (!overlapsWithTruePositive) {
+					// only add worst false positives if valueShift is the value that was tested on and it was incorrect
 					if (abs(valueShift - valueShiftForFalsePosOrNegCollection) < 0.0001 && !correct) {
-						if (result.resultClass == 1) {
+						if (evaluationClass == 1) {
 
-							if (abs(result.rawResponse) > worstFalsePositiveValue)
-								worstFalsePositiveValue = abs(result.rawResponse);
+							if (abs(evaluationResult) > worstFalsePositiveValue)
+								worstFalsePositiveValue = abs(evaluationResult);
 
-							worstFalsePositives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
+							worstFalsePositives.push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
 							// smallest numbers will be popped
 							if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
 								worstFalsePositives.pop();
 						}
 						else {
-							worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(result.rawResponse), SlidingWindowRegion(imageNumber, region)));
+							worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
 							// smallest numbers will be popped
 							if (worstFalsePositives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
 								worstFalsePositives.pop();
 						}
 					}
 				}
-				nrRegions[i]++;
+				
 			}
 		});
 	});
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
 	for (int i = 0; i < nrOfEvaluations; i++)
-		swresult.evaluations[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes[i]) / nrRegions[i];
+		swresult.evaluations[i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
 
 	std::cout << "Worst false positive result: " << worstFalsePositiveValue << std::endl;
 	swresult.worstFalsePositives.reserve(worstFalsePositives.size());
@@ -376,7 +372,7 @@ EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOf
 	while (worstFalseNegatives.size() > 0) {
 		auto pair = worstFalseNegatives.top();
 		worstFalseNegatives.pop();
-		std::cout << "Worst FN region score= " << pair.first << " image= " << pair.second.imageNumber << " bbox=" << pair.second.bbox.x << "," << pair.second.bbox.y << " " << pair.second.bbox.width << "x" << pair.second.bbox.height << std::endl;
+	//	std::cout << "Worst FN region score= " << pair.first << " image= " << pair.second.imageNumber << " bbox=" << pair.second.bbox.x << "," << pair.second.bbox.y << " " << pair.second.bbox.width << "x" << pair.second.bbox.height << std::endl;
 		swresult.worstFalseNegatives.push_back(pair.second);
 	}
 

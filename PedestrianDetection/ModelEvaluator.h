@@ -46,7 +46,7 @@ private:
 
 	Model model;
 
-	EvaluationResult evaluateFeatures(FeatureVector& v, double valueShift = 0) const;
+	double evaluateFeatures(FeatureVector& v) const;
 
 	int trainEveryXImage = 2;
 	int slidingWindowEveryXImage = 1;
@@ -61,7 +61,7 @@ public:
 	void train();
 
 	std::vector<ClassifierEvaluation> evaluateDataSet(int nrOfEvaluations, bool includeRawResponses);
-	EvaluationResult evaluateWindow(cv::Mat& rgb, cv::Mat& depth, double valueShift = 0) const;
+	double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
 
 	EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOfEvaluations, int trainingRound, float valueShiftForFalsePosOrNegCollection, int maxNrOfFalsePosOrNeg);
 

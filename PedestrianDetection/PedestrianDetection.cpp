@@ -553,7 +553,7 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 
 int main()
 {
-	//browseThroughDataSet(std::string("trainingsets\\LBP(RGB)_train1.txt"));
+	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
 	//testClassifier();
 
 	
@@ -643,23 +643,36 @@ int main()
 	//}
 	//tester.runJobs();
 
+	tester.nrOfConcurrentJobs = 1;
 
 	set = { "LBP(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
-	/*set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
-	tester.runJobs();*/
-
-
-	tester.nrOfConcurrentJobs = 1;
 	set = { "HoG(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
-	set = { "HoG(Depth)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
 	set = { "HONV" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	set = { "HDD" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)", "HDD" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	
+	/*set = { "HoG(Depth)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+	
 	set = { "LBP(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
 	set = { "HDD" };
@@ -667,7 +680,7 @@ int main()
 	set = { "S2HoG(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
 
-	tester.runJobs();
+	tester.runJobs();*/
 
 	/*for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { name };

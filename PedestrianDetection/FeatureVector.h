@@ -22,16 +22,22 @@ public:
 	}
 
 	void normalize() {
+		double n = norm();
+		if (n > 0) {
+			for (int i = 0; i < this->size(); i++)
+				at(i) = at(i) / n;
+		}
+	}
+
+	double norm() const {
 		double sum = 0;
 		for (int i = 0; i < this->size(); i++)
 			sum += at(i) * at(i);
 
 		double norm = sqrt(sum);
-		if (norm > 0) {
-			for (int i = 0; i < this->size(); i++)
-				at(i) = at(i) / norm;
-		}
+		return norm;
 	}
+
 
 	double distanceToSquared(const FeatureVector& v) {
 		if (v.size() != this->size())
@@ -45,9 +51,22 @@ public:
 		return sumsquares;
 	}
 
-	void applyMeanAndVariance(std::vector<float> meanVector, std::vector<float> sigmaVector) {
+	void applyMeanAndVariance(const std::vector<float>& meanVector, const std::vector<float>& sigmaVector) {
 		for (int f = 0; f < this->size(); f++)
 			at(f) = sigmaVector[f] != 0 ? (at(f) - meanVector[f]) / sigmaVector[f] : 0;
+	}
+
+	
+	double dot(FeatureVector& v) {
+		if (v.size() != this->size())
+			throw std::exception("Can't calculate distance between 2 vectors of varying dimensions");
+
+		double sum = 0;
+		for (int i = 0; i < this->size(); i++)
+		{
+			sum += at(i) * v.at(i);
+		}
+		return sum;
 	}
 
 	cv::Mat toMat() {

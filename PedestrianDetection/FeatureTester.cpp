@@ -98,15 +98,15 @@ void FeatureTesterJob::run() const {
 		std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
 
 
-		std::sort(evaluations.begin(), evaluations.end(), [](const ClassifierEvaluation& a, const ClassifierEvaluation& b) -> bool { return a.getTPR() > b.getTPR(); });
+		//std::sort(evaluations.begin(), evaluations.end(), [](const ClassifierEvaluation& a, const ClassifierEvaluation& b) -> bool { return a.getTPR() > b.getTPR(); });
 
-		for (auto& eval : evaluations) {
-			if (eval.getTPR() > requiredTPRRate)
-				valueShiftRequiredForTPR95Percent = eval.valueShift;
-			else
-				break; // all evaluations lower will be lower TPR
-		}
-		std::cout << "Chosen " << valueShiftRequiredForTPR95Percent << " as decision boundary shift to attain TPR of " << requiredTPRRate << std::endl;
+		//for (auto& eval : evaluations) {
+		//	if (eval.getTPR() > requiredTPRRate)
+		//		valueShiftRequiredForTPR95Percent = eval.valueShift;
+		//	else
+		//		break; // all evaluations lower will be lower TPR
+		//}
+		//std::cout << "Chosen " << valueShiftRequiredForTPR95Percent << " as decision boundary shift to attain TPR of " << requiredTPRRate << std::endl;
 		//}
 
 		// --------------- Evaluation sliding window --------------------
@@ -122,7 +122,7 @@ void FeatureTesterJob::run() const {
 				std::cout << "Started evaluation with sliding window of " << featureSetName << std::endl;
 				EvaluationSlidingWindowResult result;
 				long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-					result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, valueShiftRequiredForTPR95Percent, maxNrWorstPosNeg);
+					result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, requiredTPRRate, maxNrWorstPosNeg);
 				});
 				std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 

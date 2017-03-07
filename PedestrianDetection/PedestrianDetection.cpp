@@ -48,11 +48,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -204,52 +204,6 @@ TrainingDataSet saveTNTP() {
 }
 
 
-
-void trainDetailedClassifier() {
-
-	int trainingRound = 1;
-	TrainingDataSet tSet(kittiDatasetPath);
-	tSet.load(std::string("trainingsets\\train0.txt"));
-
-	std::string featureSetName = "HoG(Depth)+HoG(RGB)+LBP(RGB)";
-	FeatureSet setFinal;
-
-	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
-	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
-	setFinal.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
-
-	ModelEvaluator modelFinal(featureSetName, tSet, setFinal);
-	modelFinal.loadModel(std::string("models\\" + featureSetName + ".xml"));
-
-
-
-	// parameters, number of additional TN/TP
-	std::ofstream str("results\\" + featureSetName + "_round" + std::to_string(trainingRound) + ".csv");
-	EvaluationSlidingWindowResult result = modelFinal.evaluateWithSlidingWindow(500, trainingRound, 0, 1000);
-	for (auto& result : result.evaluations) {
-		result.toCSVLine(str, false);
-		str << std::endl;
-	}
-
-	TrainingDataSet newTrainingSet = tSet;
-	for (auto& swregion : result.worstFalsePositives) {
-
-		TrainingRegion r;
-		r.region = swregion.bbox;
-		r.regionClass = -1; // it was a negative but positive was specified
-		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-	}
-
-	for (auto& swregion : result.worstFalseNegatives) {
-
-		TrainingRegion r;
-		r.region = swregion.bbox;
-		r.regionClass = 1; // it was a positive but negative was specified
-		newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-	}
-	newTrainingSet.save("trainingsets\\" + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt");
-}
-
 void testClassifier() {
 
 	TrainingDataSet tSet(kittiDatasetPath);
@@ -257,13 +211,13 @@ void testClassifier() {
 
 
 	FeatureSet fset;
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
+	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
 	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
 
 	ModelEvaluator modelFinal(std::string("Test"), tSet, fset);
-	modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB)_round2.xml"));
+	modelFinal.loadModel(std::string("models\\LBP(RGB).xml"));
 
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
@@ -491,6 +445,155 @@ void testSlidingWindow() {
 }
 
 
+
+struct DistanceBetween {
+	SlidingWindowRegion tpRegion;
+	SlidingWindowRegion tnRegion;
+
+	double dot;
+
+	DistanceBetween(double dot, SlidingWindowRegion& tpRegion, SlidingWindowRegion& tnRegion) : dot(dot), tpRegion(tpRegion), tnRegion(tnRegion) {
+
+	}
+	bool operator<(const DistanceBetween& other) const {
+		return abs(this->dot) < abs(other.dot);
+	}
+};
+
+void checkDistanceBetweenTPAndTN(std::string& trainingFile) {
+	TrainingDataSet tSet(kittiDatasetPath);
+	tSet.load(trainingFile);
+
+	FeatureSet fset;
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
+	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
+
+
+	std::vector<FeatureVector> truePositiveFeatures;
+	std::vector<FeatureVector> trueNegativeFeatures;
+
+	std::vector<SlidingWindowRegion> truePositiveRegions;
+	std::vector<SlidingWindowRegion> trueNegativeRegions;
+
+	tSet.iterateDataSet([&](int idx) -> bool { return true; },
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
+
+		if (idx % 100 == 0)
+			ProgressWindow::getInstance()->updateStatus(std::string("Min distance between TN/TP"), 1.0 * imageNumber / tSet.getNumberOfImages(), std::string("Building feature vectors (") + std::to_string(imageNumber) + ")");
+
+		FeatureVector v = fset.getFeatures(rgb, depth);
+		if (resultClass == 1) {
+			truePositiveFeatures.push_back(v);
+			truePositiveRegions.push_back(SlidingWindowRegion(imageNumber, region));
+		}
+		else {
+			trueNegativeFeatures.push_back(v);
+			trueNegativeRegions.push_back(SlidingWindowRegion(imageNumber, region));
+		}
+	});
+
+	int featureSize = truePositiveFeatures[0].size();
+
+	// build mean and sigma vector
+	int N = truePositiveFeatures.size() + trueNegativeFeatures.size();
+	auto meanVector = std::vector<float>(featureSize, 0);
+	auto sigmaVector = std::vector<float>(featureSize, 0);
+
+	for (auto& featureVector : truePositiveFeatures) {
+		for (int f = 0; f < featureSize; f++)
+			meanVector[f] += featureVector[f];
+	}
+	for (auto& featureVector : trueNegativeFeatures) {
+		for (int f = 0; f < featureSize; f++)
+			meanVector[f] += featureVector[f];
+	}
+
+	for (int f = 0; f < featureSize; f++)
+		meanVector[f] /= N;
+
+	std::vector<double> sigmaSum(featureSize, 0);
+	for (auto& featureVector : truePositiveFeatures) {
+		for (int f = 0; f < featureSize; f++)
+			sigmaSum[f] += (featureVector[f] - meanVector[f]) * (featureVector[f] - meanVector[f]);
+	}
+	for (auto& featureVector : trueNegativeFeatures) {
+		for (int f = 0; f < featureSize; f++)
+			sigmaSum[f] += (featureVector[f] - meanVector[f]) * (featureVector[f] - meanVector[f]);
+	}
+
+	for (int f = 0; f < featureSize; f++)
+		sigmaVector[f] = sigmaSum[f] / (N - 1);
+
+	// now apply the normalization on the feature arrays
+	for (auto& featureVector : truePositiveFeatures) {
+		featureVector.applyMeanAndVariance(meanVector, sigmaVector);
+		featureVector.normalize();
+	}
+
+	for (auto& featureVector : trueNegativeFeatures) {
+		featureVector.applyMeanAndVariance(meanVector, sigmaVector);
+		featureVector.normalize();
+	}
+
+
+	std::ofstream str("tptnsimilarity.csv");
+	str << std::fixed;
+	str << "idx;similarity;TPIndex;TNImage;TNx;TNy;TNwidth;TNheight;TPImage;TPx;TPy;TPwidth;TPheight;" << std::endl;
+
+
+	std::set<DistanceBetween> distances;
+	for (int j = 0; j < trueNegativeFeatures.size(); j++) {
+
+		auto& tn = trueNegativeFeatures[j];
+
+		double minDistance = std::numeric_limits<double>().max();
+		double minSimilarity = -1;
+		int minTP = -1;
+
+		
+		for (int i = 0; i < truePositiveFeatures.size(); i++)
+		{
+			double tpNorm = truePositiveFeatures[i].norm();
+			double similarity = tn.dot(truePositiveFeatures[i]);
+			double abssimilarity = abs(similarity);
+			if (minDistance > abssimilarity) {
+				minDistance = abssimilarity;
+				minSimilarity = similarity;
+				minTP = i;
+			}
+		}
+
+		auto& tpregion = truePositiveRegions[minTP];
+		auto& tnregion = trueNegativeRegions[j];
+		str << j << ";" << minSimilarity << "; " << minTP << "; " <<
+			tnregion.imageNumber << ";" << tnregion.bbox.x << ";" << tnregion.bbox.y << ";" << tnregion.bbox.width << ";" << tnregion.bbox.height << ";" <<
+			tpregion.imageNumber << ";" << tpregion.bbox.x << ";" << tpregion.bbox.y << ";" << tpregion.bbox.width << ";" << tpregion.bbox.height << ";"
+			<< std::endl;
+
+		DistanceBetween db(minSimilarity, tpregion, tnregion);
+		distances.emplace(db);
+	}
+
+	KITTIDataSet ds(kittiDatasetPath);
+	for (auto& db : distances) {
+		cv::Mat tn = ds.getImagesForNumber(db.tnRegion.imageNumber)[0];
+		cv::Mat tp = ds.getImagesForNumber(db.tpRegion.imageNumber)[0];
+
+		cv::rectangle(tp, db.tpRegion.bbox, cv::Scalar(0, 255, 0));
+		cv::rectangle(tn, db.tnRegion.bbox, cv::Scalar(0, 0, 255));
+
+		cv::putText(tp, std::to_string(db.dot), cv::Point(20, 20), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 0, 0), 1, CV_AA);
+
+		cv::imshow("TruePos", tp);
+		cv::imshow("TrueNeg", tn);
+
+		
+		cv::waitKey(0);
+	}
+}
+
 void browseThroughDataSet(std::string& trainingFile) {
 	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(trainingFile);
@@ -553,10 +656,12 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 
 int main()
 {
-	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
+	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\train0.txt"));
+
+	//browseThroughDataSet(std::string("trainingsets\\LBP(RGB)_train4.txt"));
 	//testClassifier();
 
-	
+
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
@@ -669,10 +774,10 @@ int main()
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
-	
+
 	/*set = { "HoG(Depth)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
-	
+
 	set = { "LBP(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
 	set = { "HDD" };

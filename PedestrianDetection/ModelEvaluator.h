@@ -34,7 +34,7 @@ struct SlidingWindowRegion {
 struct EvaluationSlidingWindowResult {
 	std::vector<ClassifierEvaluation> evaluations;
 	std::vector<SlidingWindowRegion> worstFalsePositives;
-	std::vector<SlidingWindowRegion> worstFalseNegatives;
+	//std::vector<SlidingWindowRegion> worstFalseNegatives;
 };
 
 class ModelEvaluator
@@ -63,7 +63,7 @@ public:
 	std::vector<ClassifierEvaluation> evaluateDataSet(int nrOfEvaluations, bool includeRawResponses);
 	double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
 
-	EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOfEvaluations, int trainingRound, float valueShiftForFalsePosOrNegCollection, int maxNrOfFalsePosOrNeg);
+	EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg);
 
 	void saveModel(std::string& path);
 	void loadModel(std::string& path);

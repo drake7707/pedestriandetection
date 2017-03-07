@@ -1,6 +1,0 @@
-HoG(RGB)
-HoG(Depth)
-HONV
-LBP(RGB)
-HDD
-S2HoG(RGB)

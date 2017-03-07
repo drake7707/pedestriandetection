@@ -460,7 +460,7 @@ struct DistanceBetween {
 	}
 };
 
-void checkDistanceBetweenTPAndTN(std::string& trainingFile) {
+void checkDistanceBetweenTPAndTN(std::string& trainingFile, std::string& outputFile) {
 	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(trainingFile);
 
@@ -477,7 +477,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile) {
 	std::vector<SlidingWindowRegion> truePositiveRegions;
 	std::vector<SlidingWindowRegion> trueNegativeRegions;
 
-	tSet.iterateDataSet([&](int idx) -> bool { return true; },
+	tSet.iterateDataSet([&](int idx) -> bool { return (idx+1)%10 == 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		if (idx % 100 == 0)
@@ -538,13 +538,16 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile) {
 	}
 
 
-	std::ofstream str("tptnsimilarity.csv");
+	std::ofstream str(outputFile);
 	str << std::fixed;
 	str << "idx;similarity;TPIndex;TNImage;TNx;TNy;TNwidth;TNheight;TPImage;TPx;TPy;TPwidth;TPheight;" << std::endl;
 
 
 	std::set<DistanceBetween> distances;
 	for (int j = 0; j < trueNegativeFeatures.size(); j++) {
+
+		if (j % 100 == 0)
+			ProgressWindow::getInstance()->updateStatus(std::string("Min distance between TN/TP"), 1.0 * j / trueNegativeFeatures.size(), std::string("Calculating min distance between TP and TN (") + std::to_string(j) + ")");
 
 		auto& tn = trueNegativeFeatures[j];
 
@@ -575,6 +578,9 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile) {
 		DistanceBetween db(minSimilarity, tpregion, tnregion);
 		distances.emplace(db);
 	}
+
+	str.flush();
+	str.close();
 
 	KITTIDataSet ds(kittiDatasetPath);
 	for (auto& db : distances) {
@@ -656,15 +662,18 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 
 int main()
 {
-	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\train0.txt"));
+	// show progress window
+	ProgressWindow* wnd = ProgressWindow::getInstance();
+	wnd->run();
+
+
+	checkDistanceBetweenTPAndTN(std::string("trainingsets\\train0.txt"), std::string("tptnsimilarity_train0.csv"));
 
 	//browseThroughDataSet(std::string("trainingsets\\LBP(RGB)_train4.txt"));
 	//testClassifier();
 
 
-	// show progress window
-	ProgressWindow* wnd = ProgressWindow::getInstance();
-	wnd->run();
+	
 
 	/*std::ofstream str("heightdepthvaluesTN.csv");
 	printHeightVerticalAvgDepthRelation(std::string("trainingsets\\train0.txt"), str);*/

@@ -3,6 +3,7 @@
 #include "VariableNumberFeatureCreator.h"
 #include <fstream>
 #include "ProgressWindow.h"
+#include "EvaluatorCascade.h"
 
 
 
@@ -26,20 +27,31 @@ std::string FeatureTesterJob::getFeatureName() const {
 	return featureSetName;
 }
 
+
+
 void FeatureTesterJob::run() const {
 
 	int maxNrWorstPosNeg = 4000;
 	float requiredTPRRate = 0.95;
+	int trainEveryXImage = 2;
 
 	std::string featureSetName = getFeatureName();
-	int trainingRound = 0;
+	
+
+	EvaluatorCascade cascade(featureSetName);
+	
+	std::string cascadeFile = std::string("models") + PATH_SEPARATOR + featureSetName + "_cascade.xml";
+
+	// load and continue if it already exists
+	if (FileExists(cascadeFile))
+		cascade.load(cascadeFile, std::string("models"));
 
 	// ---------------- Load a training set -----------------------
 	std::string dataSetPath = std::string(baseDataSetPath);
 	TrainingDataSet trainingDataSet(dataSetPath);
-	trainingDataSet.load(trainingRound == 0 ? (std::string("trainingsets") + PATH_SEPARATOR + "train0.txt") : (std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound) + ".txt"));
+	trainingDataSet.load(cascade.trainingRound == 0 ? (std::string("trainingsets") + PATH_SEPARATOR + "train0.txt") : (std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound) + ".txt"));
 
-	while (trainingRound < nrOfTrainingRounds) {
+	while (cascade.trainingRound < nrOfTrainingRounds) {
 		// ---------------- Build a feature set & prepare variable feature creators --------------------
 		FeatureSet featureSet;
 		for (auto& name : set) {
@@ -47,51 +59,52 @@ void FeatureTesterJob::run() const {
 
 			std::unique_ptr<IFeatureCreator> featureCreator = creator.createInstance(creator.name);
 			if (dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()) != nullptr) {
-				(dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()))->prepare(trainingDataSet, trainingRound);
+				(dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()))->prepare(trainingDataSet, cascade.trainingRound);
 			}
 			featureSet.addCreator(std::move(featureCreator));
 		}
 
-		ModelEvaluator evaluator(featureSetName + " round " + std::to_string(trainingRound), trainingDataSet, featureSet);
+		ModelEvaluator evaluator(featureSetName + " round " + std::to_string(cascade.trainingRound));
 
-
+		std::string modelFile = std::string("models") + PATH_SEPARATOR + evaluator.getName() + ".xml";
 		// ---------------- Training -----------------------
-		std::string modelFile = trainingRound == 0 ? std::string("models") + PATH_SEPARATOR + featureSetName + ".xml" : std::string("models") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(trainingRound) + ".xml";
 		if (FileExists(modelFile)) {
 			std::cout << "Skipped training of " << featureSetName << ", loading from existing model instead" << std::endl;
 			evaluator.loadModel(modelFile);
 		}
 		else {
-			std::cout << "Started training of " << featureSetName << ", round " << trainingRound << std::endl;
+			std::cout << "Started training of " << featureSetName << ", round " << cascade.trainingRound << std::endl;
 			long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluator.train();
+				evaluator.train(trainingDataSet, featureSet, trainEveryXImage);
 			});
-			std::cout << "Training round " << trainingRound << " complete after " << elapsedTrainingTime << "ms for " << featureSetName << std::endl;
+			std::cout << "Training round " << cascade.trainingRound << " complete after " << elapsedTrainingTime << "ms for " << featureSetName << std::endl;
 
 			// save it to a file
 			evaluator.saveModel(modelFile);
 		}
+		cascade.addModelEvaluator(evaluator, 0);
+
 
 		// --------------- Evaluation --------------------
 
 		double valueShiftRequiredForTPR95Percent = 0;
 
 		std::vector<ClassifierEvaluation> evaluations;
-		std::string evaluationFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(trainingRound) + ".csv";
+		std::string evaluationFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(cascade.trainingRound) + ".csv";
 		//if (FileExists(evaluationFile)) {
 		//	std::cout << "Skipped evaluation of " << featureSetName << ", evaluation was already done." << std::endl;
 		//}
 		//else {
 		std::cout << "Started evaluation of " << featureSetName << std::endl;
 		long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			evaluations = evaluator.evaluateDataSet(nrOfEvaluations, false);
+			evaluations = evaluator.evaluateDataSet(trainingDataSet, featureSet, nrOfEvaluations, false, [&](int imgNr) -> bool { return imgNr % trainEveryXImage == 0; });
 		});
 		std::ofstream str(evaluationFile);
 		str << "Name" << ";";
 		ClassifierEvaluation().toCSVLine(str, true);
 		str << std::endl;
 		for (auto& result : evaluations) {
-			str << featureSetName << "_round" << trainingRound << ";";
+			str << featureSetName << "_round" << cascade.trainingRound << ";";
 			result.toCSVLine(str, false);
 			str << std::endl;
 		}
@@ -111,8 +124,8 @@ void FeatureTesterJob::run() const {
 
 		// --------------- Evaluation sliding window --------------------
 		if (evaluateOnSlidingWindow) {
-			std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(trainingRound) + ".csv";
-			std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt";
+			std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(cascade.trainingRound) + ".csv";
+			std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt";
 			if (FileExists(evaluationSlidingFile) && FileExists(nextRoundTrainingFile)) {
 				std::cout << "Skipped evaluation with sliding window of " << featureSetName << ", evaluation was already done and next training set was already present." << std::endl;
 				// load the training set for next round
@@ -122,7 +135,7 @@ void FeatureTesterJob::run() const {
 				std::cout << "Started evaluation with sliding window of " << featureSetName << std::endl;
 				EvaluationSlidingWindowResult result;
 				long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-					result = evaluator.evaluateWithSlidingWindow(nrOfEvaluations, trainingRound, requiredTPRRate, maxNrWorstPosNeg);
+					result = cascade.evaluateWithSlidingWindow(trainingDataSet, featureSet, nrOfEvaluations, cascade.trainingRound, requiredTPRRate, maxNrWorstPosNeg);
 				});
 				std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 
@@ -131,10 +144,12 @@ void FeatureTesterJob::run() const {
 				ClassifierEvaluation().toCSVLine(str, true);
 				str << std::endl;
 				for (auto& result : result.evaluations) {
-					str << featureSetName << "[S]_round" << trainingRound << ";";
+					str << featureSetName << "[S]_round" << cascade.trainingRound << ";";
 					result.toCSVLine(str, false);
 					str << std::endl;
 				}
+
+				cascade.updateLastModelValueShift(result.evaluations[result.evaluationIndexWhenTPRThresholdIsReached].valueShift);
 
 				// --------------- New training set --------------------
 				TrainingDataSet newTrainingSet = trainingDataSet;
@@ -154,15 +169,16 @@ void FeatureTesterJob::run() const {
 				//	r.regionClass = 1; // it was a positive but negative was specified
 				//	newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
 				//}
-				newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(trainingRound + 1) + ".txt");
+				newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt");
 				trainingDataSet = newTrainingSet;
 			}
 		}
 
 		// round is finished
-		ProgressWindow::getInstance()->finish(featureSetName + " round " + std::to_string(trainingRound));
+		ProgressWindow::getInstance()->finish(featureSetName + " round " + std::to_string(cascade.trainingRound));
 
-		trainingRound++;
+		cascade.trainingRound++;
+		cascade.save(cascadeFile);
 	}
 }
 

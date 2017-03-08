@@ -161,6 +161,7 @@
     <ClInclude Include="ClassifierEvaluation.h" />
     <ClInclude Include="DataSet.h" />
     <ClInclude Include="DataSetLabel.h" />
+    <ClInclude Include="EvaluatorCascade.h" />
     <ClInclude Include="FASTFeatureCreator.h" />
     <ClInclude Include="FeatureSet.h" />
     <ClInclude Include="FeatureTester.h" />
@@ -176,6 +177,7 @@
     <ClInclude Include="HoGHistogramVarianceFeatureCreator.h" />
     <ClInclude Include="HistogramResult.h" />
     <ClInclude Include="HONVFeatureCreator.h" />
+    <ClInclude Include="IEvaluator.h" />
     <ClInclude Include="IFeatureCreator.h" />
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="LBPFeatureCreator.h" />
@@ -196,6 +198,7 @@
     <ClCompile Include="ClassifierEvaluation.cpp" />
     <ClCompile Include="DataSet.cpp" />
     <ClCompile Include="DataSetLabel.cpp" />
+    <ClCompile Include="EvaluatorCascade.cpp" />
     <ClCompile Include="FASTFeatureCreator.cpp" />
     <ClCompile Include="FeatureSet.cpp" />
     <ClCompile Include="FeatureTester.cpp" />
@@ -211,6 +214,7 @@
     <ClCompile Include="HoGHistogramVarianceFeatureCreator.cpp" />
     <ClCompile Include="HistogramResult.cpp" />
     <ClCompile Include="HONVFeatureCreator.cpp" />
+    <ClCompile Include="IEvaluator.cpp" />
     <ClCompile Include="IFeatureCreator.cpp" />
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="LBPFeatureCreator.cpp" />

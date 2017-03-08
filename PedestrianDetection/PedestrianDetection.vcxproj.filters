@@ -132,6 +132,12 @@
     <ClInclude Include="ProgressWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EvaluatorCascade.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IEvaluator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -234,6 +240,12 @@
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ProgressWindow.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EvaluatorCascade.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IEvaluator.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -48,11 +48,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -142,7 +142,7 @@ TrainingDataSet saveTNTP() {
 		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
 
 	int sizeVariance = 8; // from 0.25 to 2 times the refWidth and refHeight ( so anything between 16x32 - 32x64 - 64x128 - 128x256, more scales might be evaluated later )
-	int nrOfTNPerImage = 10;
+	int nrOfTNPerImage = 2;
 
 	for (int i = 0; i < labelsPerNumber.size(); i++)
 	{
@@ -216,7 +216,7 @@ void testClassifier() {
 	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
 
-	ModelEvaluator modelFinal(std::string("Test"), tSet, fset);
+	ModelEvaluator modelFinal(std::string("Test"));
 	modelFinal.loadModel(std::string("models\\LBP(RGB).xml"));
 
 
@@ -275,7 +275,8 @@ void testClassifier() {
 
 
 				if (mustContinue) {
-					double result = modelFinal.evaluateWindow(regionRGB, regionDepth);
+					FeatureVector v = fset.getFeatures(regionRGB, regionDepth);
+					double result = modelFinal.evaluateFeatures(v);
 					if (result > 0 ? 1 : -1 == 1)
 						cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
 				}
@@ -667,7 +668,7 @@ int main()
 	wnd->run();
 
 
-	checkDistanceBetweenTPAndTN(std::string("trainingsets\\train0.txt"), std::string("tptnsimilarity_train0.csv"));
+	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\LBP(RGB)_train3.txt"), std::string("tptnsimilarity_lbp_train3.csv"));
 
 	//browseThroughDataSet(std::string("trainingsets\\LBP(RGB)_train4.txt"));
 	//testClassifier();

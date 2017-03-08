@@ -8,6 +8,7 @@
 #include "ClassifierEvaluation.h"
 #include "TrainingDataSet.h"
 #include "ProgressWindow.h"
+#include "IEvaluator.h"
 
 
 struct Model {
@@ -17,55 +18,35 @@ struct Model {
 };
 
 
-struct EvaluationResult {
-	int resultClass;
-	double rawResponse;
-	EvaluationResult(int resultClass, double rawResponse) : resultClass(resultClass), rawResponse(rawResponse) { }
-};
-
-
-
-struct SlidingWindowRegion {
-	int imageNumber;
-	cv::Rect bbox;
-	SlidingWindowRegion(int imageNumber, cv::Rect bbox) : imageNumber(imageNumber), bbox(bbox) { }
-};
-
-struct EvaluationSlidingWindowResult {
-	std::vector<ClassifierEvaluation> evaluations;
-	std::vector<SlidingWindowRegion> worstFalsePositives;
-	//std::vector<SlidingWindowRegion> worstFalseNegatives;
-};
-
-class ModelEvaluator
+class ModelEvaluator : public IEvaluator
 {
-private:
-	std::string name;
-	const TrainingDataSet& trainingDataSet;
-	const FeatureSet& set;
-
 	Model model;
 
-	double evaluateFeatures(FeatureVector& v) const;
+	
 
-	int trainEveryXImage = 2;
-	int slidingWindowEveryXImage = 1;
 
 public:
-	ModelEvaluator(std::string& name, const TrainingDataSet& trainingDataSet, const FeatureSet& set);
-	~ModelEvaluator();
+	ModelEvaluator(std::string& name);
+	virtual ~ModelEvaluator();
 
 	
 	
+	double evaluateFeatures(FeatureVector& v) const;
 
-	void train();
 
-	std::vector<ClassifierEvaluation> evaluateDataSet(int nrOfEvaluations, bool includeRawResponses);
-	double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
 
-	EvaluationSlidingWindowResult ModelEvaluator::evaluateWithSlidingWindow(int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg);
+	void train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int trainEveryXImage = 2);
+
+	// std::vector<ClassifierEvaluation> evaluateDataSet(int nrOfEvaluations, bool includeRawResponses) const;
+	// double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
+
+   //EvaluationSlidingWindowResult evaluateWithSlidingWindow(int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const;
 
 	void saveModel(std::string& path);
 	void loadModel(std::string& path);
+
+
+	std::string getName() const;
+
 };
 

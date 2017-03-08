@@ -3,7 +3,7 @@
 #include "opencv2/opencv.hpp"
 #include <map>
 #include <functional>
-#include "KITTIDataSet.h";
+#include "KITTIDataSet.h"
 
 struct TrainingRegion {
 	cv::Rect region;

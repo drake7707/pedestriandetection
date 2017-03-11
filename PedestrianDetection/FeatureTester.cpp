@@ -97,7 +97,7 @@ void FeatureTesterJob::run() const {
 		//else {
 		std::cout << "Started evaluation of " << featureSetName << std::endl;
 		long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			evaluations = evaluator.evaluateDataSet(trainingDataSet, featureSet, nrOfEvaluations, false, [&](int imgNr) -> bool { return imgNr % trainEveryXImage == 0; });
+			evaluations = cascade.evaluateDataSet(trainingDataSet, featureSet, nrOfEvaluations, false, [&](int imgNr) -> bool { return imgNr % trainEveryXImage == 0; });
 		});
 		std::ofstream str(evaluationFile);
 		str << "Name" << ";";

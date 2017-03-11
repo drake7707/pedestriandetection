@@ -37,6 +37,7 @@
 #include "LBPFeatureCreator.h"
 #include "HONVFeatureCreator.h"
 
+#include "EvaluatorCascade.h"
 
 #include "ModelEvaluator.h"
 
@@ -206,18 +207,18 @@ TrainingDataSet saveTNTP() {
 
 void testClassifier() {
 
-	TrainingDataSet tSet(kittiDatasetPath);
-	tSet.load(std::string("trainingsets\\train0.txt"));
-
-
+	
 	FeatureSet fset;
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
 	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
 
+	EvaluatorCascade cascade(std::string("Test"));
+	cascade.load(std::string("models\\LBP(RGB)_cascade.xml"), std::string("models"));
+
 	ModelEvaluator modelFinal(std::string("Test"));
-	modelFinal.loadModel(std::string("models\\LBP(RGB).xml"));
+	modelFinal.loadModel(std::string("models\\HoG(RGB) round 0.xml"));
 
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
@@ -276,7 +277,7 @@ void testClassifier() {
 
 				if (mustContinue) {
 					FeatureVector v = fset.getFeatures(regionRGB, regionDepth);
-					double result = modelFinal.evaluateFeatures(v);
+					double result = cascade.evaluateFeatures(v);
 					if (result > 0 ? 1 : -1 == 1)
 						cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
 				}

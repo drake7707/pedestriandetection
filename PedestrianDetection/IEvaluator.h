@@ -35,7 +35,7 @@ protected:
 	std::string name;
 	
 	int slidingWindowEveryXImage = 1;
-	int evaluationRange = 30;
+	int evaluationRange = 60;
 
 public:
 	IEvaluator(std::string& name);

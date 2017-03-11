@@ -49,8 +49,8 @@ void EvaluatorCascade::save(std::string& path) const {
 	
 	fs << "name_count" << (int)names.size();
 	for (int i = 0; i < names.size(); i++)
-		fs << "name_" + std::to_string(i);
-
+		fs << ("name_" + std::to_string(i)) << names[i];
+	
 	fs << "valueShifts" << valueShifts;
 
 	fs.release();
@@ -61,7 +61,8 @@ void EvaluatorCascade::load(std::string& path, std::string& modelsDirectory) {
 
 	cv::FileStorage fsRead(path, cv::FileStorage::READ);
 
-	std::vector<const char*> names;
+	
+	std::vector<std::string> names;
 	//fsRead["names"] >> names;
 	int nameCount;
 	fsRead["name_count"] >> nameCount;
@@ -70,12 +71,14 @@ void EvaluatorCascade::load(std::string& path, std::string& modelsDirectory) {
 	{
 		std::string name;
 		fsRead["name_" + std::to_string(i)] >> name;
+		names.push_back(name);
 	}
 
 
 	std::vector<float> valueShifts;
 	fsRead["valueShifts"] >> valueShifts;
 
+	fsRead["trainingRound"] >> trainingRound;
 
 
 	cascade.clear();
@@ -84,7 +87,7 @@ void EvaluatorCascade::load(std::string& path, std::string& modelsDirectory) {
 		std::string name = std::string(names[i]);
 
 		ModelEvaluator evaluator(name);
-		evaluator.loadModel(modelsDirectory + PATH_SEPARATOR + names[i]);
+		evaluator.loadModel(modelsDirectory + PATH_SEPARATOR + name + ".xml");
 
 
 		cascade.push_back(EvaluationCascadeEntry(evaluator, valueShifts[i]));

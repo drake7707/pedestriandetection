@@ -78,6 +78,8 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 	for (int i = 0; i < nrOfEvaluations; i++)
 		evals[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes) / nrRegions;
 
+	ProgressWindow::getInstance()->finish(std::string(name));
+
 	return evals;
 }
 
@@ -236,6 +238,8 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 	//	//	std::cout << "Worst FN region score= " << pair.first << " image= " << pair.second.imageNumber << " bbox=" << pair.second.bbox.x << "," << pair.second.bbox.y << " " << pair.second.bbox.width << "x" << pair.second.bbox.height << std::endl;
 	//	swresult.worstFalseNegatives.push_back(pair.second);
 	//}
+
+	ProgressWindow::getInstance()->finish(std::string(name));
 
 	return swresult;
 }

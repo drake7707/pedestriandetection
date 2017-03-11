@@ -1,0 +1,5 @@
+LBP(RGB)
+HoG(RGB)
+HoG(Depth)+HoG(RGB)+LBP(RGB)
+HONV
+HDD

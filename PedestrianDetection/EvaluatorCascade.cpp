@@ -58,6 +58,8 @@ void EvaluatorCascade::save(std::string& path) const {
 }
 
 void EvaluatorCascade::load(std::string& path, std::string& modelsDirectory) {
+	if (!FileExists(path))
+		throw std::exception("File does not exist");
 
 	cv::FileStorage fsRead(path, cv::FileStorage::READ);
 

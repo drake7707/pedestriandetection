@@ -44215,3 +44215,320 @@ Training boost classifier on 86284 samples, feature size 3780
 Job LBP(RGB) is already processed and will be skipped
 Starting job HoG(RGB)
 Started training of HoG(RGB), round 0
+--------------------- New console session -----------------------
+Starting job ORB(RGB)_10
+Starting job ORB(RGB)_20
+Starting job ORB(RGB)_30
+Starting job ORB(RGB)_40
+Started training of ORB(RGB)_10, round 0
+Training boost classifier on 78706 samples (3906 TP, 74800 TN), feature size 10
+Training round 0 complete after 874293ms for ORB(RGB)_10
+Started evaluation of ORB(RGB)_10
+Started training of ORB(RGB)_30, round 0
+--------------------- New console session -----------------------
+Starting job ORB(RGB)_10
+Starting job ORB(RGB)_20
+Starting job ORB(RGB)_30
+Starting job ORB(RGB)_40
+Skipped training of ORB(RGB)_10, loading from existing model instead
+Started training of ORB(RGB)_30, round 0
+Started evaluation of ORB(RGB)_10
+--------------------- New console session -----------------------
+Starting job ORB(RGB)_10
+Starting job ORB(RGB)_20
+Starting job ORB(RGB)_30
+Starting job ORB(RGB)_40
+Skipped training of ORB(RGB)_10, loading from existing model instead
+Started training of ORB(RGB)_30, round 0
+Started evaluation of ORB(RGB)_10
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 30
+Evaluation complete after 23375ms for ORB(RGB)_10
+Starting job ORB(RGB)_50
+Training round 0 complete after 25672ms for ORB(RGB)_30
+Started evaluation of ORB(RGB)_30
+Evaluation complete after 26776ms for ORB(RGB)_30
+Starting job ORB(RGB)_60
+Started training of ORB(RGB)_20, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 20
+Training round 0 complete after 46974ms for ORB(RGB)_20
+Started evaluation of ORB(RGB)_20
+Started training of ORB(RGB)_40, round 0
+Evaluation complete after 45194ms for ORB(RGB)_20
+Starting job ORB(RGB)_70
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 40
+Training round 0 complete after 46503ms for ORB(RGB)_40
+Started evaluation of ORB(RGB)_40
+Evaluation complete after 42510ms for ORB(RGB)_40
+Starting job ORB(RGB)_80
+Started training of ORB(RGB)_50, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 50
+Training round 0 complete after 62307ms for ORB(RGB)_50
+Started evaluation of ORB(RGB)_50
+Started training of ORB(RGB)_60, round 0
+Evaluation complete after 44353ms for ORB(RGB)_50
+Starting job ORB(RGB)_90
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 60
+Training round 0 complete after 64583ms for ORB(RGB)_60
+Started evaluation of ORB(RGB)_60
+Evaluation complete after 61617ms for ORB(RGB)_60
+Starting job ORB(RGB)_100
+Started training of ORB(RGB)_70, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 70
+Training round 0 complete after 46433ms for ORB(RGB)_70
+Started evaluation of ORB(RGB)_70
+Started training of ORB(RGB)_80, round 0
+Evaluation complete after 42102ms for ORB(RGB)_70
+Starting job SIFT(RGB)_10
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 80
+Training round 0 complete after 51891ms for ORB(RGB)_80
+Started evaluation of ORB(RGB)_80
+Evaluation complete after 39922ms for ORB(RGB)_80
+Starting job SIFT(RGB)_20
+Started training of SIFT(RGB)_10, round 0
+Started training of SIFT(RGB)_20, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 10
+Training round 0 complete after 89094ms for SIFT(RGB)_10
+Started evaluation of SIFT(RGB)_10
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 20
+Training round 0 complete after 74288ms for SIFT(RGB)_20
+Started evaluation of SIFT(RGB)_20
+Started training of ORB(RGB)_100, round 0
+Started training of ORB(RGB)_90, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 100
+Training round 0 complete after 36760ms for ORB(RGB)_100
+Started evaluation of ORB(RGB)_100
+Evaluation complete after 72649ms for SIFT(RGB)_10
+Starting job SIFT(RGB)_30
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 90
+Evaluation complete after 54623ms for SIFT(RGB)_20
+Starting job SIFT(RGB)_40
+Training round 0 complete after 27825ms for ORB(RGB)_90
+Started evaluation of ORB(RGB)_90
+Evaluation complete after 23835ms for ORB(RGB)_100
+Starting job SIFT(RGB)_50
+Evaluation complete after 23571ms for ORB(RGB)_90
+Starting job SIFT(RGB)_60
+Started training of SIFT(RGB)_30, round 0
+Started training of SIFT(RGB)_40, round 0
+Started training of SIFT(RGB)_50, round 0
+Started training of SIFT(RGB)_60, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 30
+Training round 0 complete after 52562ms for SIFT(RGB)_30
+Started evaluation of SIFT(RGB)_30
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 40
+Training round 0 complete after 49567ms for SIFT(RGB)_40
+Started evaluation of SIFT(RGB)_40
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 50
+Training round 0 complete after 47597ms for SIFT(RGB)_50
+Started evaluation of SIFT(RGB)_50
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 60
+Training round 0 complete after 45168ms for SIFT(RGB)_60
+Started evaluation of SIFT(RGB)_60
+Evaluation complete after 42865ms for SIFT(RGB)_30
+Starting job SIFT(RGB)_70
+Evaluation complete after 41842ms for SIFT(RGB)_40
+Starting job SIFT(RGB)_80
+Evaluation complete after 42620ms for SIFT(RGB)_50
+Starting job SIFT(RGB)_90
+Evaluation complete after 42566ms for SIFT(RGB)_60
+Starting job SIFT(RGB)_100
+Started training of SIFT(RGB)_70, round 0
+Started training of SIFT(RGB)_80, round 0
+Started training of SIFT(RGB)_90, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 70
+Started training of SIFT(RGB)_100, round 0
+Training round 0 complete after 60387ms for SIFT(RGB)_70
+Started evaluation of SIFT(RGB)_70
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 80
+Training round 0 complete after 56785ms for SIFT(RGB)_80
+Started evaluation of SIFT(RGB)_80
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 90
+Training round 0 complete after 51184ms for SIFT(RGB)_90
+Started evaluation of SIFT(RGB)_90
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 100
+Training round 0 complete after 44840ms for SIFT(RGB)_100
+Started evaluation of SIFT(RGB)_100
+Evaluation complete after 41854ms for SIFT(RGB)_70
+Starting job CenSurE(RGB)_10
+Evaluation complete after 42000ms for SIFT(RGB)_80
+Starting job CenSurE(RGB)_20
+Evaluation complete after 40488ms for SIFT(RGB)_90
+Starting job CenSurE(RGB)_30
+Evaluation complete after 41741ms for SIFT(RGB)_100
+Starting job CenSurE(RGB)_40
+Started training of CenSurE(RGB)_10, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 10
+Training round 0 complete after 42357ms for CenSurE(RGB)_10
+Started evaluation of CenSurE(RGB)_10
+Evaluation complete after 40968ms for CenSurE(RGB)_10
+Starting job CenSurE(RGB)_50
+Started training of CenSurE(RGB)_20, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 20
+Training round 0 complete after 45589ms for CenSurE(RGB)_20
+Started evaluation of CenSurE(RGB)_20
+Started training of CenSurE(RGB)_30, round 0
+Evaluation complete after 42301ms for CenSurE(RGB)_20
+Starting job CenSurE(RGB)_60
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 30
+Training round 0 complete after 43234ms for CenSurE(RGB)_30
+Started evaluation of CenSurE(RGB)_30
+Evaluation complete after 38333ms for CenSurE(RGB)_30
+Starting job CenSurE(RGB)_70
+Started training of CenSurE(RGB)_40, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 40
+Training round 0 complete after 47389ms for CenSurE(RGB)_40
+Started evaluation of CenSurE(RGB)_40
+Evaluation complete after 43088ms for CenSurE(RGB)_40
+Starting job CenSurE(RGB)_80
+Started training of CenSurE(RGB)_50, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 50
+Training round 0 complete after 51181ms for CenSurE(RGB)_50
+Started evaluation of CenSurE(RGB)_50
+Evaluation complete after 38814ms for CenSurE(RGB)_50
+Starting job CenSurE(RGB)_90
+Started training of CenSurE(RGB)_60, round 0
+Started training of CenSurE(RGB)_70, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 60
+Training round 0 complete after 49126ms for CenSurE(RGB)_60
+Started evaluation of CenSurE(RGB)_60
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 70
+Training round 0 complete after 51510ms for CenSurE(RGB)_70
+Started evaluation of CenSurE(RGB)_70
+Evaluation complete after 44231ms for CenSurE(RGB)_60
+Starting job CenSurE(RGB)_100
+Evaluation complete after 44423ms for CenSurE(RGB)_70
+Starting job MSD(RGB)_10
+Started training of CenSurE(RGB)_80, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 80
+Training round 0 complete after 49595ms for CenSurE(RGB)_80
+Started evaluation of CenSurE(RGB)_80
+Evaluation complete after 36376ms for CenSurE(RGB)_80
+Starting job MSD(RGB)_20
+Started training of CenSurE(RGB)_90, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 90
+Training round 0 complete after 44497ms for CenSurE(RGB)_90
+Started evaluation of CenSurE(RGB)_90
+Evaluation complete after 36448ms for CenSurE(RGB)_90
+Starting job MSD(RGB)_30
+Started training of CenSurE(RGB)_100, round 0
+Started training of MSD(RGB)_10, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 100
+Training round 0 complete after 45453ms for CenSurE(RGB)_100
+Started evaluation of CenSurE(RGB)_100
+Evaluation complete after 35880ms for CenSurE(RGB)_100
+Starting job MSD(RGB)_40
+Started training of MSD(RGB)_20, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 10
+Training round 0 complete after 119569ms for MSD(RGB)_10
+Started evaluation of MSD(RGB)_10
+Started training of MSD(RGB)_30, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 20
+Training round 0 complete after 121642ms for MSD(RGB)_20
+Started evaluation of MSD(RGB)_20
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 30
+Training round 0 complete after 99120ms for MSD(RGB)_30
+Started evaluation of MSD(RGB)_30
+Evaluation complete after 126018ms for MSD(RGB)_10
+Starting job MSD(RGB)_50
+Started training of MSD(RGB)_40, round 0
+Evaluation complete after 126006ms for MSD(RGB)_20
+Starting job MSD(RGB)_60
+Evaluation complete after 111361ms for MSD(RGB)_30
+Starting job MSD(RGB)_70
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 40
+Training round 0 complete after 138260ms for MSD(RGB)_40
+Started evaluation of MSD(RGB)_40
+Started training of MSD(RGB)_50, round 0
+Evaluation complete after 135797ms for MSD(RGB)_40
+Starting job MSD(RGB)_80
+Started training of MSD(RGB)_60, round 0
+Started training of MSD(RGB)_70, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 50
+Training round 0 complete after 140464ms for MSD(RGB)_50
+Started evaluation of MSD(RGB)_50
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 60
+Training round 0 complete after 109976ms for MSD(RGB)_60
+Started evaluation of MSD(RGB)_60
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 70
+Training round 0 complete after 112392ms for MSD(RGB)_70
+Started evaluation of MSD(RGB)_70
+Evaluation complete after 123874ms for MSD(RGB)_50
+Starting job MSD(RGB)_90
+Evaluation complete after 115259ms for MSD(RGB)_60
+Starting job MSD(RGB)_100
+Evaluation complete after 120736ms for MSD(RGB)_70
+Starting job FAST(RGB)_10
+Started training of MSD(RGB)_80, round 0
+Started training of FAST(RGB)_10, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 10
+Training round 0 complete after 32844ms for FAST(RGB)_10
+Started evaluation of FAST(RGB)_10
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 80
+Training round 0 complete after 110883ms for MSD(RGB)_80
+Started evaluation of MSD(RGB)_80
+Evaluation complete after 31113ms for FAST(RGB)_10
+Starting job FAST(RGB)_20
+Started training of MSD(RGB)_90, round 0
+Started training of MSD(RGB)_100, round 0
+Started training of FAST(RGB)_20, round 0
+Evaluation complete after 188045ms for MSD(RGB)_80
+Starting job FAST(RGB)_30
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 20
+Training round 0 complete after 35903ms for FAST(RGB)_20
+Started evaluation of FAST(RGB)_20
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 90
+Training round 0 complete after 132409ms for MSD(RGB)_90
+Started evaluation of MSD(RGB)_90
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 100
+Evaluation complete after 30938ms for FAST(RGB)_20
+Starting job FAST(RGB)_40
+Training round 0 complete after 101117ms for MSD(RGB)_100
+Started evaluation of MSD(RGB)_100
+Started training of FAST(RGB)_30, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 30
+Training round 0 complete after 43455ms for FAST(RGB)_30
+Started evaluation of FAST(RGB)_30
+Evaluation complete after 151401ms for MSD(RGB)_100
+Starting job FAST(RGB)_50
+Evaluation complete after 162383ms for MSD(RGB)_90
+Starting job FAST(RGB)_60
+Evaluation complete after 35143ms for FAST(RGB)_30
+Starting job FAST(RGB)_70
+Started training of FAST(RGB)_40, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 40
+Training round 0 complete after 25783ms for FAST(RGB)_40
+Started evaluation of FAST(RGB)_40
+Evaluation complete after 37972ms for FAST(RGB)_40
+Starting job FAST(RGB)_80
+Started training of FAST(RGB)_50, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 50
+Training round 0 complete after 51749ms for FAST(RGB)_50
+Started evaluation of FAST(RGB)_50
+Started training of FAST(RGB)_60, round 0
+Evaluation complete after 37757ms for FAST(RGB)_50
+Starting job FAST(RGB)_90
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 60
+Training round 0 complete after 54769ms for FAST(RGB)_60
+Started evaluation of FAST(RGB)_60
+Evaluation complete after 41517ms for FAST(RGB)_60
+Starting job FAST(RGB)_100
+Started training of FAST(RGB)_70, round 0
+Started training of FAST(RGB)_80, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 70
+Training round 0 complete after 50212ms for FAST(RGB)_70
+Started evaluation of FAST(RGB)_70
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 80
+Training round 0 complete after 48311ms for FAST(RGB)_80
+Started evaluation of FAST(RGB)_80
+Evaluation complete after 43038ms for FAST(RGB)_70
+Evaluation complete after 38499ms for FAST(RGB)_80
+Started training of FAST(RGB)_90, round 0
+Started training of FAST(RGB)_100, round 0
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 90
+Training round 0 complete after 31189ms for FAST(RGB)_90
+Started evaluation of FAST(RGB)_90
+Training boost classifier on 2482 samples (482 TP, 2000 TN), feature size 100
+Training round 0 complete after 24788ms for FAST(RGB)_100
+Started evaluation of FAST(RGB)_100
+Evaluation complete after 18944ms for FAST(RGB)_90
+Evaluation complete after 18755ms for FAST(RGB)_100

@@ -785,6 +785,26 @@ int main()
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
+	set = { "HoG(RGB)", "HoG(Depth)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	set = { "HoG(RGB)", "HDD" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	set = { "HoG(RGB)", "HONV" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	set = { "HoG(RGB)", "LBP(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	set = { "HoG(RGB)", "S2HoG(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
 
 	/*set = { "HoG(Depth)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
@@ -798,11 +818,11 @@ int main()
 
 	tester.runJobs();*/
 
-	/*for (auto& name : tester.getFeatureCreatorFactories()) {
+	for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { name };
 		tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
 	}
-	tester.runJobs();*/
+	tester.runJobs();
 
 	//// evaluate each creator combined with HOG(RGB)
 	//for (auto& name : tester.getFeatureCreatorFactories()) {

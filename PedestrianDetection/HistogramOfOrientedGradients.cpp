@@ -154,7 +154,7 @@ namespace hog {
 								tEnd += CV_PI / binSize;
 							}*/
 
-						// linear interpolation [ u ][ 1-u ]
+							// linear interpolation [ u ][ 1-u ]
 						float u = (tEnd - anglePixel) / (tEnd - tBegin);
 						histogram[bin1] += magPixel * u;
 						histogram[bin2] += magPixel * (1 - u);
@@ -215,6 +215,7 @@ namespace hog {
 	cv::Mat createHoGImage(cv::Mat& mat, const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, int patchSize) {
 		cv::Mat hog;
 
+		bool drawHistograms = true;
 		hog = cv::Mat(mat.rows, mat.cols, CV_8UC3, cv::Scalar(0));
 
 		for (int y = 0; y < nrOfCellsHeight; y++) {
@@ -227,14 +228,25 @@ namespace hog {
 
 				double maxVal = *std::max_element(hist.begin(), hist.end());
 				if (maxVal > 0) {
+
+					float barSize = 1.0 * (patchSize - 2) / binSize;
+					if (drawHistograms)
+						cv::rectangle(hog, cv::Rect(x*patchSize + 1, y * patchSize + 1, patchSize - 2, patchSize - 2), cv::Scalar(10, 10, 10), -1);
 					for (int i = 0; i < binSize; i++) {
 						double angle = ((i + 0.5) / binSize) * CV_PI + CV_PI / 2; // + 90° so it aligns perpendicular to gradient
 						double val = hist[i] / maxVal;
+						double radius = patchSize / 2 * val;
+						double vx = cos(angle) * radius;
+						double vy = sin(angle) * radius;
 
-						double vx = cos(angle) * patchSize / 2 * val;
-						double vy = sin(angle) * patchSize / 2 * val;
+						if (!drawHistograms)
+							cv::line(hog, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(0, 0, 255));
 
-						cv::line(hog, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(0, 0, 255));
+						double height = val * (patchSize - 2);
+						double yOffset = y*patchSize + 1;
+						cv::Rect2f r = cv::Rect2f(x*patchSize + 1 + i*barSize, yOffset + (patchSize - 2) - height, barSize, height);
+						if (drawHistograms)
+							cv::rectangle(hog, r, cv::Scalar(0, 255, 255), -1);
 					}
 				}
 

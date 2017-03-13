@@ -48,10 +48,12 @@ namespace hog {
 			for (int i = 0; i < result.cols; i++) {
 
 				cv::Vec3b hog = hogImage.at<cv::Vec3b>(j, i);
-				if (hog[2] > 0) { // red
+
+				if (hog[0] > 0 || hog[1] > 0 || hog[2] > 0) { // red
 					cv::Vec3b res = result.at<cv::Vec3b>(j, i);
-					result.at<cv::Vec3b>(j, i) = cv::Vec3b(0, 0, hog[2]);
+					result.at<cv::Vec3b>(j, i) = hog;
 				}
+				
 			}
 		}
 		return result;

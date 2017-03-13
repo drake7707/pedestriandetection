@@ -49,11 +49,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -207,18 +207,18 @@ TrainingDataSet saveTNTP() {
 
 void testClassifier() {
 
-	
+
 	FeatureSet fset;
-	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
-	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
 	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
 
 	EvaluatorCascade cascade(std::string("Test"));
-	cascade.load(std::string("models\\LBP(RGB)_cascade.xml"), std::string("models"));
+	cascade.load(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB)_cascade.xml"), std::string("models"));
 
-	ModelEvaluator modelFinal(std::string("Test"));
-	modelFinal.loadModel(std::string("models\\HoG(RGB) round 0.xml"));
+	//ModelEvaluator modelFinal(std::string("Test"));
+	//modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB) round 3.xml"));
 
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
@@ -282,7 +282,7 @@ void testClassifier() {
 						cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
 				}
 				nrOfWindowsEvaluated++;
-			}, 0.5, 4, 16, 2);
+			}, 0.5, 2, 16, 1.5);
 
 		});
 
@@ -336,7 +336,7 @@ void testFeature() {
 			}
 			else
 				depth = img;
-
+			/*
 			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
 			Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
 
@@ -357,7 +357,7 @@ void testFeature() {
 					float dzdx = (r - l) / 2.0;
 					float dzdy = (b - t) / 2.0;
 
-					Vec3f d(-dzdx, -dzdy, 1.0f);
+					Vec3f d(-dzdx, -dzdy, 0.0f);
 
 					Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
 					Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
@@ -374,35 +374,76 @@ void testFeature() {
 
 					double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
 
-					cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 1);
-					angleMat.at<cv::Vec3f>(y, x) = angles;
+					cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 0);
 
-					//normals.at<Vec3f>(y, x) = n;
+
+					angleMat.at<cv::Vec3f>(y, x) = cv::Vec3f(dzdx, dzdy, 0);
+
+					normals.at<Vec3f>(y, x) = n;
 				}
 			}
+
+			normalize(abs(angleMat), angleMat, 0, 1, cv::NormTypes::NORM_MINMAX);
 
 			auto& result = hog::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
 
 
 
-			//	cv::imshow(msg, normals);
+			//				cv::imshow(msg, normals);
 
-			//cvtColor(img, img, CV_BGR2GRAY);
-			//cv::Mat lbp = Algorithms::OLBP(img);
-			//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+						//cvtColor(img, img, CV_BGR2GRAY);
+						//cv::Mat lbp = Algorithms::OLBP(img);
+						//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
 
-			//cv::Mat padded;
-			//int padding = 1;
-			//padded.create(img.rows,img.cols, lbp.type());
-			//padded.setTo(cv::Scalar::all(0));
-			//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+						//cv::Mat padded;
+						//int padding = 1;
+						//padded.create(img.rows,img.cols, lbp.type());
+						//padded.setTo(cv::Scalar::all(0));
+						//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
 
-			//
-			//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
+						//
+						//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
 
 			cv::Mat tmp;
-			angleMat.convertTo(tmp, CV_8UC3, 255, 0);
-			cv::imshow(msg, result.combineHOGImage(tmp));
+			img.convertTo(tmp, CV_8UC3, 255, 0);
+			cv::imshow(msg, result.combineHOGImage(img));*/
+
+			cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
+			cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
+
+
+			for (int j = 0; j < depth.rows; j++)
+			{
+				for (int i = 0; i < depth.cols ; i++)
+				{
+
+					float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
+					float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
+
+					float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
+					float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
+
+					float dx = (r - l) / 2;
+					float dy = (b - t) / 2;
+
+					double anglePixel = atan2(dy, dx);
+					// don't limit to 0-pi, but instead use 0-2pi range
+					anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
+					if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
+
+					double magPixel = sqrt((dx*dx) + (dy*dy));
+					magnitude.at<float>(j, i) = magPixel;
+					angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
+				}
+			}
+
+			cv::normalize(abs(magnitude), magnitude, 0, 255, cv::NormTypes::NORM_MINMAX);
+
+			auto& result =  hog::getHistogramsOfX(magnitude, angle, patchSize, binSize, true, false);
+			cv::Mat tmp;
+			img.convertTo(tmp, CV_8UC3, 255, 0);
+			cv::imshow(msg, magnitude);
+
 		};
 
 		func(tp, "TP");
@@ -479,7 +520,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, std::string& outputF
 	std::vector<SlidingWindowRegion> truePositiveRegions;
 	std::vector<SlidingWindowRegion> trueNegativeRegions;
 
-	tSet.iterateDataSet([&](int idx) -> bool { return (idx+1)%10 == 0; },
+	tSet.iterateDataSet([&](int idx) -> bool { return (idx + 1) % 10 == 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		if (idx % 100 == 0)
@@ -557,7 +598,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, std::string& outputF
 		double minSimilarity = -1;
 		int minTP = -1;
 
-		
+
 		for (int i = 0; i < truePositiveFeatures.size(); i++)
 		{
 			double tpNorm = truePositiveFeatures[i].norm();
@@ -597,7 +638,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, std::string& outputF
 		cv::imshow("TruePos", tp);
 		cv::imshow("TrueNeg", tn);
 
-		
+
 		cv::waitKey(0);
 	}
 }
@@ -664,6 +705,7 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 
 int main()
 {
+	
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
@@ -675,7 +717,7 @@ int main()
 	//testClassifier();
 
 
-	
+
 
 	/*std::ofstream str("heightdepthvaluesTN.csv");
 	printHeightVerticalAvgDepthRelation(std::string("trainingsets\\train0.txt"), str);*/
@@ -735,20 +777,54 @@ int main()
 
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Histogram(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HistogramDepthFeatureCreator(name))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, false))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 80, false))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 80, false))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 80, false))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 80, false))); }));
+	///tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 90, false))); }));
+	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 10, false))); }));
+	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 30, false))); }));
+	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 80, false))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, 80, false))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, false))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, true))); }));
+	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 90, false))); }));
+	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, true))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HDD"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, patchSize, 20, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight))); }));
+
+	//std::vector<std::string> clustersToTest = { "ORB(RGB)", "SIFT(RGB)", "CenSurE(RGB)", "MSD(RGB)", "FAST(RGB)" };
+	//for (int k = 10; k <= 100; k += 10)
+	//{
+	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, k, false))); }));
+	//	set = { std::string("ORB(RGB)_") + std::to_string(k) };
+	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
+	//}
+	//for (int k = 10; k <= 100; k += 10)
+	//{
+	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, k, false))); }));
+	//	set = { std::string("SIFT(RGB)_") + std::to_string(k) };
+	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
+	//}
+	//for (int k = 10; k <= 100; k += 10)
+	//{
+	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, k, false))); }));
+	//	set = { std::string("CenSurE(RGB)_") + std::to_string(k) };
+	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
+	//}
+	//for (int k = 10; k <= 100; k += 10)
+	//{
+	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, k, false))); }));
+	//	set = { std::string("MSD(RGB)_") + std::to_string(k) };
+	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
+	//}
+	//for (int k = 10; k <= 100; k += 10)
+	//{
+	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, k, false))); }));
+	//	set = { std::string("FAST(RGB)_") + std::to_string(k) };
+	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
+	//}
+	//tester.runJobs();
+	//return 0;
 
 
 	//evaluate each creator individually, but don't do a sliding window evaluation yet

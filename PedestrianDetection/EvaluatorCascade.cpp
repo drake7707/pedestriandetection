@@ -17,14 +17,14 @@ double EvaluatorCascade::evaluateFeatures(FeatureVector& v) const {
 	for (int i = 0; i < cascade.size(); i++)
 	{
 		result = cascade[i].model.evaluateFeatures(v);
-		int resultClass = result + cascade[i].valueShift > 0 ? 1 : -1;
+		int resultClass = (result + cascade[i].valueShift) > 0 ? 1 : -1;
 
 		if (resultClass == -1) {
 			// stop cascade when a negative is encountered
-			return result;
+			return result + cascade[i].valueShift;
 		}
 	}
-	return result;
+	return result + cascade[cascade.size()-1].valueShift;
 }
 
 void EvaluatorCascade::updateLastModelValueShift(double valueShift) {

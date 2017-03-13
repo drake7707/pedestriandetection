@@ -215,7 +215,7 @@ void testClassifier() {
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
 
 	EvaluatorCascade cascade(std::string("Test"));
-	cascade.load(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB)_cascade.xml"), std::string("models"));
+	cascade.load(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB)_cascade_2.xml"), std::string("models"));
 
 	//ModelEvaluator modelFinal(std::string("Test"));
 	//modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB) round 3.xml"));
@@ -225,6 +225,11 @@ void testClassifier() {
 	eval.print(std::cout);*/
 
 	KITTIDataSet dataSet(kittiDatasetPath);
+
+	cv::namedWindow("Test");
+
+	auto& entries = cascade.getEntries();
+	double valueShift = entries[entries.size() - 1].valueShift;
 
 	int nr = 0;
 	while (true) {
@@ -282,7 +287,7 @@ void testClassifier() {
 						cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
 				}
 				nrOfWindowsEvaluated++;
-			}, 0.5, 2, 16, 1.5);
+			}, 0.5, 4, 16, 2);
 
 		});
 
@@ -705,7 +710,7 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 
 int main()
 {
-	
+	testClassifier();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();

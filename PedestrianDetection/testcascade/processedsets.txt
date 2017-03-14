@@ -3,3 +3,6 @@ HoG(RGB)
 HoG(Depth)+HoG(RGB)+LBP(RGB)
 HONV
 HDD
+HDD+HoG(Depth)+HoG(RGB)+LBP(RGB)
+HoG(Depth)+HoG(RGB)
+HDD+HoG(RGB)

@@ -34,6 +34,9 @@ public:
 		cascade.push_back(EvaluationCascadeEntry(model, valueShift));
 	}
 
+	std::vector<EvaluationCascadeEntry> getEntries() const {
+		return cascade;
+	}
 
 	virtual double evaluateFeatures(FeatureVector& v) const;
 

@@ -36,6 +36,7 @@
 #include "HDDFeatureCreator.h"
 #include "LBPFeatureCreator.h"
 #include "HONVFeatureCreator.h"
+#include "CoOccurenceMatrixFeatureCreator.h"
 
 #include "EvaluatorCascade.h"
 
@@ -45,6 +46,7 @@
 
 #include "FeatureSet.h"
 
+#include "CoOccurenceMatrix.h"
 
 #include "KITTIDataSet.h"
 #include "DataSet.h"
@@ -209,22 +211,28 @@ void testClassifier() {
 
 
 	FeatureSet fset;
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
+	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
 	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HoG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
-	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
+	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
 
 	EvaluatorCascade cascade(std::string("Test"));
-	cascade.load(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB)_cascade.xml"), std::string("models"));
+	cascade.load(std::string("models\\HDD+HoG(RGB)_cascade.xml"), std::string("models"));
 
 	//ModelEvaluator modelFinal(std::string("Test"));
 	//modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB) round 3.xml"));
 
+	cascade.updateLastModelValueShift(1.44);
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
 
 	KITTIDataSet dataSet(kittiDatasetPath);
+
+	cv::namedWindow("Test");
+
+	auto& entries = cascade.getEntries();
+	double valueShift = entries[entries.size() - 1].valueShift;
 
 	int nr = 0;
 	while (true) {
@@ -235,6 +243,7 @@ void testClassifier() {
 
 		int nrOfWindowsEvaluated = 0;
 		int nrOfWindowsSkipped = 0;
+		long nrOfWindowsPositive = 0;
 		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 
 
@@ -278,17 +287,19 @@ void testClassifier() {
 				if (mustContinue) {
 					FeatureVector v = fset.getFeatures(regionRGB, regionDepth);
 					double result = cascade.evaluateFeatures(v);
-					if (result > 0 ? 1 : -1 == 1)
+					if ((result > 0 ? 1 : -1) == 1) {
 						cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
+						nrOfWindowsPositive++;
+					}
 				}
 				nrOfWindowsEvaluated++;
-			}, 0.5, 2, 16, 1.5);
+			}, 0.5, 4, 16);
 
 		});
 
 		cv::imshow("Test", mRGB);
-
-		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") in " << slidingWindowTime << "ms" << std::endl;
+		double posPercentage = 100.0 * nrOfWindowsPositive / (nrOfWindowsEvaluated - nrOfWindowsSkipped);
+		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << ") " << slidingWindowTime << "ms" << std::endl;
 		// this will leak because creators are never disposed!
 		cv::waitKey(0);
 		nr++;
@@ -302,17 +313,36 @@ void testFeature() {
 		char nrStr[7];
 		sprintf(nrStr, "%06d", nr);
 
-		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png");// kittiDatasetPath + "\\regions\\tp\\depth" + std::to_string(nr) + ".png");
+		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
 		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\depth\\000000.png", CV_LOAD_IMAGE_UNCHANGED);
+		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png", CV_LOAD_IMAGE_UNCHANGED);
 		//cv::Mat tp = cv::imread("D:\\test.png", CV_LOAD_IMAGE_ANYDEPTH);
-		tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
+		//tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
 
-		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\depth" + std::to_string(nr) + ".png");
+		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
 
 		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
 
+			cv::Mat rgb = img.clone();
+			cv::cvtColor(img, img, CV_BGR2HLS);
+			img.convertTo(img, CV_32FC1, 1.0);
+			cv::Mat hsl[3];
+			cv::split(img, hsl);
 
+			//hsl[0].convertTo(hsl[0], CV_32FC1, 1.0 / 360);
+
+			cv::imshow(msg + "_input", hsl[0] / 180);
+
+
+			cv::Mat hue = hsl[0] / 180;
+			auto cells = getCoOccurenceMatrix(hue, patchSize, 16);
+
+			auto matrix = getCoOccurenceMatrixOfPatch(hue, 16);
+			cv::Mat m = createFullCoOccurrenceMatrixImage(img, cells, patchSize);
+			cv::imshow(msg, m);
+
+			
+			
 
 			//hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
 			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
@@ -329,120 +359,137 @@ void testFeature() {
 			cv::drawKeypoints(img, keypoints, imgKeypoints);
 			*/
 
-			cv::Mat depth;
-			int d = img.depth();
-			if (img.type() != CV_32FC1) {
-				img.convertTo(depth, CV_32FC1, 1, 0);
-			}
-			else
-				depth = img;
-			/*
-			Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-			Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-
-			//depth = depth * 255;
-			for (int y = 1; y < depth.rows; y++)
-			{
-				for (int x = 1; x < depth.cols; x++)
-				{
-
-
-					float r = x + 1 >= depth.cols ? depth.at<float>(y, x) : depth.at<float>(y, x + 1);
-					float l = x - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y, x - 1);
-
-					float b = y + 1 >= depth.rows ? depth.at<float>(y, x) : depth.at<float>(y + 1, x);
-					float t = y - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y - 1, x);
-
-
-					float dzdx = (r - l) / 2.0;
-					float dzdy = (b - t) / 2.0;
-
-					Vec3f d(-dzdx, -dzdy, 0.0f);
-
-					Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
-					Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
-					Vec3f c(x, y, depth.at<float>(y, x));
-
-					Vec3f d2 = (ll - c).cross(tt - c);
-
-
-					Vec3f n = normalize(d);
-
-					double azimuth = atan2(-d2[1], -d2[0]); // -pi -> pi
-					if (azimuth < 0)
-						azimuth += 2 * CV_PI;
-
-					double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
-
-					cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 0);
-
-
-					angleMat.at<cv::Vec3f>(y, x) = cv::Vec3f(dzdx, dzdy, 0);
-
-					normals.at<Vec3f>(y, x) = n;
+			/*	cv::Mat depth;
+				int d = img.depth();
+				if (img.type() != CV_32FC1) {
+					img.convertTo(depth, CV_32FC1, 1, 0);
 				}
-			}
+				else
+					depth = img;*/
+					/*
+					Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+					Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
 
-			normalize(abs(angleMat), angleMat, 0, 1, cv::NormTypes::NORM_MINMAX);
-
-			auto& result = hog::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
-
-
-
-			//				cv::imshow(msg, normals);
-
-						//cvtColor(img, img, CV_BGR2GRAY);
-						//cv::Mat lbp = Algorithms::OLBP(img);
-						//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
-
-						//cv::Mat padded;
-						//int padding = 1;
-						//padded.create(img.rows,img.cols, lbp.type());
-						//padded.setTo(cv::Scalar::all(0));
-						//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
-
-						//
-						//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
-
-			cv::Mat tmp;
-			img.convertTo(tmp, CV_8UC3, 255, 0);
-			cv::imshow(msg, result.combineHOGImage(img));*/
-
-			cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
-			cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
+					//depth = depth * 255;
+					for (int y = 1; y < depth.rows; y++)
+					{
+						for (int x = 1; x < depth.cols; x++)
+						{
 
 
-			for (int j = 0; j < depth.rows; j++)
-			{
-				for (int i = 0; i < depth.cols ; i++)
-				{
+							float r = x + 1 >= depth.cols ? depth.at<float>(y, x) : depth.at<float>(y, x + 1);
+							float l = x - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y, x - 1);
 
-					float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
-					float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
+							float b = y + 1 >= depth.rows ? depth.at<float>(y, x) : depth.at<float>(y + 1, x);
+							float t = y - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y - 1, x);
 
-					float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
-					float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
 
-					float dx = (r - l) / 2;
-					float dy = (b - t) / 2;
+							float dzdx = (r - l) / 2.0;
+							float dzdy = (b - t) / 2.0;
 
-					double anglePixel = atan2(dy, dx);
-					// don't limit to 0-pi, but instead use 0-2pi range
-					anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
-					if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
+							Vec3f d(-dzdx, -dzdy, 0.0f);
 
-					double magPixel = sqrt((dx*dx) + (dy*dy));
-					magnitude.at<float>(j, i) = magPixel;
-					angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
-				}
-			}
+							Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
+							Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
+							Vec3f c(x, y, depth.at<float>(y, x));
 
-			cv::normalize(abs(magnitude), magnitude, 0, 255, cv::NormTypes::NORM_MINMAX);
+							Vec3f d2 = (ll - c).cross(tt - c);
 
-			auto& result =  hog::getHistogramsOfX(magnitude, angle, patchSize, binSize, true, false);
-			cv::Mat tmp;
-			img.convertTo(tmp, CV_8UC3, 255, 0);
-			cv::imshow(msg, magnitude);
+
+							Vec3f n = normalize(d);
+
+							double azimuth = atan2(-d2[1], -d2[0]); // -pi -> pi
+							if (azimuth < 0)
+								azimuth += 2 * CV_PI;
+
+							double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
+
+							cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 0);
+
+
+							angleMat.at<cv::Vec3f>(y, x) = cv::Vec3f(dzdx, dzdy, 0);
+
+							normals.at<Vec3f>(y, x) = n;
+						}
+					}
+
+					normalize(abs(angleMat), angleMat, 0, 1, cv::NormTypes::NORM_MINMAX);
+
+					auto& result = hog::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
+
+
+
+					//				cv::imshow(msg, normals);
+
+								//cvtColor(img, img, CV_BGR2GRAY);
+								//cv::Mat lbp = Algorithms::OLBP(img);
+								//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+
+								//cv::Mat padded;
+								//int padding = 1;
+								//padded.create(img.rows,img.cols, lbp.type());
+								//padded.setTo(cv::Scalar::all(0));
+								//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+
+								//
+								//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
+
+					cv::Mat tmp;
+					img.convertTo(tmp, CV_8UC3, 255, 0);
+					cv::imshow(msg, result.combineHOGImage(img));*/
+
+					/*cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
+					cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
+
+
+					for (int j = 0; j < depth.rows; j++)
+					{
+						for (int i = 0; i < depth.cols ; i++)
+						{
+
+							float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
+							float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
+
+							float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
+							float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
+
+							float dx = (r - l) / 2;
+							float dy = (b - t) / 2;
+
+							double anglePixel = atan2(dy, dx);
+							// don't limit to 0-pi, but instead use 0-2pi range
+							anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
+							if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
+
+							double magPixel = sqrt((dx*dx) + (dy*dy));
+							magnitude.at<float>(j, i) = magPixel;
+							angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
+						}
+					}
+
+					cv::normalize(abs(magnitude), magnitude, 0, 255, cv::NormTypes::NORM_MINMAX);
+
+					auto& result =  hog::getHistogramsOfX(magnitude, angle, patchSize, binSize, true, false);
+					cv::Mat tmp;
+					img.convertTo(tmp, CV_8UC3, 255, 0);
+					cv::imshow(msg, magnitude);*/
+
+
+			//Mat gray;
+			//cv::cvtColor(img, gray, CV_BGR2GRAY);
+
+			//Mat lbp = Algorithms::OLBP(gray);
+
+			//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+			//cv::Mat padded;
+			//int padding = 1;
+			//padded.create(img.rows, img.cols, lbp.type());
+			//padded.setTo(cv::Scalar::all(0));
+			//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+
+
+			//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, binSize, true, false);
+			//cv::imshow(msg, result.combineHOGImage(img));
 
 		};
 
@@ -705,7 +752,8 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 
 int main()
 {
-	
+	//testClassifier();
+	testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
@@ -790,7 +838,9 @@ int main()
 	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, true))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HDD"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, patchSize, 20, refWidth, refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(std::string("HONV"), patchSize, binSize, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
+
 
 	//std::vector<std::string> clustersToTest = { "ORB(RGB)", "SIFT(RGB)", "CenSurE(RGB)", "MSD(RGB)", "FAST(RGB)" };
 	//for (int k = 10; k <= 100; k += 10)
@@ -837,6 +887,15 @@ int main()
 
 	tester.nrOfConcurrentJobs = 1;
 
+	set = { "CoOccurrence(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+	set = { "CoOccurrence(RGB)", "HoG(RGB)" };
+	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.runJobs();
+
+
 	set = { "LBP(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
@@ -880,6 +939,7 @@ int main()
 	set = { "HoG(RGB)", "S2HoG(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
+
 
 
 	/*set = { "HoG(Depth)" };

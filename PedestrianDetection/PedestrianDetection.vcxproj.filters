@@ -138,6 +138,12 @@
     <ClInclude Include="IEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CoOccurenceMatrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CoOccurenceMatrixFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -247,6 +253,12 @@
     </ClCompile>
     <ClCompile Include="IEvaluator.cpp">
       <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CoOccurenceMatrix.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CoOccurenceMatrixFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

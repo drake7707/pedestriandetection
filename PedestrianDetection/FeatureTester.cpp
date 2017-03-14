@@ -290,3 +290,13 @@ void FeatureTester::runJobs() {
 	for (auto& t : threads)
 		t.join();
 }
+
+FeatureSet FeatureTester::getFeatureSet(std::set<std::string>& set) {
+	FeatureSet featureSet;
+	for (auto& name : set) {
+		FactoryCreator creator = creators.find(name)->second;
+
+		std::unique_ptr<IFeatureCreator> featureCreator = creator.createInstance(creator.name);
+		featureSet.addCreator(std::move(featureCreator));
+	}
+}

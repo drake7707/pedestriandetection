@@ -44,7 +44,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 		nrRegions++;
 		for (int i = 0; i < nrOfEvaluations; i++)
 		{
-			// get datapoints, ranging from -15 to 15
+			// get datapoints, ranging from -evaluationRange/2 to evaluationRange/2
 			double valueShift = 1.0 * i / nrOfEvaluations * evaluationRange - evaluationRange / 2;
 			evals[i].valueShift = valueShift;
 

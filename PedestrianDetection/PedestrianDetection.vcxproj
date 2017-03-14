@@ -159,6 +159,8 @@
     <ClInclude Include="BRISKFeatureCreator.h" />
     <ClInclude Include="CenSurEFeatureCreator.h" />
     <ClInclude Include="ClassifierEvaluation.h" />
+    <ClInclude Include="CoOccurenceMatrix.h" />
+    <ClInclude Include="CoOccurenceMatrixFeatureCreator.h" />
     <ClInclude Include="DataSet.h" />
     <ClInclude Include="DataSetLabel.h" />
     <ClInclude Include="EvaluatorCascade.h" />
@@ -196,6 +198,8 @@
     <ClCompile Include="BRISKFeatureCreator.cpp" />
     <ClCompile Include="CenSurEFeatureCreator.cpp" />
     <ClCompile Include="ClassifierEvaluation.cpp" />
+    <ClCompile Include="CoOccurenceMatrix.cpp" />
+    <ClCompile Include="CoOccurenceMatrixFeatureCreator.cpp" />
     <ClCompile Include="DataSet.cpp" />
     <ClCompile Include="DataSetLabel.cpp" />
     <ClCompile Include="EvaluatorCascade.cpp" />

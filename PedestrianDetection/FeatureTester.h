@@ -49,6 +49,9 @@ private:
 	void loadProcessedFeatureSets();
 	void markFeatureSetProcessed(std::string& featureSetName);
 
+
+
+
 public:
 	FeatureTester();
 	~FeatureTester();
@@ -63,5 +66,7 @@ public:
 	void addJob(std::set<std::string>& set, std::string& baseDataSetPath, int nrOfEvaluations, int nrOfTrainingRounds = 1, bool evaluateOnSlidingWindow = true);
 
 	void runJobs();
+
+	FeatureSet getFeatureSet(std::set<std::string>& set);
 };
 

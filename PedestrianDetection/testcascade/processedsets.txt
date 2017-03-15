@@ -6,3 +6,8 @@ HDD
 HDD+HoG(Depth)+HoG(RGB)+LBP(RGB)
 HoG(Depth)+HoG(RGB)
 HDD+HoG(RGB)
+HONV+HoG(RGB)
+HoG(RGB)+LBP(RGB)
+HoG(RGB)+S2HoG(RGB)
+Corner(Depth)
+S2HoG(RGB)

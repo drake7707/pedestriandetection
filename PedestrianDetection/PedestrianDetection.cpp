@@ -337,8 +337,7 @@ void testFeature() {
 			cv::Mat hue = hsl[0] / 180;
 			auto cells = getCoOccurenceMatrix(hue, patchSize, 16);
 
-			auto matrix = getCoOccurenceMatrixOfPatch(hue, 16);
-			cv::Mat m = createFullCoOccurrenceMatrixImage(img, cells, patchSize);
+			cv::Mat m = createFullCoOccurrenceMatrixImage(rgb, cells, patchSize);
 			cv::imshow(msg, m);
 
 			

@@ -67,6 +67,6 @@ public:
 
 	void runJobs();
 
-	FeatureSet getFeatureSet(std::set<std::string>& set);
+	std::unique_ptr<FeatureSet> getFeatureSet(std::set<std::string>& set);
 };
 

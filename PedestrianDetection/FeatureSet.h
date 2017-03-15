@@ -12,7 +12,11 @@ private:
 public:
 	FeatureSet();
 
-	FeatureSet(FeatureSet& set) = delete;
+	FeatureSet(FeatureSet&& set) {
+		this->creators = std::move(creators);
+	}
+
+	FeatureSet(const FeatureSet& set) = delete;
 
 	~FeatureSet();
 

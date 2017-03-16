@@ -51,11 +51,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -516,7 +516,13 @@ void testSlidingWindow() {
 
 	int oldNumber = -1;
 	cv::Mat tmp;
-	tSet.iterateDataSetWithSlidingWindow([&](int idx) -> bool { return true; },
+
+
+	float minScaleReduction = 0.5;
+	float maxScaleReduction =  4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
+	int baseWindowStride = 16;
+
+	tSet.iterateDataSetWithSlidingWindow(minScaleReduction, maxScaleReduction, baseWindowStride, [&](int idx) -> bool { return true; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (imageNumber != oldNumber) {
@@ -784,8 +790,8 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
 
 
-	testClassifier(tester);
-	testFeature();
+	//testClassifier(tester);
+	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();

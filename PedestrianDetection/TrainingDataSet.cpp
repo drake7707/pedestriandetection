@@ -134,7 +134,7 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 }
 
 
-void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func, int parallization) const {
+void TrainingDataSet::iterateDataSetWithSlidingWindow(float minScaleReduction, float maxScaleReduction, int baseWindowStride, std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func, int parallization) const {
 
 	KITTIDataSet dataSet(baseDataSetPath);
 	int idx = 0;
@@ -198,7 +198,7 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::function<bool(int num
 					func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
 					idx++;
 				}
-			}, 0.5, 4, 16);
+			}, minScaleReduction, maxScaleReduction, baseWindowStride);
 			//cv::imshow("Temp", tmp);
 			//cv::waitKey(0);
 

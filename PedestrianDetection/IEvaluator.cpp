@@ -3,7 +3,7 @@
 #include <thread>
 #include "ProgressWindow.h"
 #include "Helper.h"
-
+#include <stack>
 
 IEvaluator::IEvaluator(std::string& name)
 	: name(name)
@@ -94,8 +94,6 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 	double featureBuildTime = 0;
 
 	auto comp = [](std::pair<float, SlidingWindowRegion> a, std::pair<float, SlidingWindowRegion> b) { return a.first > b.first; };
-	std::vector<std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)>> worstFalsePositivesArray(nrOfEvaluations,
-		std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)>(comp));
 	//std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)> worstFalseNegatives(comp);
 
 	std::mutex mutex;
@@ -105,8 +103,21 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 		mutex.unlock();
 	};;
 
+	float minScaleReduction = 0.5;
+	float maxScaleReduction = trainingRound > 3 ? 8 : 4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
+	int baseWindowStride = 16;
 
-	trainingDataSet.iterateDataSetWithSlidingWindow([&](int idx) -> bool { return (idx + trainingRound) % slidingWindowEveryXImage == 0; },
+	// want to obtain 4000 false positives, over 7500 images, which means about 0.5 false positive per image
+	// allow 10 times that size, or 5 worst false positives per image
+	int maxNrOfFPPerImage = trainingDataSet.getNumberOfImages() / maxNrOfFalsePosOrNeg * 10;
+
+	typedef std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)> FPPriorityQueue;
+	typedef std::vector<FPPriorityQueue> FPPriorityQueuePerValueShift;
+
+	std::vector<FPPriorityQueuePerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
+		FPPriorityQueuePerValueShift(nrOfEvaluations, FPPriorityQueue(comp)));
+
+	trainingDataSet.iterateDataSetWithSlidingWindow(minScaleReduction, maxScaleReduction, baseWindowStride,[&](int idx) -> bool { return true; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
@@ -157,6 +168,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 					correct = false;
 				}
 
+
 				// don't consider adding hard negatives or positives if it overlaps with a true positive
 				// because it will add samples to the negative set that are really really strong and should probably be considered positive
 				if (!overlapsWithTruePositive) {
@@ -164,26 +176,24 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 					if (!correct) {
 						if (evaluationClass == 1) {
 
-							worstFalsePositivesArray[i].push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
+							worstFalsePositivesArrayPerImage[imageNumber][i].push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
 							// smallest numbers will be popped
-							if (worstFalsePositivesArray[i].size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
-								worstFalsePositivesArray[i].pop();
+							if (worstFalsePositivesArrayPerImage[imageNumber][i].size() > maxNrOfFPPerImage) // keep the top worst performing regions
+								worstFalsePositivesArrayPerImage[imageNumber][i].pop();
 						}
 						else {
 							//worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
 							//// smallest numbers will be popped
-							//if (worstFalseNegatives.size() > maxNrOfFalsePosOrNeg) // keep the top 1000 worst performing regions
+							//if (worstFalseNegatives.size() > maxNrOfFalsePosOrNeg) // keep the top worst performing regions
 							//	worstFalseNegatives.pop();
 						}
 					}
 				}
-
 			}
 		});
 	});
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
-
 
 	for (int i = 0; i < nrOfEvaluations; i++)
 		swresult.evaluations[i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
@@ -225,9 +235,35 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 
 	std::cout << "Chosen " << valueShiftRequired << " as decision boundary shift to attain TPR of " << swresult.evaluations[evaluationIndexForValueShift].getTPR() << std::endl;
 
-	while (worstFalsePositivesArray[evaluationIndexForValueShift].size() > 0) {
-		auto pair = worstFalsePositivesArray[evaluationIndexForValueShift].top();
-		worstFalsePositivesArray[evaluationIndexForValueShift].pop();
+
+	// for each image in the dataset a worst false positive queue per value shift is filled in
+	// the value shift and corresponding index is know, so just iterate all the images
+	// and put them into 1 final priority queue, hard capped with the max nr of FP to add to the training set
+	// This way each image has a chanche to present a few false positives and only the worst of their worst ones will be kept
+
+	FPPriorityQueue worstFalsePositives =  FPPriorityQueue(comp);
+	for (auto& worstFalsePositiveOfImage : worstFalsePositivesArrayPerImage) {
+		
+		while(worstFalsePositiveOfImage[evaluationIndexForValueShift].size() > 0) {
+			auto pair = worstFalsePositiveOfImage[evaluationIndexForValueShift].top();
+			worstFalsePositives.push(pair);
+			worstFalsePositiveOfImage[evaluationIndexForValueShift].pop();
+		}
+	}
+
+	std::stack<std::pair<float, SlidingWindowRegion>> worstFalsePositiveStack;
+	
+	int nrPopped = 0;
+	while (worstFalsePositives.size() > 0 && nrPopped < maxNrOfFalsePosOrNeg) {
+		auto pair = worstFalsePositives.top();
+		worstFalsePositiveStack.push(pair);
+		worstFalsePositives.pop();
+		nrPopped++;
+	}
+
+	while (worstFalsePositiveStack.size() > 0) {
+		auto pair = worstFalsePositiveStack.top();
+		worstFalsePositiveStack.pop();
 		std::cout << "Worst FP region score= " << pair.first << " image= " << pair.second.imageNumber << " bbox=" << pair.second.bbox.x << "," << pair.second.bbox.y << " " << pair.second.bbox.width << "x" << pair.second.bbox.height << std::endl;
 		swresult.worstFalsePositives.push_back(pair.second);
 	}

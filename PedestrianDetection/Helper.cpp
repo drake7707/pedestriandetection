@@ -63,19 +63,20 @@ void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> fu
 }
 
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, double minScaleReduction, double maxScaleReduction, int slidingWindowStep, float multiplicationFactor, int refWidth, int refHeight) {
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, std::vector<cv::Size>& windowSizes, int slidingWindowStep, int refWidth, int refHeight) {
 	int slidingWindowWidth = 64;
 	int slidingWindowHeight = 128;
 	//	int slidingWindowStep = 8;
 
 	double topOffset = 0.3 * imgHeight;
 
-	double invscale = minScaleReduction;
-	while (invscale < maxScaleReduction) {
-		double  iWidth = 1.0 *imgWidth / invscale;
-		double iHeight = 1.0* imgHeight / invscale;
-		double rectWidth = 1.0 * slidingWindowWidth / invscale;
-		double rectHeight = 1.0 * slidingWindowHeight / invscale;
+	for (auto& s : windowSizes) {
+
+		double invscale = 1.0 *  s.width / slidingWindowWidth;
+		//double iWidth = 1.0 *imgWidth / invscale;
+		//double iHeight = 1.0* imgHeight / invscale;
+		double rectWidth = s.width;// 1.0 * slidingWindowWidth / invscale;
+		double rectHeight = s.height;// 1.0 * slidingWindowHeight / invscale;
 
 		for (double j = topOffset; j < imgHeight - rectHeight; j += slidingWindowStep / invscale) {
 			for (double i = 0; i < imgWidth - rectWidth; i += slidingWindowStep / invscale) {
@@ -84,7 +85,6 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 				func(windowRect);
 			}
 		}
-		invscale *= multiplicationFactor;
 	}
 }
 

@@ -43,7 +43,7 @@ void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int i
 
 void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> func);
 
-double getIntersectionOverUnion(cv::Rect& r1, cv::Rect& r2);
+double getIntersectionOverUnion(const cv::Rect& r1, const cv::Rect& r2);
 
 
 bool FileExists(const std::string &Filename);

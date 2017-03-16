@@ -51,16 +51,24 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
 int refWidth = 64;
 int refHeight = 128;
+
+std::vector<cv::Size> windowSizes = {
+	cv::Size(32,64),
+	cv::Size(64,128),
+	cv::Size(96,192),
+	cv::Size(128,256)
+	
+};
 
 
 void cornerFeatureTest() {
@@ -349,7 +357,7 @@ void testClassifier(FeatureTester& tester) {
 					}
 				}
 				nrOfWindowsEvaluated++;
-			}, 0.5, 4, 16, 2);
+			}, windowSizes, 16);
 
 		});
 
@@ -364,8 +372,8 @@ void testClassifier(FeatureTester& tester) {
 			cv::rectangle(nms, pos.second.bbox, cv::Scalar(255, 255, 0), 2);
 		}
 
-		//cv::imshow("Test", mRGB);
-		//cv::imshow("TestNMS", nms);
+		cv::imshow("Test", mRGB);
+		cv::imshow("TestNMS", nms);
 		m.lock();
 		double posPercentage = 100.0 * nrOfWindowsPositive / (nrOfWindowsEvaluated - nrOfWindowsSkipped);
 		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << slidingWindowTime << "ms (value shift: " << valueShift << ")" << std::endl;
@@ -373,7 +381,7 @@ void testClassifier(FeatureTester& tester) {
 		m.unlock();
 
 		cv::imwrite(std::to_string(i) + "_hddhogrgb.png", mRGB);
-		//cv::waitKey(0);
+		cv::waitKey(0);
 		//nr++;
 	});
 }
@@ -877,7 +885,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
 
 
-	//testClassifier(tester);
+	testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();

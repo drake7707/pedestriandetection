@@ -2,7 +2,7 @@
 #include "opencv2/opencv.hpp"
 #include "Histogram.h"
 #include <chrono>
-
+#include <queue>
 #include <mutex>
 #include <condition_variable>
 
@@ -118,6 +118,17 @@ struct measure
 	}
 };
 
+
+
+template <class T, class S, class C>
+S& Container(std::priority_queue<T, S, C>& q) {
+	struct EnumerablePriorityQueue : private std::priority_queue<T, S, C> {
+		static S& Container(std::priority_queue<T, S, C>& q) {
+			return q.*&EnumerablePriorityQueue::c;
+		}
+	};
+	return EnumerablePriorityQueue::Container(q);
+}
 
 
 class Semaphore {

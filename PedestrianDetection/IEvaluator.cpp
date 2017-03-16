@@ -113,12 +113,12 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 	// allow 10 times that size, or 5 worst false positives per image
 	int maxNrOfFPPerImage = trainingDataSet.getNumberOfImages() / maxNrOfFalsePosOrNeg * 10;
 
+
 	typedef std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)> FPPriorityQueue;
-	typedef std::vector<std::vector<std::pair<float, SlidingWindowRegion>>> FPVectorPerValueShift;
+	typedef std::vector<FPPriorityQueue> FPPriorityQueuePerValueShift;
 
-	std::vector<FPVectorPerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
-		FPVectorPerValueShift(nrOfEvaluations));
-
+	std::vector<FPPriorityQueuePerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
+		FPPriorityQueuePerValueShift(nrOfEvaluations, FPPriorityQueue(comp)));
 
 
 	std::map<int, std::vector<std::pair<float, SlidingWindowRegion>>> windowsPerImage;
@@ -186,7 +186,29 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 					// only add worst false positives if valueShift is the value that was tested on and it was incorrect
 					if (!correct) {
 						if (evaluationClass == 1) {
-							worstFalsePositivesArrayPerImage[imageNumber][i].push_back(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
+
+							std::vector<std::pair<float, SlidingWindowRegion>> &elements = Container(worstFalsePositivesArrayPerImage[imageNumber][i]);
+
+							if (worstFalsePositivesArrayPerImage[imageNumber][i].size() == 0 || abs(evaluationResult) > worstFalsePositivesArrayPerImage[imageNumber][i].top().first) {
+								// if the new false positive is better than the smallest element
+
+								// check if the element has any overlap with the elements currently in the queue
+								bool overlapsWithElement = false;
+								for (std::pair<float, SlidingWindowRegion>& el : elements) {
+									if (getIntersectionOverUnion(el.second.bbox, region) > 0.5) {
+										overlapsWithElement = true;
+										break;
+									}
+								}
+								// prevent false positive with a big result and overlap from completely filling the priority queue so disallow elements that overlap enough (IoU > 0.5)
+								if (!overlapsWithElement) {
+
+									worstFalsePositivesArrayPerImage[imageNumber][i].push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
+									// smallest numbers will be popped
+									if (worstFalsePositivesArrayPerImage[imageNumber][i].size() > maxNrOfFPPerImage) // keep the top worst performing regions
+										worstFalsePositivesArrayPerImage[imageNumber][i].pop();
+								}
+							}
 						}
 						else {
 							//worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
@@ -199,19 +221,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 			}
 		});
 	}, [&](int imgNr) -> void {
-		// full image is processed, apply nms
-
-		// no lock required because array of image is changed and each thread does a different image
-		for (int i = 0; i < nrOfEvaluations; i++)
-		{
-			worstFalsePositivesArrayPerImage[imgNr][i] = applyNonMaximumSuppression(worstFalsePositivesArrayPerImage[imgNr][i]);
-
-			// now sort the vector descending and ensure the amount does not exceed the max allowed FP per image
-			std::sort(worstFalsePositivesArrayPerImage[imgNr][i].begin(), worstFalsePositivesArrayPerImage[imgNr][i].end(), [](const auto& a, const auto& b) -> bool { return a.first > b.first; });
-			// remove elements until there are only max remaining
-			while (worstFalsePositivesArrayPerImage[imgNr][i].size() > maxNrOfFPPerImage)
-				worstFalsePositivesArrayPerImage[imgNr][i].pop_back();
-		}
+		// full image is processed
 	});
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
@@ -265,9 +275,10 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 	FPPriorityQueue worstFalsePositives = FPPriorityQueue(comp);
 	for (auto& worstFalsePositiveOfImage : worstFalsePositivesArrayPerImage) {
 
-		auto& worstFalsePositiveOfImageForTPR95 = worstFalsePositiveOfImage[evaluationIndexForValueShift];
-		for (auto& pair : worstFalsePositiveOfImageForTPR95) {
+		while (worstFalsePositiveOfImage[evaluationIndexForValueShift].size() > 0) {
+			auto pair = worstFalsePositiveOfImage[evaluationIndexForValueShift].top();
 			worstFalsePositives.push(pair);
+			worstFalsePositiveOfImage[evaluationIndexForValueShift].pop();
 		}
 	}
 

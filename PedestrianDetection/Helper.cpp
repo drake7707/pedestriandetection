@@ -89,7 +89,7 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 }
 
 
-double getIntersectionOverUnion(cv::Rect& r1, cv::Rect& r2) {
+double getIntersectionOverUnion(const cv::Rect& r1, const cv::Rect& r2) {
 	double intersectionRect = (r1 & r2).area();
 	double unionRect = (r1 | r2).area();
 

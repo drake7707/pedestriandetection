@@ -206,11 +206,63 @@ TrainingDataSet saveTNTP() {
 	return trainingSet;
 }
 
+//
+//void nms(const std::vector<cv::Rect>& srcRects, std::vector<cv::Rect>& resRects, float thresh) {
+//	resRects.clear();
+//
+//	const size_t size = srcRects.size();
+//	if (!size)
+//	{
+//		return;
+//	}
+//
+//	// Sort the bounding boxes by the bottom - right y - coordinate of the bounding box
+//	std::multimap<int, size_t> idxs;
+//	for (size_t i = 0; i < size; ++i)
+//	{
+//		idxs.insert(std::pair<int, size_t>(srcRects[i].br().y, i));
+//	}
+//
+//	// keep looping while some indexes still remain in the indexes list
+//	while (idxs.size() > 0)
+//	{
+//		// grab the last rectangle
+//		auto lastElem = --std::end(idxs);
+//		const cv::Rect& rect1 = srcRects[lastElem->second];
+//
+//		resRects.push_back(rect1);
+//
+//		idxs.erase(lastElem);
+//
+//		for (auto pos = std::begin(idxs); pos != std::end(idxs); )
+//		{
+//			// grab the current rectangle
+//			const cv::Rect& rect2 = srcRects[pos->second];
+//
+//			float intArea = (rect1 & rect2).area();
+//			float unionArea = rect1.area() + rect2.area() - intArea;
+//			float overlap = intArea / unionArea;
+//
+//			// if there is sufficient overlap, suppress the current bounding box
+//			if (overlap > thresh)
+//			{
+//				pos = idxs.erase(pos);
+//			}
+//			else
+//			{
+//				++pos;
+//			}
+//		}
+//	}
+//}
+//
+
+
 
 void testClassifier(FeatureTester& tester) {
 
 	std::set<std::string> set = { "HDD", "HoG(RGB)" };
-	
+
 	auto fset = tester.getFeatureSet(set);
 
 	EvaluatorCascade cascade(std::string("Test"));
@@ -219,14 +271,14 @@ void testClassifier(FeatureTester& tester) {
 	//ModelEvaluator modelFinal(std::string("Test"));
 	//modelFinal.loadModel(std::string("models\\HoG(Depth)+HoG(RGB)+LBP(RGB) round 3.xml"));
 
-	cascade.updateLastModelValueShift(1.44);
+	cascade.updateLastModelValueShift(2.44);
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
 
 	KITTIDataSet dataSet(kittiDatasetPath);
 
-//	cv::namedWindow("Test");
+	//	cv::namedWindow("Test");
 
 	auto& entries = cascade.getEntries();
 	double valueShift = entries[entries.size() - 1].valueShift;
@@ -234,7 +286,7 @@ void testClassifier(FeatureTester& tester) {
 	std::mutex m;
 	int nr = 0;
 	//while (true) {
-	parallel_for(0, 250, 3, [&](int i) -> void {
+	parallel_for(0, 250, 1, [&](int i) -> void {
 		ProgressWindow::getInstance()->updateStatus(std::string("Testing classifier"), 1.0 * i / 1000, std::to_string(i));
 
 		auto imgs = dataSet.getImagesForNumber(i);
@@ -244,6 +296,9 @@ void testClassifier(FeatureTester& tester) {
 		int nrOfWindowsEvaluated = 0;
 		int nrOfWindowsSkipped = 0;
 		long nrOfWindowsPositive = 0;
+
+		std::vector<std::pair<float, SlidingWindowRegion>> positiveregions;
+
 		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 
 
@@ -288,20 +343,32 @@ void testClassifier(FeatureTester& tester) {
 					FeatureVector v = fset->getFeatures(regionRGB, regionDepth);
 					double result = cascade.evaluateFeatures(v);
 					if ((result > 0 ? 1 : -1) == 1) {
-						cv::rectangle(mRGB, bbox, cv::Scalar(0, 255, 0), 2);
+
+						positiveregions.push_back(std::pair<float, SlidingWindowRegion>(result, SlidingWindowRegion(i, bbox)));
 						nrOfWindowsPositive++;
 					}
 				}
 				nrOfWindowsEvaluated++;
-			}, 0.5, 4, 8, 2);
+			}, 0.5, 4, 16, 2);
 
 		});
 
+		cv::Mat nms = mRGB.clone();
+		for (auto& pos : positiveregions) {
+			cv::rectangle(mRGB, pos.second.bbox, cv::Scalar(0, 255, 0), 1);
+		}
+
+	
+		auto nmsresult = applyNonMaximumSuppression(positiveregions, 0.2);
+		for (auto& pos : nmsresult) {
+			cv::rectangle(nms, pos.second.bbox, cv::Scalar(255, 255, 0), 2);
+		}
+
 		//cv::imshow("Test", mRGB);
-		
+		//cv::imshow("TestNMS", nms);
 		m.lock();
 		double posPercentage = 100.0 * nrOfWindowsPositive / (nrOfWindowsEvaluated - nrOfWindowsSkipped);
-		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << slidingWindowTime << "ms (value shift: "  << valueShift << ")" << std::endl;
+		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << slidingWindowTime << "ms (value shift: " << valueShift << ")" << std::endl;
 		// this will leak because creators are never disposed!
 		m.unlock();
 
@@ -519,7 +586,7 @@ void testSlidingWindow() {
 
 
 	float minScaleReduction = 0.5;
-	float maxScaleReduction =  4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
+	float maxScaleReduction = 4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
 	int baseWindowStride = 16;
 
 	tSet.iterateDataSetWithSlidingWindow(minScaleReduction, maxScaleReduction, baseWindowStride, [&](int idx) -> bool { return true; },
@@ -762,6 +829,20 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 
 int main()
 {
+
+	/*std::vector<std::pair<float, SlidingWindowRegion>> testregions;
+	testregions.push_back(std::pair<float, SlidingWindowRegion>(1, SlidingWindowRegion(0, cv::Rect(50, 50, 100, 100))));
+	testregions.push_back(std::pair<float, SlidingWindowRegion>(2, SlidingWindowRegion(0, cv::Rect(58, 50, 100, 100))));
+	testregions.push_back(std::pair<float, SlidingWindowRegion>(1.5, SlidingWindowRegion(0, cv::Rect(66, 50, 80, 80))));
+	testregions.push_back(std::pair<float, SlidingWindowRegion>(0, SlidingWindowRegion(0, cv::Rect(46, 30, 150, 150))));
+
+
+	auto result = applyNonMaximumSuppression(testregions);
+
+	for (auto& r : result) {
+		std::cout << r.first << " - " << r.second.bbox.x << "," << r.second.bbox.y << " " << r.second.bbox.width << "x" << r.second.bbox.height << std::endl;
+	}
+*/
 	FeatureTester tester;
 	tester.nrOfConcurrentJobs = 4;
 
@@ -790,7 +871,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
 
 
-	//testClassifier(tester);
+	testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
@@ -852,7 +933,7 @@ int main()
 		initialSet.save(initialTrain0File);
 	}
 
-	
+
 
 	//std::vector<std::string> clustersToTest = { "ORB(RGB)", "SIFT(RGB)", "CenSurE(RGB)", "MSD(RGB)", "FAST(RGB)" };
 	//for (int k = 10; k <= 100; k += 10)

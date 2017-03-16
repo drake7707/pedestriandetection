@@ -6,19 +6,12 @@
 #include "FeatureSet.h"
 #include "FeatureVector.h"
 #include <functional>
+#include "Helper.h"
 
 struct EvaluationResult {
 	int resultClass;
 	double rawResponse;
 	EvaluationResult(int resultClass, double rawResponse) : resultClass(resultClass), rawResponse(rawResponse) { }
-};
-
-
-
-struct SlidingWindowRegion {
-	int imageNumber;
-	cv::Rect bbox;
-	SlidingWindowRegion(int imageNumber, cv::Rect bbox) : imageNumber(imageNumber), bbox(bbox) { }
 };
 
 struct EvaluationSlidingWindowResult {

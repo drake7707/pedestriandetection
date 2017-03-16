@@ -28,10 +28,22 @@ int ceilTo(double val, double target);
 
 void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, double minScaleReduction = 0.25, double maxScaleReduction = 4, int slidingWindowStep = 8, float multiplicationFactor = 2, int refWidth = 64, int refHeight = 128);
 
+
+struct SlidingWindowRegion {
+	int imageNumber;
+	cv::Rect bbox;
+	SlidingWindowRegion(int imageNumber, cv::Rect bbox) : imageNumber(imageNumber), bbox(bbox) { }
+};
+
+std::vector < std::pair<float, SlidingWindowRegion>> applyNonMaximumSuppression(std::vector<std::pair<float, SlidingWindowRegion>>& windows, float iouTreshold = 0.5);
+
+
+
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func);
 
 void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> func);
 
+double getIntersectionOverUnion(cv::Rect& r1, cv::Rect& r2);
 
 
 bool FileExists(const std::string &Filename);

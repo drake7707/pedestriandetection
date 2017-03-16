@@ -89,6 +89,57 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 }
 
 
+double getIntersectionOverUnion(cv::Rect& r1, cv::Rect& r2) {
+	double intersectionRect = (r1 & r2).area();
+	double unionRect = (r1 | r2).area();
+
+
+	return unionRect == 0 ? 0 : intersectionRect / unionRect;
+}
+
+
+std::vector < std::pair<float, SlidingWindowRegion>> applyNonMaximumSuppression(std::vector<std::pair<float, SlidingWindowRegion>>& windows, float iouTreshold) {
+	std::vector<std::pair<float, SlidingWindowRegion>> wnds = windows;
+	std::vector<std::pair<float, SlidingWindowRegion>> newwindows;
+
+	bool hasMerged = true;
+	while (hasMerged) {
+		hasMerged = false;
+		std::vector<bool> flaggedToRemove(wnds.size(), false);
+		for (int j = 0; j < wnds.size(); j++)
+		{
+			for (int i = j + 1; i < wnds.size(); i++)
+			{
+				if (!flaggedToRemove[i] && !flaggedToRemove[j]) {
+					if (getIntersectionOverUnion(wnds[i].second.bbox, wnds[j].second.bbox) > iouTreshold) {
+						hasMerged = true;
+						// overlap, only keep 1 of the 2
+						if (wnds[i].first > wnds[j].first) {
+							// remove j
+							flaggedToRemove[j] = true;
+						}
+						else {
+							//remove i
+							flaggedToRemove[i] = true;
+						}
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i < wnds.size(); i++)
+		{
+			if (!flaggedToRemove[i])
+				newwindows.push_back(wnds[i]);
+		}
+		wnds = newwindows;
+		newwindows.clear();
+	}
+
+	return wnds;
+}
+
+
 
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func) {
 	int i = 0;

@@ -291,12 +291,13 @@ void FeatureTester::runJobs() {
 		t.join();
 }
 
-FeatureSet FeatureTester::getFeatureSet(std::set<std::string>& set) {
-	FeatureSet featureSet;
+std::unique_ptr<FeatureSet> FeatureTester::getFeatureSet(std::set<std::string>& set) {
+	FeatureSet* featureSet = new FeatureSet();
 	for (auto& name : set) {
 		FactoryCreator creator = creators.find(name)->second;
 
 		std::unique_ptr<IFeatureCreator> featureCreator = creator.createInstance(creator.name);
-		featureSet.addCreator(std::move(featureCreator));
+		featureSet->addCreator(std::move(featureCreator));
 	}
+	return std::unique_ptr<FeatureSet>(featureSet);
 }

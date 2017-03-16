@@ -341,8 +341,8 @@ void testFeature() {
 			cv::Mat m = createFullCoOccurrenceMatrixImage(img, cells, patchSize);
 			cv::imshow(msg, m);
 
-			
-			
+
+
 
 			//hog::HOGResult result =  hog::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
 			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
@@ -475,21 +475,21 @@ void testFeature() {
 					cv::imshow(msg, magnitude);*/
 
 
-			//Mat gray;
-			//cv::cvtColor(img, gray, CV_BGR2GRAY);
+					//Mat gray;
+					//cv::cvtColor(img, gray, CV_BGR2GRAY);
 
-			//Mat lbp = Algorithms::OLBP(gray);
+					//Mat lbp = Algorithms::OLBP(gray);
 
-			//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
-			//cv::Mat padded;
-			//int padding = 1;
-			//padded.create(img.rows, img.cols, lbp.type());
-			//padded.setTo(cv::Scalar::all(0));
-			//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+					//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+					//cv::Mat padded;
+					//int padding = 1;
+					//padded.create(img.rows, img.cols, lbp.type());
+					//padded.setTo(cv::Scalar::all(0));
+					//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
 
 
-			//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, binSize, true, false);
-			//cv::imshow(msg, result.combineHOGImage(img));
+					//auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, binSize, true, false);
+					//cv::imshow(msg, result.combineHOGImage(img));
 
 		};
 
@@ -753,7 +753,7 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 int main()
 {
 	//testClassifier();
-	testFeature();
+	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
@@ -891,7 +891,7 @@ int main()
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
-	set = { "CoOccurrence(RGB)", "HoG(RGB)" };
+	set = { "HoG(RGB)", "CoOccurrence(RGB)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
@@ -956,7 +956,7 @@ int main()
 
 	for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { name };
-		tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
+		tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
 	}
 	tester.runJobs();
 

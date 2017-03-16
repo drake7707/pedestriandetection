@@ -4,6 +4,8 @@
 #include "ProgressWindow.h"
 #include "Helper.h"
 #include <stack>
+#include <map>
+
 
 IEvaluator::IEvaluator(std::string& name)
 	: name(name)
@@ -18,7 +20,7 @@ IEvaluator::~IEvaluator()
 
 
 
-std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set,int nrOfEvaluations, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) const {
+std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) const {
 	std::vector<ClassifierEvaluation> evals(nrOfEvaluations, ClassifierEvaluation());
 
 	double sumTimes = 0;
@@ -84,7 +86,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 }
 
 
-EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const TrainingDataSet& trainingDataSet, const FeatureSet& set,int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const {
+EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const {
 
 	EvaluationSlidingWindowResult swresult;
 	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation());
@@ -112,12 +114,21 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 	int maxNrOfFPPerImage = trainingDataSet.getNumberOfImages() / maxNrOfFalsePosOrNeg * 10;
 
 	typedef std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)> FPPriorityQueue;
-	typedef std::vector<FPPriorityQueue> FPPriorityQueuePerValueShift;
+	typedef std::vector<std::vector<std::pair<float, SlidingWindowRegion>>> FPVectorPerValueShift;
 
-	std::vector<FPPriorityQueuePerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
-		FPPriorityQueuePerValueShift(nrOfEvaluations, FPPriorityQueue(comp)));
+	std::vector<FPVectorPerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
+		FPVectorPerValueShift(nrOfEvaluations));
 
-	trainingDataSet.iterateDataSetWithSlidingWindow(minScaleReduction, maxScaleReduction, baseWindowStride,[&](int idx) -> bool { return true; },
+
+
+	std::map<int, std::vector<std::pair<float, SlidingWindowRegion>>> windowsPerImage;
+
+	trainingDataSet.iterateDataSetWithSlidingWindow(minScaleReduction, maxScaleReduction, baseWindowStride,
+		[&](int idx) -> bool { return true; },
+		[&](int imgNr) -> void {
+		// image has started
+
+	},
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
@@ -175,11 +186,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 					// only add worst false positives if valueShift is the value that was tested on and it was incorrect
 					if (!correct) {
 						if (evaluationClass == 1) {
-
-							worstFalsePositivesArrayPerImage[imageNumber][i].push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
-							// smallest numbers will be popped
-							if (worstFalsePositivesArrayPerImage[imageNumber][i].size() > maxNrOfFPPerImage) // keep the top worst performing regions
-								worstFalsePositivesArrayPerImage[imageNumber][i].pop();
+							worstFalsePositivesArrayPerImage[imageNumber][i].push_back(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
 						}
 						else {
 							//worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
@@ -191,6 +198,20 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 				}
 			}
 		});
+	}, [&](int imgNr) -> void {
+		// full image is processed, apply nms
+
+		// no lock required because array of image is changed and each thread does a different image
+		for (int i = 0; i < nrOfEvaluations; i++)
+		{
+			worstFalsePositivesArrayPerImage[imgNr][i] = applyNonMaximumSuppression(worstFalsePositivesArrayPerImage[imgNr][i]);
+
+			// now sort the vector descending and ensure the amount does not exceed the max allowed FP per image
+			std::sort(worstFalsePositivesArrayPerImage[imgNr][i].begin(), worstFalsePositivesArrayPerImage[imgNr][i].end(), [](const auto& a, const auto& b) -> bool { return a.first > b.first; });
+			// remove elements until there are only max remaining
+			while (worstFalsePositivesArrayPerImage[imgNr][i].size() > maxNrOfFPPerImage)
+				worstFalsePositivesArrayPerImage[imgNr][i].pop_back();
+		}
 	});
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
@@ -241,18 +262,17 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 	// and put them into 1 final priority queue, hard capped with the max nr of FP to add to the training set
 	// This way each image has a chanche to present a few false positives and only the worst of their worst ones will be kept
 
-	FPPriorityQueue worstFalsePositives =  FPPriorityQueue(comp);
+	FPPriorityQueue worstFalsePositives = FPPriorityQueue(comp);
 	for (auto& worstFalsePositiveOfImage : worstFalsePositivesArrayPerImage) {
-		
-		while(worstFalsePositiveOfImage[evaluationIndexForValueShift].size() > 0) {
-			auto pair = worstFalsePositiveOfImage[evaluationIndexForValueShift].top();
+
+		auto& worstFalsePositiveOfImageForTPR95 = worstFalsePositiveOfImage[evaluationIndexForValueShift];
+		for (auto& pair : worstFalsePositiveOfImageForTPR95) {
 			worstFalsePositives.push(pair);
-			worstFalsePositiveOfImage[evaluationIndexForValueShift].pop();
 		}
 	}
 
 	std::stack<std::pair<float, SlidingWindowRegion>> worstFalsePositiveStack;
-	
+
 	int nrPopped = 0;
 	while (worstFalsePositives.size() > 0 && nrPopped < maxNrOfFalsePosOrNeg) {
 		auto pair = worstFalsePositives.top();

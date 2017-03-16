@@ -358,7 +358,7 @@ void testClassifier(FeatureTester& tester) {
 			cv::rectangle(mRGB, pos.second.bbox, cv::Scalar(0, 255, 0), 1);
 		}
 
-	
+
 		auto nmsresult = applyNonMaximumSuppression(positiveregions, 0.2);
 		for (auto& pos : nmsresult) {
 			cv::rectangle(nms, pos.second.bbox, cv::Scalar(255, 255, 0), 2);
@@ -590,6 +590,10 @@ void testSlidingWindow() {
 	int baseWindowStride = 16;
 
 	tSet.iterateDataSetWithSlidingWindow(minScaleReduction, maxScaleReduction, baseWindowStride, [&](int idx) -> bool { return true; },
+
+		[&](int imageNumber) -> void {
+		// start of image
+	},
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (imageNumber != oldNumber) {
@@ -608,6 +612,8 @@ void testSlidingWindow() {
 			if (!overlapsWithTruePositive)
 				cv::rectangle(tmp, region, cv::Scalar(0, 0, 255), 1);
 		}
+	}, [&](int imageNumber) -> void {
+		// end of image
 	}, 1);
 }
 
@@ -871,7 +877,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
 
 
-	testClassifier(tester);
+	//testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();

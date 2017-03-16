@@ -91,25 +91,25 @@ void FeatureTesterJob::run() const {
 
 		std::vector<ClassifierEvaluation> evaluations;
 		std::string evaluationFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(cascade.trainingRound) + ".csv";
-		//if (FileExists(evaluationFile)) {
-		//	std::cout << "Skipped evaluation of " << featureSetName << ", evaluation was already done." << std::endl;
-		//}
-		//else {
-		std::cout << "Started evaluation of " << featureSetName << std::endl;
-		long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			evaluations = cascade.evaluateDataSet(trainingDataSet, featureSet, nrOfEvaluations, false, [&](int imgNr) -> bool { return imgNr % trainEveryXImage == 0; });
-		});
-		std::ofstream str(evaluationFile);
-		str << "Name" << ";";
-		ClassifierEvaluation().toCSVLine(str, true);
-		str << std::endl;
-		for (auto& result : evaluations) {
-			str << featureSetName << "_round" << cascade.trainingRound << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
+		if (FileExists(evaluationFile)) {
+			std::cout << "Skipped evaluation of " << featureSetName << ", evaluation was already done." << std::endl;
 		}
-		std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
-
+		else {
+			std::cout << "Started evaluation of " << featureSetName << std::endl;
+			long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+				evaluations = cascade.evaluateDataSet(trainingDataSet, featureSet, nrOfEvaluations, false, [&](int imgNr) -> bool { return imgNr % trainEveryXImage == 0; });
+			});
+			std::ofstream str(evaluationFile);
+			str << "Name" << ";";
+			ClassifierEvaluation().toCSVLine(str, true);
+			str << std::endl;
+			for (auto& result : evaluations) {
+				str << featureSetName << "_round" << cascade.trainingRound << ";";
+				result.toCSVLine(str, false);
+				str << std::endl;
+			}
+			std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
+		}
 
 		//std::sort(evaluations.begin(), evaluations.end(), [](const ClassifierEvaluation& a, const ClassifierEvaluation& b) -> bool { return a.getTPR() > b.getTPR(); });
 

@@ -134,7 +134,12 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 }
 
 
-void TrainingDataSet::iterateDataSetWithSlidingWindow(float minScaleReduction, float maxScaleReduction, int baseWindowStride, std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func, int parallization) const {
+void TrainingDataSet::iterateDataSetWithSlidingWindow(float minScaleReduction, float maxScaleReduction, int baseWindowStride, 
+	std::function<bool(int number)> canSelectFunc, 
+	std::function<void(int imageNumber)> onImageStarted,
+	std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
+	std::function<void(int imageNumber)> onImageProcessed,
+	int parallization) const {
 
 	KITTIDataSet dataSet(baseDataSetPath);
 	int idx = 0;
@@ -143,7 +148,11 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(float minScaleReduction, f
 	parallel_foreach<int,TrainingImage>(images, parallization, [&](std::pair<int, TrainingImage> pair) -> void {
 		//for (auto& pair : images) {
 
+		
 		if (canSelectFunc(pair.first)) {
+
+			onImageStarted(pair.first);
+
 			auto imgs = dataSet.getImagesForNumber(pair.first);
 			cv::Mat mRGB = imgs[0];
 			cv::Mat mDepth = imgs[1];
@@ -199,6 +208,8 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(float minScaleReduction, f
 					idx++;
 				}
 			}, minScaleReduction, maxScaleReduction, baseWindowStride);
+
+			onImageProcessed(pair.first);
 			//cv::imshow("Temp", tmp);
 			//cv::waitKey(0);
 

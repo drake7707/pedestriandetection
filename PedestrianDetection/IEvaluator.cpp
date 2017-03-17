@@ -112,11 +112,11 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 	int maxNrOfFPPerImage = trainingDataSet.getNumberOfImages() / maxNrOfFalsePosOrNeg * 10;
 
 
-	typedef std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)> FPPriorityQueue;
-	typedef std::vector<FPPriorityQueue> FPPriorityQueuePerValueShift;
+	
+	typedef std::vector<std::set<SlidingWindowRegion>> FPPerValueShift;
 
-	std::vector<FPPriorityQueuePerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
-		FPPriorityQueuePerValueShift(nrOfEvaluations, FPPriorityQueue(comp)));
+	std::vector<FPPerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
+		FPPerValueShift(nrOfEvaluations, std::set<SlidingWindowRegion>()));
 
 
 	std::map<int, std::vector<std::pair<float, SlidingWindowRegion>>> windowsPerImage;
@@ -185,26 +185,40 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 					if (!correct) {
 						if (evaluationClass == 1) {
 
-							std::vector<std::pair<float, SlidingWindowRegion>> &elements = Container(worstFalsePositivesArrayPerImage[imageNumber][i]);
-
-							if (worstFalsePositivesArrayPerImage[imageNumber][i].size() == 0 || abs(evaluationResult) > worstFalsePositivesArrayPerImage[imageNumber][i].top().first) {
+							auto& worstFalsePositivesOfImageAndEvaluationShift = worstFalsePositivesArrayPerImage[imageNumber][i];
+							if (worstFalsePositivesOfImageAndEvaluationShift.size() == 0 || abs(evaluationResult) > abs(worstFalsePositivesOfImageAndEvaluationShift.begin()->score)) {
 								// if the new false positive is better than the smallest element
 
 								// check if the element has any overlap with the elements currently in the queue
 								bool overlapsWithElement = false;
-								for (std::pair<float, SlidingWindowRegion>& el : elements) {
-									if (getIntersectionOverUnion(el.second.bbox, region) > 0.5) {
+								auto it = worstFalsePositivesOfImageAndEvaluationShift.rbegin();
+								while (it != worstFalsePositivesOfImageAndEvaluationShift.rend()) {
+									if (getIntersectionOverUnion(it->bbox, region) > 0.5) {
 										overlapsWithElement = true;
-										break;
+
+										if (abs(evaluationResult) > abs(it->score)) {
+											// swap in this element
+											worstFalsePositivesOfImageAndEvaluationShift.erase(std::next(it).base()); //(http://stackoverflow.com/questions/1830158/how-to-call-erase-with-a-reverse-iterator)
+											worstFalsePositivesOfImageAndEvaluationShift.insert(SlidingWindowRegion(imageNumber, region, abs(evaluationResult)));
+										}
+										else {
+											// smaller result, the worst element is already in the queue
+										}
+										// the set is iterated in reverse, so biggest first. If it was overlapping the element could either be replaced or already have 
+										// a smaller result. As all other elements will have a smaller result we can stop now.
+										break; 
 									}
+									it++;
 								}
+							
 								// prevent false positive with a big result and overlap from completely filling the priority queue so disallow elements that overlap enough (IoU > 0.5)
 								if (!overlapsWithElement) {
+									// add it 
+									worstFalsePositivesOfImageAndEvaluationShift.emplace(SlidingWindowRegion(imageNumber, region, abs(evaluationResult)));
 
-									worstFalsePositivesArrayPerImage[imageNumber][i].push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
-									// smallest numbers will be popped
-									if (worstFalsePositivesArrayPerImage[imageNumber][i].size() > maxNrOfFPPerImage) // keep the top worst performing regions
-										worstFalsePositivesArrayPerImage[imageNumber][i].pop();
+									// smallest results will be removed to ensure not exceeding the maximum capacity
+									if (worstFalsePositivesOfImageAndEvaluationShift.size() > maxNrOfFPPerImage) // keep the top worst performing regions
+										worstFalsePositivesOfImageAndEvaluationShift.erase(worstFalsePositivesOfImageAndEvaluationShift.begin());
 								}
 							}
 						}
@@ -270,31 +284,22 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 	// and put them into 1 final priority queue, hard capped with the max nr of FP to add to the training set
 	// This way each image has a chanche to present a few false positives and only the worst of their worst ones will be kept
 
-	FPPriorityQueue worstFalsePositives = FPPriorityQueue(comp);
+	std::set<SlidingWindowRegion> worstFalsePositives = std::set<SlidingWindowRegion>();
 	for (auto& worstFalsePositiveOfImage : worstFalsePositivesArrayPerImage) {
 
-		while (worstFalsePositiveOfImage[evaluationIndexForValueShift].size() > 0) {
-			auto pair = worstFalsePositiveOfImage[evaluationIndexForValueShift].top();
-			worstFalsePositives.push(pair);
-			worstFalsePositiveOfImage[evaluationIndexForValueShift].pop();
+		for (auto& wfp : worstFalsePositiveOfImage[evaluationIndexForValueShift]) {
+			worstFalsePositives.emplace(wfp);
 		}
 	}
 
-	std::stack<std::pair<float, SlidingWindowRegion>> worstFalsePositiveStack;
-
-	int nrPopped = 0;
-	while (worstFalsePositives.size() > 0 && nrPopped < maxNrOfFalsePosOrNeg) {
-		auto pair = worstFalsePositives.top();
-		worstFalsePositiveStack.push(pair);
-		worstFalsePositives.pop();
-		nrPopped++;
-	}
-
-	while (worstFalsePositiveStack.size() > 0) {
-		auto pair = worstFalsePositiveStack.top();
-		worstFalsePositiveStack.pop();
-		std::cout << "Worst FP region score= " << pair.first << " image= " << pair.second.imageNumber << " bbox=" << pair.second.bbox.x << "," << pair.second.bbox.y << " " << pair.second.bbox.width << "x" << pair.second.bbox.height << std::endl;
-		swresult.worstFalsePositives.push_back(pair.second);
+	int nrAdded = 0;
+	auto it = worstFalsePositives.rbegin();
+	while (it != worstFalsePositives.rend() && nrAdded < maxNrOfFalsePosOrNeg) {
+		auto& wnd = *it;
+		std::cout << "Worst FP region score= " << wnd.score << " image= " << wnd.imageNumber << " bbox=" << wnd.bbox.x << "," << wnd.bbox.y << " " << wnd.bbox.width << "x" << wnd.bbox.height << std::endl;
+		swresult.worstFalsePositives.push_back(wnd);
+		nrAdded++;
+		it++;
 	}
 
 	//while (worstFalseNegatives.size() > 0) {

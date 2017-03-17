@@ -32,11 +32,16 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 struct SlidingWindowRegion {
 	int imageNumber;
 	cv::Rect bbox;
-	SlidingWindowRegion(int imageNumber, cv::Rect bbox) : imageNumber(imageNumber), bbox(bbox) { }
+
+	float score;
+	SlidingWindowRegion(int imageNumber, cv::Rect bbox, float score) : imageNumber(imageNumber), bbox(bbox), score(score) { }
+
+	bool operator<(SlidingWindowRegion other) const {
+		return this->score < other.score;
+	}
 };
 
-std::vector < std::pair<float, SlidingWindowRegion>> applyNonMaximumSuppression(std::vector<std::pair<float, SlidingWindowRegion>>& windows, float iouTreshold = 0.5);
-
+std::vector < SlidingWindowRegion> applyNonMaximumSuppression(std::vector< SlidingWindowRegion>& windows, float iouTreshold = 0.5);
 
 
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func);

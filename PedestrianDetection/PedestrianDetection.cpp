@@ -51,11 +51,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -306,7 +306,7 @@ void testClassifier(FeatureTester& tester) {
 		int nrOfWindowsSkipped = 0;
 		long nrOfWindowsPositive = 0;
 
-		std::vector<std::pair<float, SlidingWindowRegion>> positiveregions;
+		std::vector<SlidingWindowRegion> positiveregions;
 
 		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 
@@ -353,7 +353,7 @@ void testClassifier(FeatureTester& tester) {
 					double result = cascade.evaluateFeatures(v);
 					if ((result > 0 ? 1 : -1) == 1) {
 
-						positiveregions.push_back(std::pair<float, SlidingWindowRegion>(result, SlidingWindowRegion(i, bbox)));
+						positiveregions.push_back(SlidingWindowRegion(i, bbox, abs(result)));
 						nrOfWindowsPositive++;
 					}
 				}
@@ -364,13 +364,13 @@ void testClassifier(FeatureTester& tester) {
 
 		cv::Mat nms = mRGB.clone();
 		for (auto& pos : positiveregions) {
-			cv::rectangle(mRGB, pos.second.bbox, cv::Scalar(0, 255, 0), 1);
+			cv::rectangle(mRGB, pos.bbox, cv::Scalar(0, 255, 0), 1);
 		}
 
 
 		auto nmsresult = applyNonMaximumSuppression(positiveregions, 0.2);
 		for (auto& pos : nmsresult) {
-			cv::rectangle(nms, pos.second.bbox, cv::Scalar(255, 255, 0), 2);
+			cv::rectangle(nms, pos.bbox, cv::Scalar(255, 255, 0), 2);
 		}
 
 		cv::imshow("Test", mRGB);
@@ -668,11 +668,11 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, std::string& outputF
 		FeatureVector v = fset.getFeatures(rgb, depth);
 		if (resultClass == 1) {
 			truePositiveFeatures.push_back(v);
-			truePositiveRegions.push_back(SlidingWindowRegion(imageNumber, region));
+			truePositiveRegions.push_back(SlidingWindowRegion(imageNumber, region, 0));
 		}
 		else {
 			trueNegativeFeatures.push_back(v);
-			trueNegativeRegions.push_back(SlidingWindowRegion(imageNumber, region));
+			trueNegativeRegions.push_back(SlidingWindowRegion(imageNumber, region, 0));
 		}
 	});
 

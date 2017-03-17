@@ -72,12 +72,12 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 
 	for (auto& s : windowSizes) {
 
-		double invscale = 1.0 *  s.width / slidingWindowWidth;
+		double scale = 1.0 *  s.width / slidingWindowWidth;
 		double rectWidth = s.width;// 1.0 * slidingWindowWidth / invscale;
 		double rectHeight = s.height;// 1.0 * slidingWindowHeight / invscale;
 
-		for (double j = topOffset; j < imgHeight - rectHeight; j += slidingWindowStep / invscale) {
-			for (double i = 0; i < imgWidth - rectWidth; i += slidingWindowStep / invscale) {
+		for (double j = topOffset; j < imgHeight - rectHeight; j += slidingWindowStep * scale) {
+			for (double i = 0; i < imgWidth - rectWidth; i += slidingWindowStep * scale) {
 
 				cv::Rect windowRect(i, j, rectWidth, rectHeight);
 				func(windowRect);
@@ -96,9 +96,9 @@ double getIntersectionOverUnion(const cv::Rect& r1, const cv::Rect& r2) {
 }
 
 
-std::vector < std::pair<float, SlidingWindowRegion>> applyNonMaximumSuppression(std::vector<std::pair<float, SlidingWindowRegion>>& windows, float iouTreshold) {
-	std::vector<std::pair<float, SlidingWindowRegion>> wnds = windows;
-	std::vector<std::pair<float, SlidingWindowRegion>> newwindows;
+std::vector < SlidingWindowRegion> applyNonMaximumSuppression(std::vector< SlidingWindowRegion>& windows, float iouTreshold) {
+	std::vector<SlidingWindowRegion> wnds = windows;
+	std::vector< SlidingWindowRegion> newwindows;
 
 	bool hasMerged = true;
 	while (hasMerged) {
@@ -109,10 +109,10 @@ std::vector < std::pair<float, SlidingWindowRegion>> applyNonMaximumSuppression(
 			for (int i = j + 1; i < wnds.size(); i++)
 			{
 				if (!flaggedToRemove[i] && !flaggedToRemove[j]) {
-					if (getIntersectionOverUnion(wnds[i].second.bbox, wnds[j].second.bbox) > iouTreshold) {
+					if (getIntersectionOverUnion(wnds[i].bbox, wnds[j].bbox) > iouTreshold) {
 						hasMerged = true;
 						// overlap, only keep 1 of the 2
-						if (wnds[i].first > wnds[j].first) {
+						if (wnds[i].score > wnds[j].score) {
 							// remove j
 							flaggedToRemove[j] = true;
 						}

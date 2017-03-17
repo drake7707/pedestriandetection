@@ -6,7 +6,7 @@ namespace hog {
 
 	FeatureVector HistogramResult::getFeatureArray() const {
 		FeatureVector arr;
-		arr.reserve(width * height * 10);
+		arr.reserve(width * height * data[0][0].size());
 
 		for (int j = 0; j < height; j++)
 		{

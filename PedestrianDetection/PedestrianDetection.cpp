@@ -51,11 +51,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -65,9 +65,10 @@ int refHeight = 128;
 std::vector<cv::Size> windowSizes = {
 	cv::Size(32,64),
 	cv::Size(64,128),
+	cv::Size(80,160),
 	cv::Size(96,192),
+	cv::Size(112,124),
 	cv::Size(128,256)
-	
 };
 
 
@@ -597,7 +598,7 @@ void testSlidingWindow() {
 	float maxScaleReduction = 4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
 	int baseWindowStride = 16;
 
-	tSet.iterateDataSetWithSlidingWindow(minScaleReduction, maxScaleReduction, baseWindowStride, [&](int idx) -> bool { return true; },
+	tSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, [&](int idx) -> bool { return true; },
 
 		[&](int imageNumber) -> void {
 		// start of image
@@ -885,7 +886,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
 
 
-	testClassifier(tester);
+	//testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
@@ -995,56 +996,56 @@ int main()
 	tester.nrOfConcurrentJobs = 1;
 
 	set = { "CoOccurrence(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(RGB)", "CoOccurrence(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 
 	set = { "LBP(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HONV" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HDD" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(Depth)", "HoG(RGB)","LBP(RGB)", "HDD" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(RGB)", "HoG(Depth)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(RGB)", "HDD" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(RGB)", "HONV" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(RGB)", "LBP(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 	set = { "HoG(RGB)", "S2HoG(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
 
 
@@ -1063,7 +1064,7 @@ int main()
 
 	for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { name };
-		tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 4);
+		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	}
 	tester.runJobs();
 

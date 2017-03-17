@@ -86,7 +86,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 }
 
 
-EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const {
+EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const {
 
 	EvaluationSlidingWindowResult swresult;
 	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation());
@@ -105,8 +105,6 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 		mutex.unlock();
 	};;
 
-	float minScaleReduction = 0.5;
-	float maxScaleReduction = trainingRound > 3 ? 8 : 4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
 	int baseWindowStride = 16;
 
 	// want to obtain 4000 false positives, over 7500 images, which means about 0.5 false positive per image
@@ -123,7 +121,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Traini
 
 	std::map<int, std::vector<std::pair<float, SlidingWindowRegion>>> windowsPerImage;
 
-	trainingDataSet.iterateDataSetWithSlidingWindow(minScaleReduction, maxScaleReduction, baseWindowStride,
+	trainingDataSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride,
 		[&](int idx) -> bool { return true; },
 		[&](int imgNr) -> void {
 		// image has started

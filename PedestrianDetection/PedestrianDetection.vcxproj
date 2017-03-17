@@ -167,6 +167,7 @@
     <ClInclude Include="FASTFeatureCreator.h" />
     <ClInclude Include="FeatureSet.h" />
     <ClInclude Include="FeatureTester.h" />
+    <ClInclude Include="FeatureTesterJob.h" />
     <ClInclude Include="FeatureVector.h" />
     <ClInclude Include="HDDFeatureCreator.h" />
     <ClInclude Include="Helper.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="FASTFeatureCreator.cpp" />
     <ClCompile Include="FeatureSet.cpp" />
     <ClCompile Include="FeatureTester.cpp" />
+    <ClCompile Include="FeatureTesterJob.cpp" />
     <ClCompile Include="FeatureVector.cpp" />
     <ClCompile Include="HDDFeatureCreator.cpp" />
     <ClCompile Include="Helper.cpp" />

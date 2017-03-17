@@ -134,7 +134,7 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 }
 
 
-void TrainingDataSet::iterateDataSetWithSlidingWindow(float minScaleReduction, float maxScaleReduction, int baseWindowStride, 
+void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
 	std::function<bool(int number)> canSelectFunc, 
 	std::function<void(int imageNumber)> onImageStarted,
 	std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
@@ -207,7 +207,7 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(float minScaleReduction, f
 					func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
 					idx++;
 				}
-			}, minScaleReduction, maxScaleReduction, baseWindowStride);
+			}, windowSizes, baseWindowStride);
 
 			onImageProcessed(pair.first);
 			//cv::imshow("Temp", tmp);

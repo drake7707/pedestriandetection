@@ -73,8 +73,6 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 	for (auto& s : windowSizes) {
 
 		double invscale = 1.0 *  s.width / slidingWindowWidth;
-		//double iWidth = 1.0 *imgWidth / invscale;
-		//double iHeight = 1.0* imgHeight / invscale;
 		double rectWidth = s.width;// 1.0 * slidingWindowWidth / invscale;
 		double rectHeight = s.height;// 1.0 * slidingWindowHeight / invscale;
 

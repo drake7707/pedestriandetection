@@ -26,7 +26,7 @@ int randBetween(int min, int max);
 
 int ceilTo(double val, double target);
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, double minScaleReduction = 0.25, double maxScaleReduction = 4, int slidingWindowStep = 8, float multiplicationFactor = 2, int refWidth = 64, int refHeight = 128);
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, std::vector<cv::Size>& windowSizes, int slidingWindowStep, int refWidth = 64, int refHeight = 128);
 
 
 struct SlidingWindowRegion {

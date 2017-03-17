@@ -2,6 +2,7 @@
 #include "FeatureVector.h"
 #include "IFeatureCreator.h"
 #include "opencv2/opencv.hpp"
+#include "TrainingDataSet.h"
 #include <memory>
 
 class FeatureSet
@@ -21,6 +22,9 @@ public:
 	~FeatureSet();
 
 	void addCreator(std::unique_ptr<IFeatureCreator> creator);
+
+
+	void prepare(TrainingDataSet& trainingDataSet, int trainingRound);
 
 	int getNumberOfFeatures() const;
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;

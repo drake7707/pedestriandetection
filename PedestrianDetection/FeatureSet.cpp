@@ -1,4 +1,5 @@
 #include "FeatureSet.h"
+#include "VariableNumberFeatureCreator.h"
 
 
 
@@ -50,4 +51,12 @@ std::string FeatureSet::explainFeature(int featureIndex, double splitValue) cons
 	}
 
 	return "";
+}
+
+void FeatureSet::prepare(TrainingDataSet& trainingDataSet, int trainingRound) {
+	for (auto&& c : creators) {
+		if (dynamic_cast<VariableNumberFeatureCreator*>(c.get()) != nullptr) {
+			(dynamic_cast<VariableNumberFeatureCreator*>(c.get()))->prepare(trainingDataSet, trainingRound);
+		}
+	}
 }

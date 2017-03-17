@@ -33,6 +33,10 @@ private:
 	void markFeatureSetProcessed(std::string& featureSetName);
 
 
+	
+		std::mutex singletonLock;
+
+
 
 
 public:
@@ -51,5 +55,9 @@ public:
 	void runJobs();
 
 	std::unique_ptr<FeatureSet> getFeatureSet(const std::set<std::string>& set);
+
+	std::mutex* getLock() {
+		return &singletonLock;
+	}
 };
 

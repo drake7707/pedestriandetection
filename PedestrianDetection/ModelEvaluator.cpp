@@ -133,6 +133,7 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 
 	model.boost = boost;
 
+	ProgressWindow::getInstance()->finish(name);
 	//auto& roots = boost->getRoots();
 	//auto& nodes = boost->getNodes();
 	//auto& splits = boost->getSplits();

@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include "FeatureTester.h"
+#include <mutex>
 
 class FeatureTester;
 

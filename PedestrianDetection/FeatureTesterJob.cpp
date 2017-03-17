@@ -125,6 +125,10 @@ void FeatureTesterJob::run() const {
 
 		// --------------- Evaluation sliding window --------------------
 		if (evaluateOnSlidingWindow) {
+
+			// do not try and evaluate multiple jobs together with sliding window. The sliding window evaluation is already parallelized will just interfere with each other then
+			tester->getLock()->lock();
+
 			std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(cascade.trainingRound) + ".csv";
 			std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt";
 			if (FileExists(evaluationSlidingFile) && FileExists(nextRoundTrainingFile)) {
@@ -152,6 +156,12 @@ void FeatureTesterJob::run() const {
 
 				cascade.updateLastModelValueShift(result.evaluations[result.evaluationIndexWhenTPRThresholdIsReached].valueShift);
 
+
+				std::string worstFalsePositivesFile = std::string("models") + PATH_SEPARATOR + featureSetName + "_" + "worstfalsepositives_" + std::to_string(cascade.trainingRound) + ".csv";
+				std::ofstream wfpStr = std::ofstream(worstFalsePositivesFile);
+
+				wfpStr << std::fixed;
+				wfpStr << "Name;Score;ImageNumber;X;Y;Width;Height" << std::endl;
 				// --------------- New training set --------------------
 				TrainingDataSet newTrainingSet = trainingDataSet;
 				for (auto& swregion : result.worstFalsePositives) {
@@ -160,7 +170,10 @@ void FeatureTesterJob::run() const {
 					r.region = swregion.bbox;
 					r.regionClass = -1; // it was a negative but positive was specified
 					newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+
+					wfpStr << featureSetName << ";" << swregion.score << ";" << swregion.imageNumber << ";" << swregion.bbox.x << ";" << swregion.bbox.y << ";" << swregion.bbox.width << ";" << swregion.bbox.height << std::endl;
 				}
+				wfpStr.close();
 
 				// don't add more true positives because it starts skewing the results
 				//for (auto& swregion : result.worstFalseNegatives) {
@@ -173,6 +186,8 @@ void FeatureTesterJob::run() const {
 				newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt");
 				trainingDataSet = newTrainingSet;
 			}
+
+			tester->getLock()->unlock();
 		}
 
 		// round is finished

@@ -24,7 +24,7 @@ double EvaluatorCascade::evaluateFeatures(FeatureVector& v) const {
 			return result + cascade[i].valueShift;
 		}
 	}
-	return result + cascade[cascade.size()-1].valueShift;
+	return result +cascade[cascade.size() - 1].valueShift;
 }
 
 void EvaluatorCascade::updateLastModelValueShift(double valueShift) {

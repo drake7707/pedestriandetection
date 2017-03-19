@@ -89,7 +89,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const {
 
 	EvaluationSlidingWindowResult swresult;
-	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation());
+	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
 
 	double sumTimesRegions = 0;
 	int nrRegions = 0;
@@ -119,19 +119,22 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 		FPPerValueShift(nrOfEvaluations, std::set<SlidingWindowRegion>()));
 
 
-	std::map<int, std::vector<std::pair<float, SlidingWindowRegion>>> windowsPerImage;
-
+	
 	trainingDataSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride,
 		[&](int idx) -> bool { return true; },
 		[&](int imgNr) -> void {
 		// image has started
 
+		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
+			
+		});
 	},
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating with sliding window (") + std::to_string(imageNumber) + ")");
 
+		
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 			v = set.getFeatures(rgb, depth);
@@ -170,6 +173,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 				else {
 					if (resultClass == -1 && evaluationClass == 1) {
 						swresult.evaluations[i].nrOfFalsePositives++;
+						swresult.evaluations[i].falsePositivesPerImage[imageNumber]++;
 					}
 					else
 						swresult.evaluations[i].nrOfFalseNegatives++;

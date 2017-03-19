@@ -24,7 +24,13 @@ struct ClassifierEvaluation {
 	double valueShift = 0;
 	double evaluationSpeedPerRegionMS = 0;
 
+	std::vector<int> falsePositivesPerImage;
+
 	std::vector<RawEvaluationEntry> rawValues;
+
+	ClassifierEvaluation(int nrOfImages = 0) {
+		falsePositivesPerImage = std::vector<int>(nrOfImages, 0);
+	}
 
 	void print(std::ostream& out) {
 
@@ -46,6 +52,9 @@ struct ClassifierEvaluation {
 		out << "Precision " << getPrecision() << std::endl;
 		out << "Recall " << getRecall() << std::endl;
 		out << "F1-score " << getFScore(1) << std::endl;
+		out << "-------------------" << std::endl;
+		out << "FPPI " << getFPPI() << std::endl;
+		out << "Miss rate " << getMissRate() << std::endl;
 		out << "-------------------" << std::endl;
 		out << "Evaluation time " << evaluationSpeedPerRegionMS << "ms" << std::endl;
 
@@ -70,12 +79,27 @@ struct ClassifierEvaluation {
 		return (1 + betabeta) * (precision * recall) / ((betabeta * precision) + recall);
 	}
 
+	double getMissRate() {
+		return 1 - getTPR();
+	}
+
+	double getFPPI() {
+		if (falsePositivesPerImage.size() == 0)
+			return -1;
+
+		int sum = 0;
+		for (int i : falsePositivesPerImage)
+			sum += i;
+		return 1.0 * sum / falsePositivesPerImage.size();
+	}
+
 	void toCSVLine(std::ostream& out, bool header) {
 		if (header)
-			out << "TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;EvaluationTimePerWindowMS;ValueShift";
+			out << "TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;FPPI;MissRate;EvaluationTimePerWindowMS;ValueShift;";
 		else
 			out << std::fixed << nrOfTruePositives << ";" << nrOfTrueNegatives << ";" << nrOfFalsePositives << ";" << nrOfFalseNegatives
 			<< ";" << getTPR() << ";" << getFPR() << ";" << getPrecision() << ";" << getRecall() << ";" << getFScore(1)
+			<< ";" << getFPPI() << ";" << getMissRate()
 			<< ";" << evaluationSpeedPerRegionMS << ";" << valueShift;
 	}
 };

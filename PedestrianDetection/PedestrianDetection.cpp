@@ -285,7 +285,7 @@ void testClassifier(FeatureTester& tester) {
 	//ModelEvaluator modelFinal(std::string("Test"));
 	//modelFinal.loadModel(std::string("models\\HOG(Depth)+HOG(RGB)+LBP(RGB) round 3.xml"));
 
-	cascade.updateLastModelValueShift(2.44);
+	cascade.updateLastModelValueShift(1.44);
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
@@ -300,7 +300,7 @@ void testClassifier(FeatureTester& tester) {
 	std::mutex m;
 	int nr = 0;
 	//while (true) {
-	parallel_for(0, 250, 1, [&](int i) -> void {
+	parallel_for(0, 250, 4, [&](int i) -> void {
 		ProgressWindow::getInstance()->updateStatus(std::string("Testing classifier"), 1.0 * i / 1000, std::to_string(i));
 
 		auto imgs = dataSet.getImagesForNumber(i);
@@ -378,16 +378,16 @@ void testClassifier(FeatureTester& tester) {
 			cv::rectangle(nms, pos.bbox, cv::Scalar(255, 255, 0), 2);
 		}
 
-		cv::imshow("Test", mRGB);
-		cv::imshow("TestNMS", nms);
+		/*	cv::imshow("Test", mRGB);
+			cv::imshow("TestNMS", nms);*/
 		m.lock();
 		double posPercentage = 100.0 * nrOfWindowsPositive / (nrOfWindowsEvaluated - nrOfWindowsSkipped);
 		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << slidingWindowTime << "ms (value shift: " << valueShift << ")" << std::endl;
 		// this will leak because creators are never disposed!
 		m.unlock();
 
-		cv::imwrite(std::to_string(i) + "_hddHOGrgb.png", mRGB);
-		cv::waitKey(0);
+		cv::imwrite(std::to_string(i) + "_hddHOGrgb.png", nms);
+		//cv::waitKey(0);
 		//nr++;
 	});
 }
@@ -869,7 +869,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, false, patchSize, binSize, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("S2HOG(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGHistogramVarianceFeatureCreator(name, false, patchSize, binSize, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, true, patchSize, binSize, refWidth, refHeight))); }));
-	
+
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, false))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, true))); }));
 
@@ -902,7 +902,7 @@ int main()
 
 	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\LBP(RGB)_train3.txt"), std::string("tptnsimilarity_lbp_train3.csv"));
 
-	//browseThroughDataSet(std::string("trainingsets\\LBP(RGB)_train4.txt"));
+//	browseThroughDataSet(std::string("trainingsets\\HDD+HOG(RGB)_train4.txt"));
 	//testClassifier();
 
 
@@ -1002,24 +1002,26 @@ int main()
 
 	tester.nrOfConcurrentJobs = 1;
 
-	set = { "RAW(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
 	set = { "HOG(RGB)", "HDD" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	
+
+
+	set = { "RAW(RGB)" };
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+
 	set = { "HOG(RGB)", "HOG(Depth)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	
+
 	set = { "HOG(RGB)", "HONV" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	
+
 	set = { "HOG(RGB)", "LBP(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	
+
 	set = { "HOG(RGB)", "S2HOG(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	
+
 	set = { "HOG(RGB)", "CoOccurrence(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();
@@ -1041,7 +1043,7 @@ int main()
 
 	set = { "HOG(Depth)", "HOG(RGB)","LBP(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	
+
 	set = { "HOG(Depth)", "HOG(RGB)","LBP(RGB)", "HDD" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 

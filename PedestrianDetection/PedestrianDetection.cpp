@@ -37,6 +37,7 @@
 #include "LBPFeatureCreator.h"
 #include "HONVFeatureCreator.h"
 #include "CoOccurenceMatrixFeatureCreator.h"
+#include "RAWRGBFeatureCreator.h"
 
 #include "EvaluatorCascade.h"
 
@@ -889,6 +890,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, patchSize, 20, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name))); }));
 
 
 	//testClassifier(tester);
@@ -998,28 +1000,26 @@ int main()
 	//}
 	//tester.runJobs();
 
-	tester.nrOfConcurrentJobs = 4;
+	tester.nrOfConcurrentJobs = 1;
+
+	set = { "RAW(RGB)" };
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
 	set = { "HOG(RGB)", "HDD" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	tester.runJobs();
-
+	
 	set = { "HOG(RGB)", "HOG(Depth)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	tester.runJobs();
-
+	
 	set = { "HOG(RGB)", "HONV" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	tester.runJobs();
-
+	
 	set = { "HOG(RGB)", "LBP(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	tester.runJobs();
-
+	
 	set = { "HOG(RGB)", "S2HOG(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	tester.runJobs();
-
+	
 	set = { "HOG(RGB)", "CoOccurrence(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	tester.runJobs();

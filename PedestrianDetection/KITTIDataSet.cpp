@@ -29,14 +29,21 @@ std::vector<DataSetLabel> KITTIDataSet::getLabels() const {
 
 				if (parts.size() >= 15) {
 					std::string type = parts[0];
+
+					double left = atof(parts[4].c_str());
+					double top = atof(parts[5].c_str());
+					double right = atof(parts[6].c_str());
+					double bottom = atof(parts[7].c_str());
+					cv::Rect2d r(left, top, right - left + 1, bottom - top + 1);
+				
+
 					if (type == "Pedestrian") {
 						// 0 1 2 3 | 4 5 6 7 |
-						double left = atof(parts[4].c_str());
-						double top = atof(parts[5].c_str());
-						double right = atof(parts[6].c_str());
-						double bottom = atof(parts[7].c_str());
-						cv::Rect2d r(left, top, right - left + 1, bottom - top + 1);
-						DataSetLabel lbl(nrStr, r);
+						DataSetLabel lbl(nrStr, r, false);
+						labels.push_back(lbl);
+					}
+					else if (type == "Person_sitting" || type == "Cyclist" || type == "DontCare") {
+						DataSetLabel lbl(nrStr, r, true);
 						labels.push_back(lbl);
 					}
 				}
@@ -70,7 +77,7 @@ std::vector<cv::Mat> KITTIDataSet::getImagesForNumber(int number) const {
 
 int KITTIDataSet::getNrOfImages() const
 {
-	return 7480;
+	return 7481;
 }
 
 bool KITTIDataSet::isWithinValidDepthRange(int height, float depthAverage) const {

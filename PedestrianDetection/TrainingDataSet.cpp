@@ -5,7 +5,7 @@
 
 
 TrainingDataSet::TrainingDataSet(std::string& baseDataSetPath)
-	: baseDataSetPath(baseDataSetPath) , dataSet(baseDataSetPath)
+	: baseDataSetPath(baseDataSetPath), dataSet(baseDataSetPath)
 {
 }
 
@@ -101,7 +101,7 @@ void TrainingDataSet::iterateDataSetImages(std::function<void(int imageNumber, c
 
 void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth)> func) const {
 
-	
+
 	int idx = 0;
 	for (auto& pair : images) {
 
@@ -111,23 +111,24 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 			cv::Mat depth = imgs[1];
 
 			for (auto& r : pair.second.regions) {
+				if (r.regionClass != 0) { // exclude don't care regions
+					cv::Mat regionRGB;
+					cv::resize(rgb(r.region), regionRGB, cv::Size2d(refWidth, refHeight));
 
-				cv::Mat regionRGB;
-				cv::resize(rgb(r.region), regionRGB, cv::Size2d(refWidth, refHeight));
-
-				cv::Mat regionDepth;
-				cv::resize(depth(r.region), regionDepth, cv::Size2d(refWidth, refHeight));
+					cv::Mat regionDepth;
+					cv::resize(depth(r.region), regionDepth, cv::Size2d(refWidth, refHeight));
 
 
-				func(idx, r.regionClass, pair.first, r.region, regionRGB, regionDepth);
-				idx++;
+					func(idx, r.regionClass, pair.first, r.region, regionRGB, regionDepth);
+					idx++;
 
-				cv::Mat rgbFlipped;
-				cv::Mat depthFlipped;
-				cv::flip(regionRGB, rgbFlipped, 1);
-				cv::flip(regionDepth, depthFlipped, 1);
-				func(idx, r.regionClass, pair.first, r.region, rgbFlipped, depthFlipped);
-				idx++;
+					cv::Mat rgbFlipped;
+					cv::Mat depthFlipped;
+					cv::flip(regionRGB, rgbFlipped, 1);
+					cv::flip(regionDepth, depthFlipped, 1);
+					func(idx, r.regionClass, pair.first, r.region, rgbFlipped, depthFlipped);
+					idx++;
+				}
 			}
 		}
 	}
@@ -135,7 +136,7 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 
 
 void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
-	std::function<bool(int number)> canSelectFunc, 
+	std::function<bool(int number)> canSelectFunc,
 	std::function<void(int imageNumber)> onImageStarted,
 	std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
 	std::function<void(int imageNumber)> onImageProcessed,
@@ -144,11 +145,11 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& win
 	KITTIDataSet dataSet(baseDataSetPath);
 	int idx = 0;
 
-	
-	parallel_foreach<int,TrainingImage>(images, parallization, [&](std::pair<int, TrainingImage> pair) -> void {
+
+	parallel_foreach<int, TrainingImage>(images, parallization, [&](std::pair<int, TrainingImage> pair) -> void {
 		//for (auto& pair : images) {
 
-		
+
 		if (canSelectFunc(pair.first)) {
 
 			onImageStarted(pair.first);
@@ -158,54 +159,54 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& win
 			cv::Mat mDepth = imgs[1];
 
 
-			std::vector<cv::Rect> truePositiveRegions;
+			std::vector<cv::Rect2d> truePositiveRegions;
+			std::vector<cv::Rect2d> dontCareRegions;
 			for (auto& r : pair.second.regions) {
 				if (r.regionClass == 1)
 					truePositiveRegions.push_back(r.region);
+				else if (r.regionClass == 0)
+					dontCareRegions.push_back(r.region);
 			}
 
 			cv::Mat tmp = mRGB.clone();
 			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
-				cv::Mat regionRGB;
-				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
 
-				cv::Mat regionDepth;
-				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+				if (!overlaps(bbox, dontCareRegions)) { // skip all windows that overlap (IoU > 0.5) with don't care
+					cv::Mat regionRGB;
+					cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
 
-				double depthSum = 0;
-				int depthCount = 0;
-				int xOffset = bbox.x + bbox.width / 2;
-				for (int y = bbox.y; y < bbox.y + bbox.height; y++)
-				{
-					for (int i = xOffset - 1; i <= xOffset + 1; i++)
+					cv::Mat regionDepth;
+					cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+
+					double depthSum = 0;
+					int depthCount = 0;
+					int xOffset = bbox.x + bbox.width / 2;
+					for (int y = bbox.y; y < bbox.y + bbox.height; y++)
 					{
-						depthSum += mDepth.at<float>(y, i);
-						depthCount++;
-					}
-				}
-				double depthAvg = (depthSum / depthCount);
-			//	 only evaluate windows that fall within the depth range to speed up the evaluation
-				if (isWithinValidDepthRange(bbox.height, depthAvg)) {
-
-					int resultClass = -1;
-					bool overlapsWithTruePositive = false;
-					for (int i = 0; i < truePositiveRegions.size(); i++)
-					{
-						cv::Rect tp = truePositiveRegions[i];
-						double intersectionRect = (tp & bbox).area();
-						double unionRect = (tp | bbox).area();
-						if (intersectionRect > 0)
-							overlapsWithTruePositive = true;
-
-						if (unionRect > 0 && intersectionRect / unionRect > 0.5) {
-							resultClass = 1;
-							break;
+						for (int i = xOffset - 1; i <= xOffset + 1; i++)
+						{
+							depthSum += mDepth.at<float>(y, i);
+							depthCount++;
 						}
-
 					}
+					double depthAvg = (depthSum / depthCount);
+					//	 only evaluate windows that fall within the depth range to speed up the evaluation
+					if (isWithinValidDepthRange(bbox.height, depthAvg)) {
 
-					func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
-					idx++;
+						bool overlapsWithTruePositive;
+						int resultClass;
+						if (overlaps(bbox, truePositiveRegions)) {
+							resultClass = 1;
+							overlapsWithTruePositive = true;
+						}
+						else
+							resultClass = -1;
+
+						if (resultClass != 0) { // don't evaluate don't care regions
+							func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
+							idx++;
+						}
+					}
 				}
 			}, windowSizes, baseWindowStride);
 

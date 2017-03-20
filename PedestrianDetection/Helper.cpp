@@ -55,7 +55,7 @@ void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> fu
 			{
 				func(i);
 			}
-		}, t * blocks));
+		}, from + t * blocks));
 	}
 
 	for (auto& t : threads)
@@ -137,6 +137,16 @@ std::vector < SlidingWindowRegion> applyNonMaximumSuppression(std::vector< Slidi
 	return wnds;
 }
 
+
+
+bool overlaps(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions) {
+	for (auto& region : selectedRegions) {
+		if (getIntersectionOverUnion(r, region) > 0.5)
+			return true;
+	}
+
+	return false;
+}
 
 
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func) {

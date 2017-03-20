@@ -12,9 +12,10 @@ class DataSetLabel
 private:
 	std::string number;
 	cv::Rect2d bbox;
+	bool isDontCare;
 
 public:
-	DataSetLabel(const std::string& number, const cv::Rect2d& bbox) : number(number), bbox(bbox) {
+	DataSetLabel(const std::string& number, const cv::Rect2d& bbox, bool isDontCare) : number(number), bbox(bbox), isDontCare(isDontCare) {
 
 	}
 
@@ -27,6 +28,10 @@ public:
 	}
 	cv::Rect2d getBbox()  const {
 		return bbox;
+	}
+
+	bool isDontCareArea() {
+		return this->isDontCare;
 	}
 };
 

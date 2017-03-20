@@ -1,0 +1,4 @@
+--------------------- New console session -----------------------
+--------------------- New console session -----------------------
+The initial train0 file does not exist, building training setStarting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 0

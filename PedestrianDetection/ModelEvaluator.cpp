@@ -22,7 +22,7 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 	std::vector<FeatureVector> trueNegativeFeatures;
 
 
-	trainingDataSet.iterateDataSet([&](int idx) -> bool { return idx % trainEveryXImage != 0; },
+	trainingDataSet.iterateDataSet([&](int imgNr) -> bool { return imgNr % trainEveryXImage != 0; },
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		if (idx % 100 == 0)

@@ -139,7 +139,7 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& win
 	std::function<bool(int number)> canSelectFunc,
 	std::function<void(int imageNumber)> onImageStarted,
 	std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
-	std::function<void(int imageNumber)> onImageProcessed,
+	std::function<void(int imageNumber, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 	int parallization) const {
 
 	KITTIDataSet dataSet(baseDataSetPath);
@@ -210,7 +210,7 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& win
 				}
 			}, windowSizes, baseWindowStride);
 
-			onImageProcessed(pair.first);
+			onImageProcessed(pair.first, truePositiveRegions);
 			//cv::imshow("Temp", tmp);
 			//cv::waitKey(0);
 

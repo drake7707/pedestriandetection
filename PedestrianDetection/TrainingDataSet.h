@@ -53,7 +53,7 @@ public:
 		std::function<bool(int number)> canSelectFunc,
 		std::function<void(int imageNumber)> onImageStarted,
 		std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
-		std::function<void(int imageNumber)> onImageProcessed = [](int imgNr) -> void {},
+		std::function<void(int imageNumber, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 		int parallization = 8) const;
 
 	std::string getBaseDataSetPath() const;

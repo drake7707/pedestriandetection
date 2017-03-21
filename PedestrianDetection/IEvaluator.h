@@ -25,8 +25,11 @@ struct EvaluationSlidingWindowResult {
 class IEvaluator
 {
 protected:
+
+
 	std::string name;
 	
+	int baseWindowStride = 16;
 	int slidingWindowEveryXImage = 1;
 	int evaluationRange = 60;
 
@@ -38,6 +41,8 @@ public:
 	std::vector<ClassifierEvaluation> evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set,int nrOfEvaluations, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) const;
 
 	EvaluationSlidingWindowResult evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const;
+
+	EvaluationSlidingWindowResult evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations) const;
 
 	//double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
 

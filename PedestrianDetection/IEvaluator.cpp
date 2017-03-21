@@ -105,36 +105,32 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 		mutex.unlock();
 	};;
 
-	int baseWindowStride = 16;
+
 
 	// want to obtain 4000 false positives, over 7500 images, which means about 0.5 false positive per image
 	// allow 10 times that size, or 5 worst false positives per image
 	int maxNrOfFPPerImage = trainingDataSet.getNumberOfImages() / maxNrOfFalsePosOrNeg * 10;
 
 
-	
+
 	typedef std::vector<std::set<SlidingWindowRegion>> FPPerValueShift;
 
 	std::vector<FPPerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
 		FPPerValueShift(nrOfEvaluations, std::set<SlidingWindowRegion>()));
 
 
-	
+
 	trainingDataSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride,
 		[&](int idx) -> bool { return true; },
 		[&](int imgNr) -> void {
 		// image has started
-
-		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
-			
-		});
 	},
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating with sliding window (") + std::to_string(imageNumber) + ")");
 
-		
+
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 			v = set.getFeatures(rgb, depth);
@@ -210,11 +206,11 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 										}
 										// the set is iterated in reverse, so biggest first. If it was overlapping the element could either be replaced or already have 
 										// a smaller result. As all other elements will have a smaller result we can stop now.
-										break; 
+										break;
 									}
 									it++;
 								}
-							
+
 								// prevent false positive with a big result and overlap from completely filling the priority queue so disallow elements that overlap enough (IoU > 0.5)
 								if (!overlapsWithElement) {
 									// add it 
@@ -236,7 +232,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 				}
 			}
 		});
-	}, [&](int imgNr) -> void {
+	}, [&](int imgNr, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
 	});
 
@@ -317,9 +313,113 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 
 	return swresult;
 }
-//
-//double IEvaluator::evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const {
-//
-//	FeatureVector v = set.getFeatures(rgb, depth);
-//	return evaluateFeatures(v);
-//}
+
+
+EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations) const {
+
+	EvaluationSlidingWindowResult swresult;
+	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
+
+	double sumTimesRegions = 0;
+	int nrRegions = 0;
+	double featureBuildTime = 0;
+
+	std::mutex mutex;
+	std::function<void(std::function<void()>)> lock = [&](std::function<void()> func) -> void {
+		mutex.lock();
+		func();
+		mutex.unlock();
+	};;
+
+	std::map<int, std::vector<SlidingWindowRegion>> map;
+
+	trainingDataSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride,
+		[&](int idx) -> bool { return true; },
+		[&](int imgNr) -> void {
+		// image has started
+		lock([&]() -> void {
+			map[imgNr] = std::vector<SlidingWindowRegion>();
+		});
+	},
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
+
+		if (idx % 100 == 0)
+			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating with sliding window and NMS (") + std::to_string(imageNumber) + ")");
+
+
+		FeatureVector v;
+		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			v = set.getFeatures(rgb, depth);
+		});
+
+		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
+			featureBuildTime += buildTime;
+			nrRegions++;
+		});
+
+		// just evaluate it once and shift it
+		double baseEvaluationSum;
+		long time = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			baseEvaluationSum = evaluateFeatures(v);
+		});
+		map[imageNumber].push_back(SlidingWindowRegion(imageNumber, region, baseEvaluationSum));
+
+	}, [&](int imgNr, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
+		// full image is processed
+
+		auto& windows = map[imgNr];
+		
+		for (int i = 0; i < nrOfEvaluations; i++) {
+			double valueShift = 1.0 * i / nrOfEvaluations * evaluationRange - evaluationRange / 2;
+			
+			// get the predicted positives
+			std::vector<SlidingWindowRegion> predictedPositives;
+			for (auto& w : windows) {
+				int resultClass = (w.score + valueShift) > 0 ? 1 : -1;
+				if (resultClass == 1)
+					predictedPositives.push_back(SlidingWindowRegion(w.imageNumber, w.bbox, abs(w.score + valueShift)));
+			}
+			predictedPositives = applyNonMaximumSuppression(predictedPositives);
+
+			lock([&]() -> void {
+				swresult.evaluations[i].valueShift = valueShift;
+				int tp = 0;
+				for (auto& predpos : predictedPositives) {
+					if (overlaps(predpos.bbox, truePositiveRegions)) {
+						//  predicted positive and true positive
+						swresult.evaluations[i].nrOfTruePositives++;
+					}
+					else {
+						swresult.evaluations[i].nrOfFalsePositives++;
+						swresult.evaluations[i].falsePositivesPerImage[imgNr]++;
+					}
+				}
+
+				std::vector<cv::Rect2d> predictedPosRegions;
+				for (auto& r : predictedPositives)
+					predictedPosRegions.push_back(r.bbox);
+
+				for (auto& truepos : truePositiveRegions) {
+					if (!overlaps(truepos, predictedPosRegions)) {
+						// missed a true positive
+						swresult.evaluations[i].nrOfFalseNegatives++;
+					}
+				}
+			});
+		}
+		lock([&]() -> void {
+			// done with image
+			map.erase(imgNr);
+		});
+	});
+
+	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
+
+	for (int i = 0; i < nrOfEvaluations; i++)
+		swresult.evaluations[i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
+
+
+	ProgressWindow::getInstance()->finish(std::string(name));
+
+	return swresult;
+}

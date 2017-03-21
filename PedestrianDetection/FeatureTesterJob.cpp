@@ -196,4 +196,32 @@ void FeatureTesterJob::run() const {
 		cascade.trainingRound++;
 		cascade.save(cascadeFile);
 	}
+
+
+	// Note: no true negatives will be tracked due to NMS
+	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_final.csv";
+	if (!FileExists(finalEvaluationSlidingFile)) {
+		auto featureSet = tester->getFeatureSet(set);
+		featureSet->prepare(trainingDataSet, cascade.trainingRound);
+
+		std::cout << "Started final evaluation with sliding window and NMS of " << featureSetName << std::endl;
+		EvaluationSlidingWindowResult finalresult;
+		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			finalresult = cascade.evaluateWithSlidingWindowAndNMS(windowSizes, trainingDataSet, *featureSet, nrOfEvaluations);
+
+		});
+		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
+
+		std::ofstream str = std::ofstream(finalEvaluationSlidingFile);
+		str << "Name" << ";";
+		ClassifierEvaluation().toCSVLine(str, true);
+		str << std::endl;
+		for (auto& result : finalresult.evaluations) {
+			str << featureSetName << "[S]_round" << cascade.trainingRound << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+	}
+
+	
 }

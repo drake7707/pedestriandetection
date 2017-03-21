@@ -11,6 +11,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <iomanip>
+#include <string>
 
 #include "ProgressWindow.h"
 
@@ -52,11 +54,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -283,7 +285,7 @@ void testClassifier(FeatureTester& tester) {
 	//ModelEvaluator modelFinal(std::string("Test"));
 	//modelFinal.loadModel(std::string("models\\HOG(Depth)+HOG(RGB)+LBP(RGB) round 3.xml"));
 
-	cascade.updateLastModelValueShift(1.44);
+	cascade.updateLastModelValueShift(1);
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
@@ -384,64 +386,120 @@ void testClassifier(FeatureTester& tester) {
 
 
 		auto nmsresult = applyNonMaximumSuppression(predictedPositiveRegions, 0.5);
+
+		std::vector<cv::Rect2d> tpRegions;
+		std::vector<cv::Rect2d> dontCareRegions;
+		for (auto& l : labelsPerNumber[i]) {
+			if (l.isDontCareArea())
+				dontCareRegions.push_back(l.getBbox());
+			else
+				tpRegions.push_back(l.getBbox());
+		}
+
+		std::vector<SlidingWindowRegion> posInDontCareRegions;
+
 		for (auto& predpos : nmsresult) {
+			if (!overlaps(predpos.bbox, dontCareRegions)) {
 
-
-			bool actualPositive = false;
-			for (auto& l : labelsPerNumber[i]) {
-				if (!l.isDontCareArea() && getIntersectionOverUnion(predpos.bbox, l.getBbox()) > 0.5) {
+				bool actualPositive = false;
+				
+				if (overlaps(predpos.bbox, tpRegions)) {
 					// should be positive
 					actualPositive = true;
-					break;
 				}
-			}
-			bool predictedPositive = true;
-			if (predictedPositive == actualPositive) {
-				if (predictedPositive) {
-					eval.nrOfTruePositives++;
-					truepositiveregions.push_back(predpos);
-				}
-				else
-					eval.nrOfFalseNegatives++;
-			}
-			else {
-				if (predictedPositive && !actualPositive) {
-					// false positive
-					eval.nrOfFalsePositives++;
-					eval.falsePositivesPerImage[i]++;
-					falsepositiveregions.push_back(predpos);
+				
+				bool predictedPositive = true;
+				if (predictedPositive == actualPositive) {
+					if (predictedPositive) {
+						eval.nrOfTruePositives++;
+						truepositiveregions.push_back(predpos);
+					}
+					else {
+						eval.nrOfTrueNegatives++;
+					}
 				}
 				else {
-					eval.nrOfFalseNegatives++;
+					if (predictedPositive && !actualPositive) {
+						// false positive
+						eval.nrOfFalsePositives++;
+						eval.falsePositivesPerImage[i]++;
+						falsepositiveregions.push_back(predpos);
+					}
+					else {
+						
+						eval.nrOfFalseNegatives++;
+					}
 				}
 			}
+			else {
+				posInDontCareRegions.push_back(predpos);
+			}
 		}
+
+		int nrMissed = 0;
+		std::vector<cv::Rect2d> predictedPos;
+		for (auto& r : nmsresult) {
+			predictedPos.push_back(r.bbox);
+		}
+		for (auto pos : tpRegions) {
+			if (!overlaps(pos, predictedPos))
+				nrMissed++;
+		}
+
 		cv::Mat nms = mRGB.clone();
 
 		for (auto& l : labelsPerNumber[i]) {
-			cv::rectangle(mRGB, l.getBbox(), cv::Scalar(255, 255, 0), 1);
+			if (!l.isDontCareArea())
+				cv::rectangle(mRGB, l.getBbox(), cv::Scalar(255, 255, 0), 1);
+		}
+
+
+		for (auto& pos : posInDontCareRegions) {
+			cv::rectangle(mRGB, pos.bbox, cv::Scalar(128, 128, 128), 2);
+
+			std::stringstream stream;
+			stream << std::fixed << std::setprecision(2) << pos.score;
+			std::string s = stream.str();
+			cv::rectangle(mRGB, cv::Rect(pos.bbox.x, pos.bbox.y - 10, pos.bbox.width - 5, 10), cv::Scalar(128, 128, 128), -1);
+			cv::putText(mRGB, s, cv::Point(pos.bbox.x, pos.bbox.y - 2), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+		}
+
+
+		for (auto& pos : falsepositiveregions) {
+			cv::rectangle(mRGB, pos.bbox, cv::Scalar(0, 0, 255), 2);
+
+			std::stringstream stream;
+			stream << std::fixed << std::setprecision(2) << pos.score;
+			std::string s = stream.str();
+			cv::rectangle(mRGB, cv::Rect(pos.bbox.x, pos.bbox.y - 10, pos.bbox.width-5, 10), cv::Scalar(0, 0, 255), -1);
+			cv::putText(mRGB, s, cv::Point(pos.bbox.x , pos.bbox.y-2), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
 		}
 
 		for (auto& pos : truepositiveregions) {
 			cv::rectangle(mRGB, pos.bbox, cv::Scalar(0, 255, 0), 2);
+
+			std::stringstream stream;
+			stream << std::fixed << std::setprecision(2) << pos.score;
+			std::string s = stream.str();
+			cv::rectangle(mRGB, cv::Rect(pos.bbox.x, pos.bbox.y - 10, pos.bbox.width-5, 10), cv::Scalar(0, 255, 0), -1);
+			cv::putText(mRGB, s, cv::Point(pos.bbox.x, pos.bbox.y - 2), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
 		}
-		for (auto& pos : falsepositiveregions) {
-			cv::rectangle(mRGB, pos.bbox, cv::Scalar(0, 0, 255), 2);
-		}
 
-	//	auto nmsresult = applyNonMaximumSuppression(truepositiveregions, 0.2);
-	//	for (auto& pos : nmsresult) {
-	//		cv::rectangle(nms, pos.bbox, cv::Scalar(255, 255, 0), 2);
-	//	}
+		//	auto nmsresult = applyNonMaximumSuppression(truepositiveregions, 0.2);
+		//	for (auto& pos : nmsresult) {
+		//		cv::rectangle(nms, pos.bbox, cv::Scalar(255, 255, 0), 2);
+		//	}
 
-		cv::putText(mRGB, "FP: " + std::to_string(eval.falsePositivesPerImage[i]), cv::Point(20, 20), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 0, 255), 1, CV_AA);
+		cv::rectangle(mRGB, cv::Rect(0, 0, mRGB.cols, 20), cv::Scalar(255, 255, 255), -1);
+		std::string str = "FP: " + std::to_string(eval.falsePositivesPerImage[i]) + ", missed: " + std::to_string(nrMissed) + " #windows : " + std::to_string(nrOfWindowsEvaluated) + " (#skipped with depth check: " + std::to_string(nrOfWindowsSkipped) + "). Eval time: " + std::to_string(slidingWindowTime) + "ms";
+		cv::putText(mRGB, str, cv::Point(10, 10), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(0, 0, 0), 1, CV_AA);
 
 
-		//cv::imshow("Test", mRGB);
+	//	cv::imshow("Test", mRGB);
 		//cv::imshow("TestNMS", nms);
 		m.lock();
 		double posPercentage = 100.0 * nrOfWindowsPositive / (nrOfWindowsEvaluated - nrOfWindowsSkipped);
-		std::cout << "Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << slidingWindowTime << "ms (value shift: " << valueShift << ")" << std::endl;
+		std::cout << "Image: " << i << " Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << slidingWindowTime << "ms (value shift: " << valueShift << ")" << std::endl;
 		// this will leak because creators are never disposed!
 		m.unlock();
 
@@ -685,7 +743,7 @@ void testSlidingWindow() {
 			if (!overlapsWithTruePositive)
 				cv::rectangle(tmp, region, cv::Scalar(0, 0, 255), 1);
 		}
-	}, [&](int imageNumber) -> void {
+	}, [&](int imageNumber, std::vector<cv::Rect2d>& truePositives) -> void {
 		// end of image
 	}, 1);
 }
@@ -858,9 +916,9 @@ void browseThroughDataSet(std::string& trainingFile) {
 		for (auto& r : regions) {
 			if (r.regionClass == 1)
 				cv::rectangle(tmp, r.region, cv::Scalar(0, 255, 0));
-			else if(r.regionClass == -1)
+			else if (r.regionClass == -1)
 				cv::rectangle(tmp, r.region, cv::Scalar(0, 0, 255));
-			else if(r.regionClass == 0) // mask out don't care regions
+			else if (r.regionClass == 0) // mask out don't care regions
 				cv::rectangle(tmp, r.region, cv::Scalar(192, 192, 192), -1);
 
 		}
@@ -955,7 +1013,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name))); }));
 
 
-	//testClassifier(tester);
+	testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();

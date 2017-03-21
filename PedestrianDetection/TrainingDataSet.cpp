@@ -171,7 +171,7 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& win
 			cv::Mat tmp = mRGB.clone();
 			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
 
-				if (!overlaps(bbox, dontCareRegions)) { // skip all windows that overlap (IoU > 0.5) with don't care
+				if (!intersectsWith(bbox, dontCareRegions)) { // skip all windows that intersect with the don't care regions
 					cv::Mat regionRGB;
 					cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
 

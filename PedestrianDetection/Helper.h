@@ -46,6 +46,8 @@ std::vector < SlidingWindowRegion> applyNonMaximumSuppression(std::vector< Slidi
 
 bool overlaps(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
 
+bool intersectsWith(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
+
 
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func);
 

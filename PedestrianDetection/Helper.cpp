@@ -148,6 +148,15 @@ bool overlaps(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions) {
 	return false;
 }
 
+bool intersectsWith(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions) {
+	for (auto& region : selectedRegions) {
+		double intersectionRect = (r & region).area();
+		if(intersectionRect > 0)
+			return true;
+	}
+
+	return false;
+}
 
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func) {
 	int i = 0;

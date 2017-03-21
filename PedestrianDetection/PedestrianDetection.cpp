@@ -198,7 +198,7 @@ TrainingDataSet saveTNTP() {
 				double width = refWidth * sizeMultiplier;
 				double height = refHeight * sizeMultiplier;
 				rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - width), randBetween(0, currentImages[0].rows - height), width, height);
-			} while (iteration++ < 10000 && (overlaps(rTN, selectedRegions) || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
+			} while (iteration++ < 10000 && (intersectsWith(rTN, selectedRegions) || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
 
 
 			if (iteration < 10000) {
@@ -285,7 +285,7 @@ void testClassifier(FeatureTester& tester) {
 	//ModelEvaluator modelFinal(std::string("Test"));
 	//modelFinal.loadModel(std::string("models\\HOG(Depth)+HOG(RGB)+LBP(RGB) round 3.xml"));
 
-	cascade.updateLastModelValueShift(1);
+	cascade.updateLastModelValueShift(-4);
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
@@ -399,7 +399,7 @@ void testClassifier(FeatureTester& tester) {
 		std::vector<SlidingWindowRegion> posInDontCareRegions;
 
 		for (auto& predpos : nmsresult) {
-			if (!overlaps(predpos.bbox, dontCareRegions)) {
+			if (!intersectsWith(predpos.bbox, dontCareRegions)) {
 
 				bool actualPositive = false;
 				
@@ -1013,7 +1013,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name))); }));
 
 
-	testClassifier(tester);
+//	testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
@@ -1022,7 +1022,7 @@ int main()
 
 	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\LBP(RGB)_train3.txt"), std::string("tptnsimilarity_lbp_train3.csv"));
 
-	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
+	//browseThroughDataSet(std::string("trainingsets\\HDD+HOG(RGB)_train5.txt"));
 	//testClassifier();
 
 

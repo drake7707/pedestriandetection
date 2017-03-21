@@ -1124,7 +1124,7 @@ int main()
 
 
 	set = { "HOG(RGB)", "HDD" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 7);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 5);
 
 
 	set = { "RAW(RGB)" };

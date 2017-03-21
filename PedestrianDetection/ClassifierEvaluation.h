@@ -21,6 +21,8 @@ struct ClassifierEvaluation {
 	int nrOfFalsePositives = 0;
 	int nrOfFalseNegatives = 0;
 
+	int nrOfImagesEvaluated = 0;
+
 	double valueShift = 0;
 	double evaluationSpeedPerRegionMS = 0;
 
@@ -90,16 +92,45 @@ struct ClassifierEvaluation {
 		int sum = 0;
 		for (int i : falsePositivesPerImage)
 			sum += i;
-		return 1.0 * sum / falsePositivesPerImage.size();
+		return 1.0 * sum / nrOfImagesEvaluated;
+	}
+
+	std::vector<int> getWorstPerformingImages() {
+		std::map<int, std::vector<int>> map;
+		for (int i = 0; i < falsePositivesPerImage.size(); i++)
+		{
+
+			map[falsePositivesPerImage[i]].push_back(i);
+		}
+
+		std::vector<int> worstPerforming;
+		auto it = map.rbegin();
+		while (it != map.rend()) {
+			auto& v = it->second;
+			for (int imgNr : v)
+				worstPerforming.push_back(imgNr);
+			it++;
+		}
+		return worstPerforming;
 	}
 
 	void toCSVLine(std::ostream& out, bool header) {
 		if (header)
-			out << "TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;FPPI;MissRate;EvaluationTimePerWindowMS;ValueShift;";
+			out << "TP;TN;FP;FN;TPR;FPR;Precision;Recall;F1;FPPI;MissRate;EvaluationTimePerWindowMS;ValueShift;WorstFalsePositiveImages";
 		else
+		{
+			std::vector<int> worstPerforming = getWorstPerformingImages();
+			std::string str = "";
+			for (int i = 0; i < worstPerforming.size(); i++) {
+				str += std::to_string(worstPerforming[i]);
+
+				if (i != worstPerforming.size() - 1)
+					str += ",";
+			}
 			out << std::fixed << nrOfTruePositives << ";" << nrOfTrueNegatives << ";" << nrOfFalsePositives << ";" << nrOfFalseNegatives
-			<< ";" << getTPR() << ";" << getFPR() << ";" << getPrecision() << ";" << getRecall() << ";" << getFScore(1)
-			<< ";" << getFPPI() << ";" << getMissRate()
-			<< ";" << evaluationSpeedPerRegionMS << ";" << valueShift;
+				<< ";" << getTPR() << ";" << getFPR() << ";" << getPrecision() << ";" << getRecall() << ";" << getFScore(1)
+				<< ";" << getFPPI() << ";" << getMissRate()
+				<< ";" << evaluationSpeedPerRegionMS << ";" << valueShift << ";" << str;
+		}
 	}
 };

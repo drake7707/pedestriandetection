@@ -234,6 +234,10 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 		});
 	}, [&](int imgNr, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
+		lock([&]() -> void {
+			for (int i = 0; i < nrOfEvaluations; i++)
+				swresult.evaluations[i].nrOfImagesEvaluated++;
+		});
 	});
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
@@ -334,7 +338,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::v
 	std::map<int, std::vector<SlidingWindowRegion>> map;
 
 	trainingDataSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride,
-		[&](int idx) -> bool { return true; },
+		[&](int imgNr) -> bool { return true; },
 		[&](int imgNr) -> void {
 		// image has started
 		lock([&]() -> void {
@@ -368,10 +372,10 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::v
 		// full image is processed
 
 		auto& windows = map[imgNr];
-		
+
 		for (int i = 0; i < nrOfEvaluations; i++) {
 			double valueShift = 1.0 * i / nrOfEvaluations * evaluationRange - evaluationRange / 2;
-			
+
 			// get the predicted positives
 			std::vector<SlidingWindowRegion> predictedPositives;
 			for (auto& w : windows) {
@@ -410,6 +414,9 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::v
 		lock([&]() -> void {
 			// done with image
 			map.erase(imgNr);
+
+			for (int i = 0; i < nrOfEvaluations; i++)
+				swresult.evaluations[i].nrOfImagesEvaluated++;
 		});
 	});
 

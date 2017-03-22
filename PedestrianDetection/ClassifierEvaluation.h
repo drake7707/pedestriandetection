@@ -109,10 +109,13 @@ struct ClassifierEvaluation {
 		int i = 0;
 		while (it != map.rend() && i < 50) {
 			auto& v = it->second;
-			for (int imgNr : v)
+			for (int imgNr : v) {
 				worstPerforming.push_back(imgNr);
+				i++;
+				if (i >= 50)
+					break;
+			}
 			it++;
-			i++;
 		}
 		return worstPerforming;
 	}

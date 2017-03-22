@@ -32,8 +32,8 @@ void FeatureTesterJob::run() const {
 	float requiredTPRRate = 0.95;
 
 	// faster, change later
-	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 100 == 0; };
-	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 100 == 1; };
+	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 20 == 0; };
+	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 20 == 1; };
 
 
 	std::string featureSetName = getFeatureName();

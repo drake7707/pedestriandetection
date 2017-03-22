@@ -80,7 +80,7 @@ void DataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes
 					//	 only evaluate windows that fall within the depth range to speed up the evaluation
 					if (isWithinValidDepthRange(bbox.height, depthAvg)) {
 
-						bool overlapsWithTruePositive;
+						bool overlapsWithTruePositive = false;
 						int resultClass;
 						if (overlaps(bbox, truePositiveRegions)) {
 							resultClass = 1;

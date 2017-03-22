@@ -35,7 +35,7 @@ public:
 
 
 
-	void train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int trainEveryXImage = 2);
+	void train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, std::function<bool(int number)> canSelectFunc);
 
 	// std::vector<ClassifierEvaluation> evaluateDataSet(int nrOfEvaluations, bool includeRawResponses) const;
 	// double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;

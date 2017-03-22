@@ -734,7 +734,9 @@ void testSlidingWindow() {
 	float maxScaleReduction = 4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
 	int baseWindowStride = 16;
 
-	tSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, [&](int idx) -> bool { return true; },
+	tSet.getDataSet()->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
+		
+		[&](int idx) -> bool { return true; },
 
 		[&](int imageNumber) -> void {
 		// start of image
@@ -1036,7 +1038,7 @@ int main()
 
 	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\LBP(RGB)_train3.txt"), std::string("tptnsimilarity_lbp_train3.csv"));
 
-	browseThroughDataSet(std::string("trainingsets\\HDD+HOG(RGB)_train6.txt"));
+	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
 
 
 

@@ -15,14 +15,14 @@ ModelEvaluator::~ModelEvaluator()
 
 
 
-void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set,int trainEveryXImage)
+void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, std::function<bool(int number)> canSelectFunc)
 {
 
 	std::vector<FeatureVector> truePositiveFeatures;
 	std::vector<FeatureVector> trueNegativeFeatures;
 
 
-	trainingDataSet.iterateDataSet([&](int imgNr) -> bool { return imgNr % trainEveryXImage != 0; },
+	trainingDataSet.iterateDataSet(canSelectFunc,
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		if (idx % 100 == 0)

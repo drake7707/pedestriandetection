@@ -86,10 +86,13 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 }
 
 
-EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const {
+EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes, 
+	const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, 
+	float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg,
+	std::function<bool(int number)> canSelectFunc) const {
 
 	EvaluationSlidingWindowResult swresult;
-	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
+	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
 
 	double sumTimesRegions = 0;
 	int nrRegions = 0;
@@ -108,27 +111,27 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 
 
 	// want to obtain 4000 false positives, over 7500 images, which means about 0.5 false positive per image
-	// allow 10 times that size, or 5 worst false positives per image
-	int maxNrOfFPPerImage = trainingDataSet.getNumberOfImages() / maxNrOfFalsePosOrNeg * 10;
+	// allow 20 times that size, or 10 worst false positives per image
+	int maxNrOfFPPerImage = dataSet->getNrOfImages() / maxNrOfFalsePosOrNeg * 20;
 
 
 
 	typedef std::vector<std::set<SlidingWindowRegion>> FPPerValueShift;
 
-	std::vector<FPPerValueShift> worstFalsePositivesArrayPerImage(trainingDataSet.getNumberOfImages(),
+	std::vector<FPPerValueShift> worstFalsePositivesArrayPerImage(dataSet->getNrOfImages(),
 		FPPerValueShift(nrOfEvaluations, std::set<SlidingWindowRegion>()));
 
 
 
-	trainingDataSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride,
-		[&](int idx) -> bool { return true; },
+	dataSet->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
+		canSelectFunc,
 		[&](int imgNr) -> void {
 		// image has started
 	},
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
-			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating with sliding window (") + std::to_string(imageNumber) + ")");
+			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / dataSet->getNrOfImages(), std::string("Evaluating with sliding window (") + std::to_string(imageNumber) + ")");
 
 
 		FeatureVector v;
@@ -238,7 +241,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 			for (int i = 0; i < nrOfEvaluations; i++)
 				swresult.evaluations[i].nrOfImagesEvaluated++;
 		});
-	});
+	}, parallelization);
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
 
@@ -290,7 +293,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 
 	std::set<SlidingWindowRegion> worstFalsePositives = std::set<SlidingWindowRegion>();
 	for (auto& worstFalsePositiveOfImage : worstFalsePositivesArrayPerImage) {
-
+		
 		for (auto& wfp : worstFalsePositiveOfImage[evaluationIndexForValueShift]) {
 			worstFalsePositives.emplace(wfp);
 		}
@@ -320,14 +323,14 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 
 
 FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, 
-	const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations,
+	const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, std::function<bool(int number)> canSelectFunc,
 	int refWidth, int refHeight, int paralellization) const {
 
 	FinalEvaluationSlidingWindowResult swresult;
 	// TODO don't hardcode categories
-	swresult.evaluations["easy"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
-	swresult.evaluations["moderate"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
-	swresult.evaluations["hard"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
+	swresult.evaluations["easy"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
+	swresult.evaluations["moderate"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
+	swresult.evaluations["hard"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
 
 	double sumTimesRegions = 0;
 	int nrRegions = 0;
@@ -342,7 +345,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 
 	std::map<int, std::vector<SlidingWindowRegion>> map;
 
-	trainingDataSet.getDataSet()->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
+	dataSet->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
 		[&](int imgNr) -> bool { return true; },
 		[&](int imgNr) -> void {
 		// image has started
@@ -353,7 +356,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
-			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating with sliding window and NMS (") + std::to_string(imageNumber) + ")");
+			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / dataSet->getNrOfImages(), std::string("Evaluating with sliding window and NMS (") + std::to_string(imageNumber) + ")");
 
 
 		FeatureVector v;

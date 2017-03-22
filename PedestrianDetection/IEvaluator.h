@@ -35,6 +35,9 @@ protected:
 
 	std::string name;
 
+	int refWidth = 64;
+	int refHeight = 128;
+	int parallelization = 8;
 	int baseWindowStride = 16;
 	int slidingWindowEveryXImage = 1;
 	int evaluationRange = 60;
@@ -46,9 +49,13 @@ public:
 
 	std::vector<ClassifierEvaluation> evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) const;
 
-	EvaluationSlidingWindowResult evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const;
+	EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes,
+		const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound,
+		float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg, std::function<bool(int number)> canSelectFunc) const;
 
-	FinalEvaluationSlidingWindowResult evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int refWidth = 64, int refHeight = 128, int paralellization = 8) const;
+	FinalEvaluationSlidingWindowResult evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, 
+		const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, std::function<bool(int number)> canSelectFunc,
+		int refWidth = 64, int refHeight = 128, int paralellization = 8) const;
 
 	//double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
 

@@ -32,6 +32,10 @@ void FeatureTesterJob::run() const {
 	float requiredTPRRate = 0.95;
 	int trainEveryXImage = 2;
 
+	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 0; };
+	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 2 != 0; };
+
+
 	std::string featureSetName = getFeatureName();
 
 
@@ -76,7 +80,7 @@ void FeatureTesterJob::run() const {
 		else {
 			std::cout << "Started training of " << featureSetName << ", round " << cascade.trainingRound << std::endl;
 			long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluator.train(trainingDataSet, *featureSet, trainEveryXImage);
+				evaluator.train(trainingDataSet, *featureSet, trainingCriteria);
 			});
 			std::cout << "Training round " << cascade.trainingRound << " complete after " << elapsedTrainingTime << "ms for " << featureSetName << std::endl;
 
@@ -137,10 +141,11 @@ void FeatureTesterJob::run() const {
 				trainingDataSet.load(nextRoundTrainingFile);
 			}
 			else {
-				std::cout << "Started evaluation with sliding window of " << featureSetName << std::endl;
+				std::cout << "Started training evaluation with sliding window of " << featureSetName << std::endl;
 				EvaluationSlidingWindowResult result;
 				long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-					result = cascade.evaluateWithSlidingWindow(windowSizes, trainingDataSet, *featureSet, nrOfEvaluations, cascade.trainingRound, requiredTPRRate, maxNrWorstPosNeg);
+					result = cascade.evaluateWithSlidingWindow(windowSizes, trainingDataSet.getDataSet(), *featureSet, nrOfEvaluations, cascade.trainingRound, requiredTPRRate, maxNrWorstPosNeg,
+						trainingCriteria);
 				});
 				std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 
@@ -204,10 +209,10 @@ void FeatureTesterJob::run() const {
 		auto featureSet = tester->getFeatureSet(set);
 		featureSet->prepare(trainingDataSet, cascade.trainingRound);
 
-		std::cout << "Started final evaluation with sliding window and NMS of " << featureSetName << std::endl;
+		std::cout << "Started final evaluation on test set with sliding window and NMS of " << featureSetName << std::endl;
 		FinalEvaluationSlidingWindowResult finalresult;
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			finalresult = cascade.evaluateWithSlidingWindowAndNMS(windowSizes, trainingDataSet, *featureSet, nrOfEvaluations);
+			finalresult = cascade.evaluateWithSlidingWindowAndNMS(windowSizes, trainingDataSet.getDataSet(), *featureSet, nrOfEvaluations, testCriteria);
 
 		});
 		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;

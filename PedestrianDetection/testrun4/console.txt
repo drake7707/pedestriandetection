@@ -1,0 +1,133 @@
+--------------------- New console session -----------------------
+The initial train0 file does not exist, building training setStarting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 0
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 0
+Training boost classifier on 19372 samples (4408 TP, 14964 TN), feature size 7560
+Training round 0 complete after 1553704ms for HDD+HOG(RGB)
+Started evaluation of HDD+HOG(RGB)
+Evaluation complete after 132130ms for HDD+HOG(RGB)
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Started evaluation of HDD+HOG(RGB)
+Evaluation complete after 133682ms for HDD+HOG(RGB)
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Chosen 7.000000 as decision boundary shift to attain TPR of 0.951754
+Evaluation with sliding window complete after 102962ms for HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 1
+Training boost classifier on 350 samples (50 TP, 300 TN), feature size 7560
+Training round 1 complete after 8375ms for HDD+HOG(RGB)
+Started evaluation of HDD+HOG(RGB)
+Evaluation complete after 2602ms for HDD+HOG(RGB)
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Chosen 29.200000 as decision boundary shift to attain TPR of 0.951754
+Evaluation with sliding window complete after 104382ms for HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 2
+Training boost classifier on 350 samples (50 TP, 300 TN), feature size 7560
+Training round 2 complete after 8062ms for HDD+HOG(RGB)
+Started evaluation of HDD+HOG(RGB)
+Evaluation complete after 2544ms for HDD+HOG(RGB)
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Chosen 25.800000 as decision boundary shift to attain TPR of 0.960526
+Evaluation with sliding window complete after 157141ms for HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 3
+Training boost classifier on 350 samples (50 TP, 300 TN), feature size 7560
+Training round 3 complete after 9551ms for HDD+HOG(RGB)
+Started evaluation of HDD+HOG(RGB)
+Evaluation complete after 3112ms for HDD+HOG(RGB)
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Chosen 22.000000 as decision boundary shift to attain TPR of 0.951754
+Evaluation with sliding window complete after 104646ms for HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 4
+Training boost classifier on 350 samples (50 TP, 300 TN), feature size 7560
+Training round 4 complete after 9583ms for HDD+HOG(RGB)
+Started evaluation of HDD+HOG(RGB)
+Evaluation complete after 3105ms for HDD+HOG(RGB)
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Chosen 17.600000 as decision boundary shift to attain TPR of 0.960526
+Evaluation with sliding window complete after 104308ms for HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Evaluation with sliding window and NMS complete after 247858ms for HDD+HOG(RGB)
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Training boost classifier on 350 samples (50 TP, 300 TN), feature size 28356
+Training round 0 complete after 81123ms for HOG(RGB)+RAW(RGB)
+Started evaluation of HOG(RGB)+RAW(RGB)
+Evaluation complete after 2451ms for HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(RGB)
+Chosen 29.800000 as decision boundary shift to attain TPR of 0.390351
+Evaluation with sliding window complete after 73329ms for HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 1
+Training boost classifier on 350 samples (50 TP, 300 TN), feature size 28356
+Training round 1 complete after 82544ms for HOG(RGB)+RAW(RGB)
+Started evaluation of HOG(RGB)+RAW(RGB)
+Evaluation complete after 2490ms for HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Evaluation with sliding window and NMS complete after 243287ms for HDD+HOG(RGB)
+Starting job HOG(RGB)+RAW(RGB)
+Skipped training of HOG(RGB)+RAW(RGB), loading from existing model instead
+Skipped evaluation of HOG(RGB)+RAW(RGB), evaluation was already done.
+Started training evaluation with sliding window of HOG(RGB)+RAW(RGB)
+Chosen 29.800000 as decision boundary shift to attain TPR of 0.706140
+Evaluation with sliding window complete after 75045ms for HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 2
+Training boost classifier on 350 samples (50 TP, 300 TN), feature size 28356
+Training round 2 complete after 83714ms for HOG(RGB)+RAW(RGB)
+Started evaluation of HOG(RGB)+RAW(RGB)
+Evaluation complete after 2485ms for HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(RGB)

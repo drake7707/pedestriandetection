@@ -30,10 +30,10 @@ void FeatureTesterJob::run() const {
 
 	int maxNrWorstPosNeg = 4000;
 	float requiredTPRRate = 0.95;
-	int trainEveryXImage = 2;
 
-	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 0; };
-	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 2 != 0; };
+	// faster, change later
+	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 100 == 0; };
+	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 100 == 1; };
 
 
 	std::string featureSetName = getFeatureName();
@@ -55,20 +55,8 @@ void FeatureTesterJob::run() const {
 	while (cascade.trainingRound < nrOfTrainingRounds) {
 		// ---------------- Build a feature set & prepare variable feature creators --------------------
 		auto featureSet = tester->getFeatureSet(set);
-
 		featureSet->prepare(trainingDataSet, cascade.trainingRound);
 
-	/*	
-		for (auto& name : set) {
-			FactoryCreator creator = creators.find(name)->second;
-
-			std::unique_ptr<IFeatureCreator> featureCreator = creator.createInstance(creator.name);
-			if (dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()) != nullptr) {
-				(dynamic_cast<VariableNumberFeatureCreator*>(featureCreator.get()))->prepare(trainingDataSet, cascade.trainingRound);
-			}
-			featureSet.addCreator(std::move(featureCreator));
-		}
-*/
 		ModelEvaluator evaluator(featureSetName + " round " + std::to_string(cascade.trainingRound));
 
 		std::string modelFile = std::string("models") + PATH_SEPARATOR + evaluator.getName() + ".xml";
@@ -102,7 +90,7 @@ void FeatureTesterJob::run() const {
 		else {
 			std::cout << "Started evaluation of " << featureSetName << std::endl;
 			long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluations = cascade.evaluateDataSet(trainingDataSet, *featureSet, nrOfEvaluations, false, [&](int imgNr) -> bool { return imgNr % trainEveryXImage == 0; });
+				evaluations = cascade.evaluateDataSet(trainingDataSet, *featureSet, nrOfEvaluations, false, trainingCriteria);
 			});
 			std::ofstream str(evaluationFile);
 			str << "Name" << ";";
@@ -115,17 +103,6 @@ void FeatureTesterJob::run() const {
 			}
 			std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
 		}
-
-		//std::sort(evaluations.begin(), evaluations.end(), [](const ClassifierEvaluation& a, const ClassifierEvaluation& b) -> bool { return a.getTPR() > b.getTPR(); });
-
-		//for (auto& eval : evaluations) {
-		//	if (eval.getTPR() > requiredTPRRate)
-		//		valueShiftRequiredForTPR95Percent = eval.valueShift;
-		//	else
-		//		break; // all evaluations lower will be lower TPR
-		//}
-		//std::cout << "Chosen " << valueShiftRequiredForTPR95Percent << " as decision boundary shift to attain TPR of " << requiredTPRRate << std::endl;
-		//}
 
 		// --------------- Evaluation sliding window --------------------
 		if (evaluateOnSlidingWindow) {
@@ -180,14 +157,6 @@ void FeatureTesterJob::run() const {
 				}
 				wfpStr.close();
 
-				// don't add more true positives because it starts skewing the results
-				//for (auto& swregion : result.worstFalseNegatives) {
-
-				//	TrainingRegion r;
-				//	r.region = swregion.bbox;
-				//	r.regionClass = 1; // it was a positive but negative was specified
-				//	newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-				//}
 				newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt");
 				trainingDataSet = newTrainingSet;
 			}
@@ -222,7 +191,7 @@ void FeatureTesterJob::run() const {
 		ClassifierEvaluation().toCSVLine(str, true);
 		str << std::endl;
 		for (auto& result : finalresult.evaluations["easy"]) {
-			str << featureSetName << "[S][E]";;
+			str << featureSetName << "[S][E]" << ";";
 			result.toCSVLine(str, false);
 			str << std::endl;
 		}
@@ -238,7 +207,13 @@ void FeatureTesterJob::run() const {
 			result.toCSVLine(str, false);
 			str << std::endl;
 		}
+
+		for (auto& result : finalresult.combinedEvaluations) {
+			str << featureSetName << "[S]" << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
 	}
 
-	
+
 }

@@ -25,6 +25,7 @@ struct EvaluationSlidingWindowResult {
 
 struct FinalEvaluationSlidingWindowResult {
 	std::map<std::string, std::vector<ClassifierEvaluation>> evaluations;
+	std::vector<ClassifierEvaluation> combinedEvaluations;
 };
 
 

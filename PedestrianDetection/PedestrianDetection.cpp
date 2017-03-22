@@ -54,11 +54,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -285,7 +285,7 @@ void testClassifier(FeatureTester& tester) {
 	//ModelEvaluator modelFinal(std::string("Test"));
 	//modelFinal.loadModel(std::string("models\\HOG(Depth)+HOG(RGB)+LBP(RGB) round 3.xml"));
 
-	cascade.updateLastModelValueShift(-4);
+
 
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
@@ -295,7 +295,7 @@ void testClassifier(FeatureTester& tester) {
 	//	cv::namedWindow("Test");
 
 	auto& entries = cascade.getEntries();
-	double valueShift = entries[entries.size() - 1].valueShift;
+	double valueShift = -3;
 
 	std::mutex m;
 	int nr = 0;
@@ -371,7 +371,7 @@ void testClassifier(FeatureTester& tester) {
 				if (mustContinue) {
 					FeatureVector v = fset->getFeatures(regionRGB, regionDepth);
 					result = cascade.evaluateFeatures(v);
-					if ((result > 0 ? 1 : -1) == 1) {
+					if ((result + valueShift > 0 ? 1 : -1) == 1) {
 						nrOfWindowsPositive++;
 						predictedPositive = true;
 						predictedPositiveRegions.push_back(SlidingWindowRegion(i, bbox, abs(result)));
@@ -402,12 +402,12 @@ void testClassifier(FeatureTester& tester) {
 			if (!intersectsWith(predpos.bbox, dontCareRegions)) {
 
 				bool actualPositive = false;
-				
+
 				if (overlaps(predpos.bbox, tpRegions)) {
 					// should be positive
 					actualPositive = true;
 				}
-				
+
 				bool predictedPositive = true;
 				if (predictedPositive == actualPositive) {
 					if (predictedPositive) {
@@ -426,7 +426,7 @@ void testClassifier(FeatureTester& tester) {
 						falsepositiveregions.push_back(predpos);
 					}
 					else {
-						
+
 						eval.nrOfFalseNegatives++;
 					}
 				}
@@ -448,14 +448,14 @@ void testClassifier(FeatureTester& tester) {
 
 		cv::Mat nms = mRGB.clone();
 
-		for (auto& l : labelsPerNumber[i]) {
-			if (!l.isDontCareArea())
-				cv::rectangle(mRGB, l.getBbox(), cv::Scalar(255, 255, 0), 1);
-		}
 
 
 		for (auto& pos : posInDontCareRegions) {
-			cv::rectangle(mRGB, pos.bbox, cv::Scalar(128, 128, 128), 2);
+			// even though it's in the don't care region, let's check if there there is a pedestrian there
+			if (overlaps(pos.bbox, tpRegions))
+				cv::rectangle(mRGB, pos.bbox, cv::Scalar(128, 164, 128), 2);
+			else
+				cv::rectangle(mRGB, pos.bbox, cv::Scalar(128, 128, 164), 2);
 
 			std::stringstream stream;
 			stream << std::fixed << std::setprecision(2) << pos.score;
@@ -471,8 +471,8 @@ void testClassifier(FeatureTester& tester) {
 			std::stringstream stream;
 			stream << std::fixed << std::setprecision(2) << pos.score;
 			std::string s = stream.str();
-			cv::rectangle(mRGB, cv::Rect(pos.bbox.x, pos.bbox.y - 10, pos.bbox.width-5, 10), cv::Scalar(0, 0, 255), -1);
-			cv::putText(mRGB, s, cv::Point(pos.bbox.x , pos.bbox.y-2), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+			cv::rectangle(mRGB, cv::Rect(pos.bbox.x, pos.bbox.y - 10, pos.bbox.width - 5, 10), cv::Scalar(0, 0, 255), -1);
+			cv::putText(mRGB, s, cv::Point(pos.bbox.x, pos.bbox.y - 2), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
 		}
 
 		for (auto& pos : truepositiveregions) {
@@ -481,22 +481,36 @@ void testClassifier(FeatureTester& tester) {
 			std::stringstream stream;
 			stream << std::fixed << std::setprecision(2) << pos.score;
 			std::string s = stream.str();
-			cv::rectangle(mRGB, cv::Rect(pos.bbox.x, pos.bbox.y - 10, pos.bbox.width-5, 10), cv::Scalar(0, 255, 0), -1);
+			cv::rectangle(mRGB, cv::Rect(pos.bbox.x, pos.bbox.y - 10, pos.bbox.width - 5, 10), cv::Scalar(0, 255, 0), -1);
 			cv::putText(mRGB, s, cv::Point(pos.bbox.x, pos.bbox.y - 2), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
 		}
 
+		for (auto& l : labelsPerNumber[i]) {
+			if (!l.isDontCareArea()) {
+
+				std::string category = l.getCategory();
+				if (category == "easy")
+					cv::rectangle(mRGB, l.getBbox(), cv::Scalar(255, 255, 0), 2);
+				else if (category == "moderate")
+					cv::rectangle(mRGB, l.getBbox(), cv::Scalar(255, 128, 0), 2);
+				else if (category == "hard")
+					cv::rectangle(mRGB, l.getBbox(), cv::Scalar(255, 0, 0), 2);
+				else
+					cv::rectangle(mRGB, l.getBbox(), cv::Scalar(128, 0, 0), 2);
+			}
+		}
 		//	auto nmsresult = applyNonMaximumSuppression(truepositiveregions, 0.2);
 		//	for (auto& pos : nmsresult) {
 		//		cv::rectangle(nms, pos.bbox, cv::Scalar(255, 255, 0), 2);
 		//	}
 
 		cv::rectangle(mRGB, cv::Rect(0, 0, mRGB.cols, 20), cv::Scalar(255, 255, 255), -1);
-		std::string str = "FP: " + std::to_string(eval.falsePositivesPerImage[i]) + ", missed: " + std::to_string(nrMissed) + " #windows : " + std::to_string(nrOfWindowsEvaluated) + " (#skipped with depth check: " + std::to_string(nrOfWindowsSkipped) + "). Eval time: " + std::to_string(slidingWindowTime) + "ms";
+		std::string str = "FP: " + std::to_string(eval.falsePositivesPerImage[i]) + ", missed: " + std::to_string(nrMissed) + " #windows : " + std::to_string(nrOfWindowsEvaluated) + " (#skipped with depth check: " + std::to_string(nrOfWindowsSkipped) + "). Eval time: " + std::to_string(slidingWindowTime) + "ms " + "(decision shift : " + std::to_string(valueShift) + ")";
 		cv::putText(mRGB, str, cv::Point(10, 10), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(0, 0, 0), 1, CV_AA);
 
 
-	//	cv::imshow("Test", mRGB);
-		//cv::imshow("TestNMS", nms);
+		//	cv::imshow("Test", mRGB);
+			//cv::imshow("TestNMS", nms);
 		m.lock();
 		double posPercentage = 100.0 * nrOfWindowsPositive / (nrOfWindowsEvaluated - nrOfWindowsSkipped);
 		std::cout << "Image: " << i << " Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << slidingWindowTime << "ms (value shift: " << valueShift << ")" << std::endl;
@@ -743,7 +757,7 @@ void testSlidingWindow() {
 			if (!overlapsWithTruePositive)
 				cv::rectangle(tmp, region, cv::Scalar(0, 0, 255), 1);
 		}
-	}, [&](int imageNumber, std::vector<cv::Rect2d>& truePositives) -> void {
+	}, [&](int imageNumber, std::vector<std::string>& truePositiveCategories,std::vector<cv::Rect2d>& truePositives) -> void {
 		// end of image
 	}, 1);
 }
@@ -1013,7 +1027,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name))); }));
 
 
-//	testClassifier(tester);
+	//testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
@@ -1022,15 +1036,14 @@ int main()
 
 	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\LBP(RGB)_train3.txt"), std::string("tptnsimilarity_lbp_train3.csv"));
 
-	//browseThroughDataSet(std::string("trainingsets\\HDD+HOG(RGB)_train5.txt"));
-	//testClassifier();
+	browseThroughDataSet(std::string("trainingsets\\HDD+HOG(RGB)_train6.txt"));
 
 
 
 
 	/*std::ofstream str("heightdepthvaluesTN.csv");
 	printHeightVerticalAvgDepthRelation(std::string("trainingsets\\train0.txt"), str);*/
-	//testClassifier();
+
 	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
 //	testSlidingWindow();
 
@@ -1060,7 +1073,7 @@ int main()
 	//saveTNTP();
 	//return 0;
 
-	int nrOfEvaluations = 500;
+	int nrOfEvaluations = 300;
 	std::set<std::string> set;
 
 
@@ -1122,12 +1135,11 @@ int main()
 
 	tester.nrOfConcurrentJobs = 1;
 
-
 	set = { "HOG(RGB)", "HDD" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 5);
 
 
-	set = { "RAW(RGB)" };
+	set = { "HOG(RGB)", "RAW(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
 	set = { "HOG(RGB)", "HOG(Depth)" };

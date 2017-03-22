@@ -22,13 +22,19 @@ struct EvaluationSlidingWindowResult {
 	int evaluationIndexWhenTPRThresholdIsReached;
 };
 
+
+struct FinalEvaluationSlidingWindowResult {
+	std::map<std::string, std::vector<ClassifierEvaluation>> evaluations;
+};
+
+
 class IEvaluator
 {
 protected:
 
 
 	std::string name;
-	
+
 	int baseWindowStride = 16;
 	int slidingWindowEveryXImage = 1;
 	int evaluationRange = 60;
@@ -37,12 +43,12 @@ public:
 	IEvaluator(std::string& name);
 	virtual ~IEvaluator();
 
-	
-	std::vector<ClassifierEvaluation> evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set,int nrOfEvaluations, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) const;
+
+	std::vector<ClassifierEvaluation> evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) const;
 
 	EvaluationSlidingWindowResult evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const;
 
-	EvaluationSlidingWindowResult evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations) const;
+	FinalEvaluationSlidingWindowResult evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, int refWidth = 64, int refHeight = 128, int paralellization = 8) const;
 
 	//double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
 

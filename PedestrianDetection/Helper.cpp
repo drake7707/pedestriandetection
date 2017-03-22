@@ -148,6 +148,16 @@ bool overlaps(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions) {
 	return false;
 }
 
+
+int getOverlapIndex(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions) {
+	for (int i = 0; i < selectedRegions.size(); i++)
+	{
+		if (getIntersectionOverUnion(r, selectedRegions[i]) > 0.5)
+			return i;
+	}
+	return -1;
+}
+
 bool intersectsWith(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions) {
 	for (auto& region : selectedRegions) {
 		double intersectionRect = (r & region).area();

@@ -139,13 +139,13 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& win
 	std::function<bool(int number)> canSelectFunc,
 	std::function<void(int imageNumber)> onImageStarted,
 	std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
-	std::function<void(int imageNumber, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
+	std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 	int parallization) const {
 
 	KITTIDataSet dataSet(baseDataSetPath);
 	int idx = 0;
 
-
+	auto labels = dataSet.getLabels();
 	parallel_foreach<int, TrainingImage>(images, parallization, [&](std::pair<int, TrainingImage> pair) -> void {
 		//for (auto& pair : images) {
 
@@ -160,10 +160,13 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& win
 
 
 			std::vector<cv::Rect2d> truePositiveRegions;
+			std::vector<std::string> truePositiveCategories;
 			std::vector<cv::Rect2d> dontCareRegions;
 			for (auto& r : pair.second.regions) {
-				if (r.regionClass == 1)
+				if (r.regionClass == 1) {
 					truePositiveRegions.push_back(r.region);
+					truePositiveCategories.push_back(r.category);
+				}
 				else if (r.regionClass == 0)
 					dontCareRegions.push_back(r.region);
 			}
@@ -210,7 +213,7 @@ void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& win
 				}
 			}, windowSizes, baseWindowStride);
 
-			onImageProcessed(pair.first, truePositiveRegions);
+			onImageProcessed(pair.first, truePositiveCategories, truePositiveRegions);
 			//cv::imshow("Temp", tmp);
 			//cv::waitKey(0);
 
@@ -227,4 +230,8 @@ std::string TrainingDataSet::getBaseDataSetPath() const
 
 bool TrainingDataSet::isWithinValidDepthRange(int height, float depthAverage) const {
 	return dataSet.isWithinValidDepthRange(height, depthAverage);
+}
+
+DataSet* TrainingDataSet::getDataSet() const {
+	return (DataSet*)&dataSet;
 }

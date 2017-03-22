@@ -105,11 +105,14 @@ struct ClassifierEvaluation {
 
 		std::vector<int> worstPerforming;
 		auto it = map.rbegin();
-		while (it != map.rend()) {
+
+		int i = 0;
+		while (it != map.rend() && i < 50) {
 			auto& v = it->second;
 			for (int imgNr : v)
 				worstPerforming.push_back(imgNr);
 			it++;
+			i++;
 		}
 		return worstPerforming;
 	}

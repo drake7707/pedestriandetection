@@ -205,7 +205,7 @@ void FeatureTesterJob::run() const {
 		featureSet->prepare(trainingDataSet, cascade.trainingRound);
 
 		std::cout << "Started final evaluation with sliding window and NMS of " << featureSetName << std::endl;
-		EvaluationSlidingWindowResult finalresult;
+		FinalEvaluationSlidingWindowResult finalresult;
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 			finalresult = cascade.evaluateWithSlidingWindowAndNMS(windowSizes, trainingDataSet, *featureSet, nrOfEvaluations);
 
@@ -216,8 +216,20 @@ void FeatureTesterJob::run() const {
 		str << "Name" << ";";
 		ClassifierEvaluation().toCSVLine(str, true);
 		str << std::endl;
-		for (auto& result : finalresult.evaluations) {
-			str << featureSetName << "[S]_round" << cascade.trainingRound << ";";
+		for (auto& result : finalresult.evaluations["easy"]) {
+			str << featureSetName << "[S][E]";;
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+
+		for (auto& result : finalresult.evaluations["moderate"]) {
+			str << featureSetName << "[S][M]" << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+
+		for (auto& result : finalresult.evaluations["hard"]) {
+			str << featureSetName << "[S][H]" << ";";
 			result.toCSVLine(str, false);
 			str << std::endl;
 		}

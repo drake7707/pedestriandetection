@@ -232,7 +232,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 				}
 			}
 		});
-	}, [&](int imgNr, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
+	}, [&](int imgNr, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
 		lock([&]() -> void {
 			for (int i = 0; i < nrOfEvaluations; i++)
@@ -319,10 +319,15 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 }
 
 
-EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations) const {
+FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes, 
+	const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations,
+	int refWidth, int refHeight, int paralellization) const {
 
-	EvaluationSlidingWindowResult swresult;
-	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
+	FinalEvaluationSlidingWindowResult swresult;
+	// TODO don't hardcode categories
+	swresult.evaluations["easy"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
+	swresult.evaluations["moderate"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
+	swresult.evaluations["hard"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(trainingDataSet.getNumberOfImages()));
 
 	double sumTimesRegions = 0;
 	int nrRegions = 0;
@@ -337,7 +342,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::v
 
 	std::map<int, std::vector<SlidingWindowRegion>> map;
 
-	trainingDataSet.iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride,
+	trainingDataSet.getDataSet()->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
 		[&](int imgNr) -> bool { return true; },
 		[&](int imgNr) -> void {
 		// image has started
@@ -368,7 +373,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::v
 		});
 		map[imageNumber].push_back(SlidingWindowRegion(imageNumber, region, baseEvaluationSum));
 
-	}, [&](int imgNr, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
+	}, [&](int imgNr, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
 
 		auto& windows = map[imgNr];
@@ -386,16 +391,25 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::v
 			predictedPositives = applyNonMaximumSuppression(predictedPositives);
 
 			lock([&]() -> void {
-				swresult.evaluations[i].valueShift = valueShift;
+				swresult.evaluations["easy"][i].valueShift = valueShift;
+				swresult.evaluations["moderate"][i].valueShift = valueShift;
+				swresult.evaluations["hard"][i].valueShift = valueShift;
+
 				int tp = 0;
 				for (auto& predpos : predictedPositives) {
-					if (overlaps(predpos.bbox, truePositiveRegions)) {
+
+					int tpIndex = getOverlapIndex(predpos.bbox, truePositiveRegions);
+					if (tpIndex == -1) {
 						//  predicted positive and true positive
-						swresult.evaluations[i].nrOfTruePositives++;
+						swresult.evaluations[truePositiveCategories[tpIndex]][i].nrOfTruePositives++;
 					}
 					else {
-						swresult.evaluations[i].nrOfFalsePositives++;
-						swresult.evaluations[i].falsePositivesPerImage[imgNr]++;
+						swresult.evaluations["easy"][i].nrOfFalsePositives++;
+						swresult.evaluations["easy"][i].falsePositivesPerImage[imgNr]++;
+						swresult.evaluations["moderate"][i].nrOfFalsePositives++;
+						swresult.evaluations["moderate"][i].falsePositivesPerImage[imgNr]++;
+						swresult.evaluations["hard"][i].nrOfFalsePositives++;
+						swresult.evaluations["hard"][i].falsePositivesPerImage[imgNr]++;
 					}
 				}
 
@@ -403,10 +417,11 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::v
 				for (auto& r : predictedPositives)
 					predictedPosRegions.push_back(r.bbox);
 
-				for (auto& truepos : truePositiveRegions) {
-					if (!overlaps(truepos, predictedPosRegions)) {
+				for (int tp = 0; tp < truePositiveRegions.size(); tp++)
+				{
+					if (!overlaps(truePositiveRegions[tp], predictedPosRegions)) {
 						// missed a true positive
-						swresult.evaluations[i].nrOfFalseNegatives++;
+						swresult.evaluations[truePositiveCategories[tp]][i].nrOfFalseNegatives++;
 					}
 				}
 			});
@@ -415,16 +430,22 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::v
 			// done with image
 			map.erase(imgNr);
 
-			for (int i = 0; i < nrOfEvaluations; i++)
-				swresult.evaluations[i].nrOfImagesEvaluated++;
+			for (int i = 0; i < nrOfEvaluations; i++) {
+				swresult.evaluations["easy"][i].nrOfImagesEvaluated++;
+				swresult.evaluations["moderate"][i].nrOfImagesEvaluated++;
+				swresult.evaluations["hard"][i].nrOfImagesEvaluated++;
+			}
 		});
-	});
+	}, paralellization);
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
 
-	for (int i = 0; i < nrOfEvaluations; i++)
-		swresult.evaluations[i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
+	for (int i = 0; i < nrOfEvaluations; i++) {
+		swresult.evaluations["easy"][i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
+		swresult.evaluations["moderate"][i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
+		swresult.evaluations["hard"][i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
 
+	}
 
 	ProgressWindow::getInstance()->finish(std::string(name));
 

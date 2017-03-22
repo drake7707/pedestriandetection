@@ -330,6 +330,6 @@ public:
 
 	virtual int getNrOfImages() const;
 
-	bool isWithinValidDepthRange(int height, float depthAverage) const;
+	virtual bool isWithinValidDepthRange(int height, float depthAverage) const;
 };
 

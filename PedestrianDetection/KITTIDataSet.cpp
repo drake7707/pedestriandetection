@@ -30,20 +30,22 @@ std::vector<DataSetLabel> KITTIDataSet::getLabels() const {
 				if (parts.size() >= 15) {
 					std::string type = parts[0];
 
+					double truncation = atof(parts[1].c_str());
+					int occlusion = atoi(parts[2].c_str());
 					double left = atof(parts[4].c_str());
 					double top = atof(parts[5].c_str());
 					double right = atof(parts[6].c_str());
 					double bottom = atof(parts[7].c_str());
 					cv::Rect2d r(left, top, right - left + 1, bottom - top + 1);
-				
+
 
 					if (type == "Pedestrian") {
 						// 0 1 2 3 | 4 5 6 7 |
-						DataSetLabel lbl(nrStr, r, false);
+						DataSetLabel lbl(nrStr, r, (OcclusionEnum)occlusion, truncation, false);
 						labels.push_back(lbl);
 					}
 					else if (type == "Person_sitting" || type == "Cyclist" || type == "DontCare") {
-						DataSetLabel lbl(nrStr, r, true);
+						DataSetLabel lbl(nrStr, r, (OcclusionEnum)occlusion, truncation, true);
 						labels.push_back(lbl);
 					}
 				}

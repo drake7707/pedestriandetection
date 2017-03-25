@@ -55,7 +55,8 @@ void FeatureTesterJob::run() const {
 	while (cascade.trainingRound < nrOfTrainingRounds) {
 		// ---------------- Build a feature set & prepare variable feature creators --------------------
 		auto featureSet = tester->getFeatureSet(set);
-		featureSet->prepare(trainingDataSet, cascade.trainingRound);
+		featureSet->prepare(trainingDataSet, 0); // always use base
+		//featureSet->prepare(trainingDataSet, cascade.trainingRound);
 
 		ModelEvaluator evaluator(featureSetName + " round " + std::to_string(cascade.trainingRound));
 
@@ -176,7 +177,7 @@ void FeatureTesterJob::run() const {
 	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_final.csv";
 	if (!FileExists(finalEvaluationSlidingFile)) {
 		auto featureSet = tester->getFeatureSet(set);
-		featureSet->prepare(trainingDataSet, cascade.trainingRound);
+		featureSet->prepare(trainingDataSet, 0); // always use base bag of words
 
 		std::cout << "Started final evaluation on test set with sliding window and NMS of " << featureSetName << std::endl;
 		FinalEvaluationSlidingWindowResult finalresult;

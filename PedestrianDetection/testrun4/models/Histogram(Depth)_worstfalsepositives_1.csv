@@ -1,0 +1,15 @@
+Name;Score;ImageNumber;X;Y;Width;Height
+Histogram(Depth);7.281852;0;1168;175;32;64
+Histogram(Depth);7.255408;0;1176;231;32;64
+Histogram(Depth);6.343863;0;1066;137;104;208
+Histogram(Depth);6.317418;0;1144;263;32;64
+Histogram(Depth);5.373534;0;1184;111;32;64
+Histogram(Depth);5.235427;220;1164;124;48;96
+Histogram(Depth);4.435544;100;1188;112;48;96
+Histogram(Depth);4.275424;600;1032;120;32;64
+Histogram(Depth);3.222524;220;1176;112;32;64
+Histogram(Depth);3.176571;100;960;176;32;64
+Histogram(Depth);2.262521;620;112;112;32;64
+Histogram(Depth);2.238581;100;72;112;32;64
+Histogram(Depth);1.002970;100;976;128;32;64
+Histogram(Depth);0.064980;100;0;112;32;64

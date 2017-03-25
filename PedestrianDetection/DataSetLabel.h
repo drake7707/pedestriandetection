@@ -52,11 +52,11 @@ public:
 		//double intersectionArea = (bbox & cv::Rect2d(0, 0, img.cols, img.rows)).area();
 		//double truncationPercentage = (bbox.area() - intersectionArea) / bbox.area();
 
-		if (bbox.height >= 40 && occlusion == OcclusionEnum::FullyVisible && truncation <= 0.15)
+		if (bbox.height >= 40 && (occlusion <= OcclusionEnum::FullyVisible) && truncation <= 0.15)
 			return "easy";
-		else if (bbox.height >= 25 && occlusion == OcclusionEnum::DifficultToSee && truncation <= 0.30)
+		else if (bbox.height >= 25 && (occlusion <= OcclusionEnum::PartlyOccluded) && truncation <= 0.30)
 			return "moderate";
-		else if (bbox.height >= 25 && occlusion == OcclusionEnum::DifficultToSee && truncation <= 0.50)
+		else if (bbox.height >= 25 && (occlusion <= OcclusionEnum::DifficultToSee) && truncation <= 0.50)
 			return "hard";
 
 		return "";

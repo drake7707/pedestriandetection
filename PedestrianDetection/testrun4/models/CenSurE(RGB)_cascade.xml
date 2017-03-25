@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"CenSurE(RGB) round 0"</name_0>
+<name_1>"CenSurE(RGB) round 1"</name_1>
+<name_2>"CenSurE(RGB) round 2"</name_2>
+<name_3>"CenSurE(RGB) round 3"</name_3>
+<valueShifts>
+  2.59999990e+00 4.59999990e+00 4.40000010e+00 4.80000019e+00</valueShifts>
+</opencv_storage>

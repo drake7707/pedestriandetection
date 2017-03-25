@@ -1031,7 +1031,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name))); }));
 
 
-	testClassifier(tester);
+	//testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
@@ -1180,7 +1180,7 @@ int main()
 	set = { "HOG(Depth)", "HOG(RGB)","LBP(RGB)" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
-	set = { "HOG(Depth)", "HOG(RGB)","LBP(RGB)", "HDD" };
+	set = { "HOG(RGB)","LBP(RGB)", "HDD" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
 
@@ -1200,6 +1200,12 @@ int main()
 
 	for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { name };
+		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	}
+	tester.runJobs();
+
+	for (auto& name : tester.getFeatureCreatorFactories()) {
+		set = { "HOG(RGB)", name };
 		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	}
 	tester.runJobs();

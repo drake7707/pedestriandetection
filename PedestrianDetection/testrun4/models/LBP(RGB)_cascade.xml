@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"LBP(RGB) round 0"</name_0>
+<name_1>"LBP(RGB) round 1"</name_1>
+<name_2>"LBP(RGB) round 2"</name_2>
+<name_3>"LBP(RGB) round 3"</name_3>
+<valueShifts>
+  9.80000019e+00 1.16000004e+01 4.19999981e+00 1.23999996e+01</valueShifts>
+</opencv_storage>

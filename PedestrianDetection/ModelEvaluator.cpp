@@ -15,7 +15,7 @@ ModelEvaluator::~ModelEvaluator()
 
 
 
-void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, std::function<bool(int number)> canSelectFunc)
+void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int maxWeakClassifiers,std::function<bool(int number)> canSelectFunc)
 {
 
 	std::vector<FeatureVector> truePositiveFeatures;
@@ -117,7 +117,7 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 
 	boost->setBoostType(cv::ml::Boost::Types::REAL);
 	boost->setPriors(cv::Mat(priors));
-	boost->setWeakCount(500);
+	boost->setWeakCount(maxWeakClassifiers);
 	//boost->setMaxDepth(3);
 
 	ProgressWindow::getInstance()->updateStatus(name, 0, std::string("Training boost classifier"));

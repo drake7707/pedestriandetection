@@ -32,9 +32,9 @@ void FeatureTesterJob::run() const {
 	float requiredTPRRate = 0.95;
 
 	// faster, change later
-	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 20 == 0; };
-	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 20 == 1; };
-
+	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 0; };
+	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 1; };
+	int maxWeakClassifiers = 1000;
 
 	std::string featureSetName = getFeatureName();
 
@@ -69,7 +69,7 @@ void FeatureTesterJob::run() const {
 		else {
 			std::cout << "Started training of " << featureSetName << ", round " << cascade.trainingRound << std::endl;
 			long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluator.train(trainingDataSet, *featureSet, trainingCriteria);
+				evaluator.train(trainingDataSet, *featureSet, maxWeakClassifiers, trainingCriteria);
 			});
 			std::cout << "Training round " << cascade.trainingRound << " complete after " << elapsedTrainingTime << "ms for " << featureSetName << std::endl;
 

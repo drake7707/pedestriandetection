@@ -1093,7 +1093,7 @@ int main()
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
-	generateFinalForEachRound(&tester);
+	//generateFinalForEachRound(&tester);
 
 	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\LBP(RGB)_train3.txt"), std::string("tptnsimilarity_lbp_train3.csv"));
 
@@ -1197,51 +1197,51 @@ int main()
 	tester.nrOfConcurrentJobs = 1;
 
 	set = { "HOG(RGB)", "HDD" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-
-	set = { "HOG(RGB)", "RAW(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	set = { "HOG(RGB)", "HOG(Depth)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	set = { "HOG(RGB)", "HONV" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	set = { "HOG(RGB)", "LBP(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	set = { "HOG(RGB)", "S2HOG(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	set = { "HOG(RGB)", "CoOccurrence(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 8);
 	tester.runJobs();
+	//
+	//set = { "HOG(RGB)", "RAW(RGB)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
-	set = { "CoOccurrence(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	//set = { "HOG(RGB)", "HOG(Depth)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
-	set = { "LBP(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	//set = { "HOG(RGB)", "HONV" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
-	set = { "HOG(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	//set = { "HOG(RGB)", "LBP(RGB)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
-	set = { "HONV" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	//set = { "HOG(RGB)", "S2HOG(RGB)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
-	set = { "HDD" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	//set = { "HOG(RGB)", "CoOccurrence(RGB)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	//tester.runJobs();
 
-	set = { "HOG(Depth)", "HOG(RGB)","LBP(RGB)" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	//set = { "CoOccurrence(RGB)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
-	set = { "HOG(RGB)","LBP(RGB)", "HDD" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	//set = { "LBP(RGB)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+
+	//set = { "HOG(RGB)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+
+	//set = { "HONV" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+
+	//set = { "HDD" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+
+	//set = { "HOG(Depth)", "HOG(RGB)","LBP(RGB)" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+
+	//set = { "HOG(RGB)","LBP(RGB)", "HDD" };
+	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 
 
-	tester.runJobs();
+	//tester.runJobs();
 
 	/*set = { "HOG(Depth)" };
 	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
@@ -1255,7 +1255,7 @@ int main()
 
 	tester.runJobs();*/
 
-	for (auto& name : tester.getFeatureCreatorFactories()) {
+	/*for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { "HOG(RGB)", name };
 		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	}
@@ -1267,7 +1267,7 @@ int main()
 	}
 	tester.runJobs();
 
-	
+	*/
 
 	//// evaluate each creator combined with HOG(RGB)
 	//for (auto& name : tester.getFeatureCreatorFactories()) {

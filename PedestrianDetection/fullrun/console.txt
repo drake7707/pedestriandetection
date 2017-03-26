@@ -1,0 +1,3 @@
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 0

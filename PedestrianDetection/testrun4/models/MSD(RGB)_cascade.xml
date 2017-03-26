@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <opencv_storage>
-<trainingRound>2</trainingRound>
-<name_count>2</name_count>
+<trainingRound>3</trainingRound>
+<name_count>3</name_count>
 <name_0>"MSD(RGB) round 0"</name_0>
 <name_1>"MSD(RGB) round 1"</name_1>
+<name_2>"MSD(RGB) round 2"</name_2>
 <valueShifts>
-  3. 4.19999981e+00</valueShifts>
+  3. 4.19999981e+00 4.19999981e+00</valueShifts>
 </opencv_storage>

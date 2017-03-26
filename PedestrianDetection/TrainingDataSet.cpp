@@ -134,91 +134,94 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 	}
 }
 
-
-void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
-	std::function<bool(int number)> canSelectFunc,
-	std::function<void(int imageNumber)> onImageStarted,
-	std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
-	std::function<void(int imageNumber, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
-	int parallization) const {
-
-	KITTIDataSet dataSet(baseDataSetPath);
-	int idx = 0;
-
-
-	parallel_foreach<int, TrainingImage>(images, parallization, [&](std::pair<int, TrainingImage> pair) -> void {
-		//for (auto& pair : images) {
-
-
-		if (canSelectFunc(pair.first)) {
-
-			onImageStarted(pair.first);
-
-			auto imgs = dataSet.getImagesForNumber(pair.first);
-			cv::Mat mRGB = imgs[0];
-			cv::Mat mDepth = imgs[1];
-
-
-			std::vector<cv::Rect2d> truePositiveRegions;
-			std::vector<cv::Rect2d> dontCareRegions;
-			for (auto& r : pair.second.regions) {
-				if (r.regionClass == 1)
-					truePositiveRegions.push_back(r.region);
-				else if (r.regionClass == 0)
-					dontCareRegions.push_back(r.region);
-			}
-
-			cv::Mat tmp = mRGB.clone();
-			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
-
-				if (!intersectsWith(bbox, dontCareRegions)) { // skip all windows that intersect with the don't care regions
-					cv::Mat regionRGB;
-					cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
-
-					cv::Mat regionDepth;
-					cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
-
-					double depthSum = 0;
-					int depthCount = 0;
-					int xOffset = bbox.x + bbox.width / 2;
-					for (int y = bbox.y; y < bbox.y + bbox.height; y++)
-					{
-						for (int i = xOffset - 1; i <= xOffset + 1; i++)
-						{
-							depthSum += mDepth.at<float>(y, i);
-							depthCount++;
-						}
-					}
-					double depthAvg = (depthSum / depthCount);
-					//	 only evaluate windows that fall within the depth range to speed up the evaluation
-					if (isWithinValidDepthRange(bbox.height, depthAvg)) {
-
-						bool overlapsWithTruePositive;
-						int resultClass;
-						if (overlaps(bbox, truePositiveRegions)) {
-							resultClass = 1;
-							overlapsWithTruePositive = true;
-						}
-						else
-							resultClass = -1;
-
-						if (resultClass != 0) { // don't evaluate don't care regions
-							func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
-							idx++;
-						}
-					}
-				}
-			}, windowSizes, baseWindowStride);
-
-			onImageProcessed(pair.first, truePositiveRegions);
-			//cv::imshow("Temp", tmp);
-			//cv::waitKey(0);
-
-
-		}
-		//}
-	});
-}
+//
+//void TrainingDataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
+//	std::function<bool(int number)> canSelectFunc,
+//	std::function<void(int imageNumber)> onImageStarted,
+//	std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
+//	std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
+//	int parallization) const {
+//
+//	KITTIDataSet dataSet(baseDataSetPath);
+//	int idx = 0;
+//
+//	auto labels = dataSet.getLabels();
+//	parallel_foreach<int, TrainingImage>(images, parallization, [&](std::pair<int, TrainingImage> pair) -> void {
+//		//for (auto& pair : images) {
+//
+//
+//		if (canSelectFunc(pair.first)) {
+//
+//			onImageStarted(pair.first);
+//
+//			auto imgs = dataSet.getImagesForNumber(pair.first);
+//			cv::Mat mRGB = imgs[0];
+//			cv::Mat mDepth = imgs[1];
+//
+//
+//			std::vector<cv::Rect2d> truePositiveRegions;
+//			std::vector<std::string> truePositiveCategories;
+//			std::vector<cv::Rect2d> dontCareRegions;
+//			for (auto& r : pair.second.regions) {
+//				if (r.regionClass == 1) {
+//					truePositiveRegions.push_back(r.region);
+//					truePositiveCategories.push_back(r.category);
+//				}
+//				else if (r.regionClass == 0)
+//					dontCareRegions.push_back(r.region);
+//			}
+//
+//			cv::Mat tmp = mRGB.clone();
+//			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
+//
+//				if (!intersectsWith(bbox, dontCareRegions)) { // skip all windows that intersect with the don't care regions
+//					cv::Mat regionRGB;
+//					cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+//
+//					cv::Mat regionDepth;
+//					cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+//
+//					double depthSum = 0;
+//					int depthCount = 0;
+//					int xOffset = bbox.x + bbox.width / 2;
+//					for (int y = bbox.y; y < bbox.y + bbox.height; y++)
+//					{
+//						for (int i = xOffset - 1; i <= xOffset + 1; i++)
+//						{
+//							depthSum += mDepth.at<float>(y, i);
+//							depthCount++;
+//						}
+//					}
+//					double depthAvg = (depthSum / depthCount);
+//					//	 only evaluate windows that fall within the depth range to speed up the evaluation
+//					if (isWithinValidDepthRange(bbox.height, depthAvg)) {
+//
+//						bool overlapsWithTruePositive;
+//						int resultClass;
+//						if (overlaps(bbox, truePositiveRegions)) {
+//							resultClass = 1;
+//							overlapsWithTruePositive = true;
+//						}
+//						else
+//							resultClass = -1;
+//
+//						if (resultClass != 0) { // don't evaluate don't care regions
+//							func(idx, resultClass, pair.first, bbox, regionRGB, regionDepth, tmp, overlapsWithTruePositive);
+//							idx++;
+//						}
+//					}
+//				}
+//			}, windowSizes, baseWindowStride);
+//
+//			onImageProcessed(pair.first, truePositiveCategories, truePositiveRegions);
+//			//cv::imshow("Temp", tmp);
+//			//cv::waitKey(0);
+//
+//
+//		}
+//		//}
+//	});
+//}
 
 std::string TrainingDataSet::getBaseDataSetPath() const
 {
@@ -227,4 +230,8 @@ std::string TrainingDataSet::getBaseDataSetPath() const
 
 bool TrainingDataSet::isWithinValidDepthRange(int height, float depthAverage) const {
 	return dataSet.isWithinValidDepthRange(height, depthAverage);
+}
+
+DataSet* TrainingDataSet::getDataSet() const {
+	return (DataSet*)&dataSet;
 }

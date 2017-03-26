@@ -45,6 +45,7 @@ std::vector < SlidingWindowRegion> applyNonMaximumSuppression(std::vector< Slidi
 
 
 bool overlaps(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
+int getOverlapIndex(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
 
 bool intersectsWith(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
 

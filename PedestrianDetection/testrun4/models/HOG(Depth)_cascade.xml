@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"HOG(Depth) round 0"</name_0>
+<name_1>"HOG(Depth) round 1"</name_1>
+<name_2>"HOG(Depth) round 2"</name_2>
+<name_3>"HOG(Depth) round 3"</name_3>
+<valueShifts>
+  1.96000004e+01 15. 1.48000002e+01 1.46000004e+01</valueShifts>
+</opencv_storage>

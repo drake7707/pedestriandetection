@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"RAW(RGB) round 0"</name_0>
+<name_1>"RAW(RGB) round 1"</name_1>
+<name_2>"RAW(RGB) round 2"</name_2>
+<name_3>"RAW(RGB) round 3"</name_3>
+<valueShifts>
+  1.33999996e+01 9.60000038e+00 4.19999981e+00 10.</valueShifts>
+</opencv_storage>

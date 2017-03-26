@@ -8,6 +8,7 @@
 struct TrainingRegion {
 	cv::Rect region;
 	int regionClass;
+	std::string category;
 };
 
 struct TrainingImage {
@@ -49,15 +50,18 @@ public:
 
 	void iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth)> func) const;
 
-	void iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
+	/*void iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
 		std::function<bool(int number)> canSelectFunc,
 		std::function<void(int imageNumber)> onImageStarted,
 		std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTP)> func,
-		std::function<void(int imageNumber, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
+		std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 		int parallization = 8) const;
-
+*/
 	std::string getBaseDataSetPath() const;
 
 	bool isWithinValidDepthRange(int height, float depthAverage) const;
+
+
+	DataSet* getDataSet() const;
 };
 

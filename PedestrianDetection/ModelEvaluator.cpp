@@ -15,14 +15,14 @@ ModelEvaluator::~ModelEvaluator()
 
 
 
-void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set,int trainEveryXImage)
+void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, std::function<bool(int number)> canSelectFunc)
 {
 
 	std::vector<FeatureVector> truePositiveFeatures;
 	std::vector<FeatureVector> trueNegativeFeatures;
 
 
-	trainingDataSet.iterateDataSet([&](int imgNr) -> bool { return imgNr % trainEveryXImage != 0; },
+	trainingDataSet.iterateDataSet(canSelectFunc,
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
 
 		if (idx % 100 == 0)
@@ -118,6 +118,7 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 	boost->setBoostType(cv::ml::Boost::Types::REAL);
 	boost->setPriors(cv::Mat(priors));
 	boost->setWeakCount(500);
+	//boost->setMaxDepth(3);
 
 	ProgressWindow::getInstance()->updateStatus(name, 0, std::string("Training boost classifier"));
 

@@ -1,0 +1,78 @@
+--------------------- New console session -----------------------
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HoG(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job HoG(RGB) is already processed and will be skipped
+Job HoG(Depth)+HoG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HDD+HoG(Depth)+HoG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HoG(Depth)+HoG(RGB) is already processed and will be skipped
+Starting job HDD+HoG(RGB)
+Skipped training of HDD+HoG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HoG(RGB), evaluation was already done.
+Started evaluation with sliding window of HDD+HoG(RGB)
+--------------------- New console session -----------------------
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HoG(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job HoG(RGB) is already processed and will be skipped
+Job HoG(Depth)+HoG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HDD+HoG(Depth)+HoG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HoG(Depth)+HoG(RGB) is already processed and will be skipped
+Starting job HDD+HoG(RGB)
+Skipped training of HDD+HoG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HoG(RGB), evaluation was already done.
+Started evaluation with sliding window of HDD+HoG(RGB)
+--------------------- New console session -----------------------
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HoG(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job HoG(RGB) is already processed and will be skipped
+Job HoG(Depth)+HoG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HDD+HoG(Depth)+HoG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HoG(Depth)+HoG(RGB) is already processed and will be skipped
+Starting job HDD+HoG(RGB)
+Skipped training of HDD+HoG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HoG(RGB), evaluation was already done.
+Started evaluation with sliding window of HDD+HoG(RGB)
+--------------------- New console session -----------------------
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HoG(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job HoG(RGB) is already processed and will be skipped
+Job HoG(Depth)+HoG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HDD+HoG(Depth)+HoG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HoG(Depth)+HoG(RGB) is already processed and will be skipped
+Starting job HDD+HoG(RGB)
+Skipped training of HDD+HoG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HoG(RGB), evaluation was already done.
+Started evaluation with sliding window of HDD+HoG(RGB)
+Chosen 8.400000 as decision boundary shift to attain TPR of 0.965517
+Worst FP region score= 20.916700 image= 8 bbox=984,208 32x64
+Worst FP region score= 20.916700 image= 8 bbox=984,208 32x64
+Worst FP region score= 20.916700 image= 8 bbox=984,208 32x64
+Worst FP region score= 20.916700 image= 8 bbox=984,208 32x64
+Worst FP region score= 20.916700 image= 8 bbox=984,208 32x64
+Worst FP region score= 20.916700 image= 8 bbox=984,208 32x64
+Worst FP region score= 20.916700 image= 8 bbox=984,208 32x64
+Worst FP region score= 20.916700 image= 8 bbox=984,208 32x64
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started evaluation with sliding window of HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job RAW(RGB)
+Started training of RAW(RGB), round 0
+Training boost classifier on 18866 samples (3906 TP, 14960 TN), feature size 24576
+Training round 0 complete after 15291472ms for RAW(RGB)
+Started evaluation of RAW(RGB)
+Evaluation complete after 166229ms for RAW(RGB)
+Started evaluation with sliding window of RAW(RGB)

@@ -1,4 +1,4 @@
-#include "HoGFeatureCreator.h"
+#include "HOGFeatureCreator.h"
 #include "HistogramOfOrientedGradients.h"
 
 
@@ -21,7 +21,7 @@ int HOGFeatureCreator::getNumberOfFeatures() const {
 FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 
 	hog::HistogramResult result;
-	if(onDepth)
+	if (onDepth)
 		result = hog::getHistogramsOfOrientedGradient(depth, patchSize, binSize, false, true);
 	else
 		result = hog::getHistogramsOfOrientedGradient(rgb, patchSize, binSize, false, true);
@@ -29,6 +29,6 @@ FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const
 	return result.getFeatureArray();
 }
 
-std::string HOGFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " " + hog::explainHOGFeature(featureIndex, featureValue, refWidth, refHeight, patchSize, binSize);
+cv::Mat HOGFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+	return hog::explainHOGFeature(offset, weightPerFeature, occurrencePerFeature, refWidth, refHeight, patchSize, binSize, false, true);
 }

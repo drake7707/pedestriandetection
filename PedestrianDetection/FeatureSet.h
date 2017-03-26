@@ -23,12 +23,13 @@ public:
 
 	void addCreator(std::unique_ptr<IFeatureCreator> creator);
 
+	int size() const;
 
 	void prepare(TrainingDataSet& trainingDataSet, int trainingRound);
 
 	int getNumberOfFeatures() const;
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
 
-	std::string explainFeature(int featureIndex, double splitValue) const;
+	std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 };
 

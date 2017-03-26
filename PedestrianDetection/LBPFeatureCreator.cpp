@@ -22,7 +22,7 @@ int LBPFeatureCreator::getNumberOfFeatures() const {
 FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 
 	cv::Mat img;
-	if(onDepth)
+	if (onDepth)
 		cv::cvtColor(rgb, img, CV_BGR2GRAY);
 	else
 		cv::cvtColor(depth, img, CV_BGR2GRAY);
@@ -43,6 +43,7 @@ FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const
 	return result.getFeatureArray();
 }
 
-std::string LBPFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " TODO";
+cv::Mat LBPFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+	// TODO change this to histogram
+	return hog::explainHOGFeature(offset, weightPerFeature, occurrencePerFeature, refWidth, refHeight, patchSize, binSize, false, false);
 }

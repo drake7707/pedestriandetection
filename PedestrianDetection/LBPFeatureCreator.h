@@ -15,7 +15,7 @@ public:
 	virtual ~LBPFeatureCreator();
 
 	int getNumberOfFeatures() const;
-	std::string explainFeature(int featureIndex, double featureValue) const;
+	cv::Mat LBPFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
 };

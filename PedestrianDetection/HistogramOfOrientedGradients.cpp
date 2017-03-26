@@ -58,43 +58,103 @@ namespace hog {
 			return (nrOfCellsHeight) * (nrOfCellsWidth)* binSize;
 	}
 
-	std::string explainHOGFeature(int featureIndex, double featureValue, int imgWidth, int imgHeight, int patchSize, int binSize) {
+
+	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize) {
+
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
 
+		int nrOfFeatures = getNumberOfFeatures(imgWidth, imgHeight, patchSize, binSize, l2normalize);
+		int to = offset + nrOfFeatures;
+
+		cv::Mat explanation(cv::Size(imgWidth, imgHeight), CV_32FC1, cv::Scalar(0));
+
+
+		std::function<void(int, int, int, int)> func = [&](int featureIndex, int patchX, int patchY, int binIndex) -> void {
+			int x = patchX * patchSize;
+			int y = patchY * patchSize;
+			double angle = 1.0 * binIndex / binSize * (full360 ? 2 * CV_PI : CV_PI) + CV_PI / 2;
+			double weight = weightPerFeature[offset + featureIndex];
+			if (weight > 0) {
+				int cx = x + patchSize / 2;
+				int cy = y + patchSize / 2;
+
+				double radius = patchSize / 2;
+				double vx = cos(angle) * radius;
+				double vy = sin(angle) * radius;
+
+				cv::line(explanation, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(weight), 1);
+			}
+		};
+
+
 		int idx = 0;
-		// now normalize all histograms
-		for (int y = 0; y < nrOfCellsHeight - 1; y++) {
-			for (int x = 0; x < nrOfCellsWidth - 1; x++) {
+		if (l2normalize) {
+			for (int y = 0; y < nrOfCellsHeight - 1; y++) {
+				for (int x = 0; x < nrOfCellsWidth - 1; x++) {
 
-				for (int k = 0; k < binSize; k++)
-				{
-					if (featureIndex == idx)
-						return "HoG @ (" + std::to_string(x) + "," + std::to_string(y) + ") with angle " + std::to_string((180.0 / binSize)*k);
-					idx++;
-				}
-				for (int k = 0; k < binSize; k++)
-				{
-					if (featureIndex == idx)
-						return "HoG @ (" + std::to_string(x + 1) + "," + std::to_string(y) + ") with angle " + std::to_string((180.0 / binSize)*k);
-					idx++;
-				}
-				for (int k = 0; k < binSize; k++)
-				{
-					if (featureIndex == idx)
-						return "HoG @ (" + std::to_string(x) + "," + std::to_string(y + 1) + ") with angle " + std::to_string((180.0 / binSize)*k);
-					idx++;
-				}
-				for (int k = 0; k < binSize; k++)
-				{
-					if (featureIndex == idx)
-						return "HoG @ (" + std::to_string(x + 1) + "," + std::to_string(y + 1) + ") with angle " + std::to_string((180.0 / binSize)*k);
-					idx++;
-				}
+					std::vector<int> sorted;
 
+					for (int k = 0; k < binSize; k++)
+						sorted.push_back(k);
+					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+					for (int k = 0; k < binSize; k++) {
+						func(idx, x, y, sorted[k]);
+						idx++;
+					}
+					sorted.clear();
+
+
+					for (int k = 0; k < binSize; k++)
+						sorted.push_back(k);
+					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+					for (int k = 0; k < binSize; k++) {
+						func(idx, x + 1, y, sorted[k]);
+						idx++;
+					}
+					sorted.clear();
+
+
+					for (int k = 0; k < binSize; k++)
+						sorted.push_back(k);
+					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+					for (int k = 0; k < binSize; k++) {
+						func(idx, x , y+1, sorted[k]);
+						idx++;
+					}
+					sorted.clear();
+
+
+					for (int k = 0; k < binSize; k++)
+						sorted.push_back(k);
+					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+					for (int k = 0; k < binSize; k++) {
+						func(idx, x + 1, y+1, sorted[k]);
+						idx++;
+					}
+					sorted.clear();
+
+				}
 			}
 		}
-		return "";
+		else {
+			for (int y = 0; y < nrOfCellsHeight; y++) {
+				for (int x = 0; x < nrOfCellsWidth; x++) {
+
+					std::vector<int> sorted;
+
+					for (int k = 0; k < binSize; k++)
+						sorted.push_back(k);
+					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+					for (int k = 0; k < binSize; k++) {
+						func(idx, x + 1, y, sorted[k]);
+						idx++;
+					}
+					sorted.clear();
+				}
+			}
+		}
+		return explanation;
 	}
 
 
@@ -357,6 +417,55 @@ namespace hog {
 	}
 
 
+	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize) {
+
+		int nrOfCellsWidth = imgWidth / patchSize;
+		int nrOfCellsHeight = imgHeight / patchSize;
+
+		int idx = 0;
+
+		int nrOfFeatures = getNumberOfFeatures(imgWidth, imgHeight, patchSize, binSize, l2normalize);
+		int to = offset + nrOfFeatures;
+
+		cv::Mat explanation(cv::Size(imgWidth, imgHeight), CV_32FC1, cv::Scalar(0));
+
+		for (int featureIndex = 0; featureIndex < nrOfFeatures; featureIndex++) {
+			// now normalize all histograms
+
+			int patchX = -1;
+			int patchY = -1;
+			int binIndex = -1;
+			int binIndex2 = -1;
+
+			bool found = false;
+
+			for (int y = 0; y < nrOfCellsHeight && !found; y++) {
+				for (int x = 0; x < nrOfCellsWidth && !found; x++) {
+					for (int k = 0; k < binSize && !found; k++) {
+						for (int l = 0; l < binSize && !found; l++) {
+							if (featureIndex == idx) {
+								patchX = x;
+								patchY = y;
+								binIndex = k;
+								binIndex2 = l;
+								found = true;
+							}
+							idx++;
+						}
+					}
+				}
+			}
+
+			if (found) {
+				int x = patchX * patchSize;
+				int y = patchY * patchSize;
+
+				double weight = weightPerFeature[offset + featureIndex];
+				cv::rectangle(explanation, cv::Rect(x + 1 + binSize * 2, y + 1 + binSize * 2, 2, 2), cv::Scalar(weight), -1);
+			}
+		}
+		return explanation;
+	}
 
 
 	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize) {

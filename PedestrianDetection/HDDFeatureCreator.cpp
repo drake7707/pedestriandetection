@@ -25,6 +25,6 @@ FeatureVector HDDFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const
 	return result.getFeatureArray();
 }
 
-std::string HDDFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " TODO";
+cv::Mat HDDFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+	return hog::explainHOGFeature(offset, weightPerFeature, occurrencePerFeature, refWidth, refHeight, patchSize, binSize, true, true);
 }

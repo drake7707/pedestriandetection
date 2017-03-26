@@ -5,15 +5,15 @@ class RAWRGBFeatureCreator : public IFeatureCreator
 {
 
 private:
-	int patchSize = 8;
-	int binSize = 16;
+	int refWidth;
+	int refHeight;
 
 public:
-	RAWRGBFeatureCreator(std::string& name);
+	RAWRGBFeatureCreator(std::string& name, int refWidth, int refHeight);
 	virtual ~RAWRGBFeatureCreator();
 
 	int getNumberOfFeatures() const;
-	std::string explainFeature(int featureIndex, double featureValue) const;
+	cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
 

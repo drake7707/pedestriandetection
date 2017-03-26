@@ -6,13 +6,13 @@ class HistogramDepthFeatureCreator : public IFeatureCreator
 {
 
 private:
-	
+
 public:
 	HistogramDepthFeatureCreator(std::string& name);
 	virtual ~HistogramDepthFeatureCreator();
 
 	int getNumberOfFeatures() const;
-	std::string explainFeature(int featureIndex, double featureValue) const;
+	cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
 };

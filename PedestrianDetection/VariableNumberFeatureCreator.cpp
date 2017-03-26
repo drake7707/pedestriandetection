@@ -146,8 +146,10 @@ int VariableNumberFeatureCreator::getNumberOfFeatures() const {
 }
 
 
-std::string VariableNumberFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " centroid " + std::to_string(featureIndex) + " count ";
+cv::Mat VariableNumberFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+	// TODO draw centroids as keypoints
+	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
+	return explanation;
 }
 
 

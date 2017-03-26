@@ -20,7 +20,7 @@ int HOGHistogramVarianceFeatureCreator::getNumberOfFeatures() const {
 
 FeatureVector HOGHistogramVarianceFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 	hog::HistogramResult result;
-	if(onDepth)
+	if (onDepth)
 		result = hog::getHistogramsOfOrientedGradient(depth, patchSize, binSize, false, true);
 	else
 		result = hog::getHistogramsOfOrientedGradient(rgb, patchSize, binSize, false, true);
@@ -28,12 +28,50 @@ FeatureVector HOGHistogramVarianceFeatureCreator::getFeatures(cv::Mat& rgb, cv::
 	return result.getHistogramVarianceFeatures();
 }
 
-std::string HOGHistogramVarianceFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
+
+cv::Mat HOGHistogramVarianceFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
 	int nrOfCellsWidth = refWidth / patchSize;
 	int nrOfCellsHeight = refHeight / patchSize;
 
-	int x = featureIndex % (nrOfCellsWidth - 1);
-	int y = featureIndex / (nrOfCellsWidth - 1);
+	int nrOfFeatures = getNumberOfFeatures();
+	bool l2normalize = true;
 
-	return getName() + " at (" + std::to_string(x) + "," + std::to_string(y) + ")";
+	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
+
+	std::function<void(int, int, int)> func = [&](int featureIndex, int patchX, int patchY) -> void {
+		int x = patchX * patchSize;
+		int y = patchY * patchSize;
+		double weight = weightPerFeature[offset + featureIndex];
+		cv::rectangle(explanation, cv::Rect(x, y, patchSize, patchSize), cv::Scalar(weight), -1);
+	};
+
+
+	int idx = 0;
+	if (l2normalize) {
+		for (int y = 0; y < nrOfCellsHeight - 1; y++) {
+			for (int x = 0; x < nrOfCellsWidth - 1; x++) {
+
+
+				func(idx, x, y);
+				idx++;
+
+				func(idx, x + 1, y);
+				idx++;
+
+				func(idx, x, y + 1);
+				idx++;
+				func(idx, x + 1, y + 1);
+				idx++;
+			}
+		}
+	}
+	else {
+		for (int y = 0; y < nrOfCellsHeight; y++) {
+			for (int x = 0; x < nrOfCellsWidth; x++) {
+				func(idx, x, y);
+				idx++;
+			}
+		}
+	}
+	return explanation;
 }

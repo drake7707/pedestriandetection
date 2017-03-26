@@ -50,6 +50,8 @@ FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat
 	return v;
 }
 
-std::string CoOccurenceMatrixFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " TODO";
+cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+	//TODO
+	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
+	return explanation;
 }

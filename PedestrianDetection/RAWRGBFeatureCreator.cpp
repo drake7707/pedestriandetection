@@ -1,8 +1,8 @@
 #include "RAWRGBFeatureCreator.h"
 
 
-RAWRGBFeatureCreator::RAWRGBFeatureCreator(std::string& name)
-	: IFeatureCreator(name)
+RAWRGBFeatureCreator::RAWRGBFeatureCreator(std::string& name, int refWidth, int refHeight)
+	: IFeatureCreator(name), refWidth(refWidth), refHeight(refHeight)
 {
 }
 
@@ -13,11 +13,11 @@ RAWRGBFeatureCreator::~RAWRGBFeatureCreator()
 
 
 int RAWRGBFeatureCreator::getNumberOfFeatures() const {
-	return binSize*binSize;
+	return refWidth*refHeight * 3;
 }
 
 FeatureVector RAWRGBFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
-	
+
 	FeatureVector v;
 	v.reserve(rgb.cols * rgb.rows * 3);
 
@@ -33,6 +33,26 @@ FeatureVector RAWRGBFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) co
 	return v;
 }
 
-std::string RAWRGBFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " TODO";
+cv::Mat RAWRGBFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
+
+	int nrOfFeatures = getNumberOfFeatures();
+	
+	int idx = 0;
+	for (int j = 0; j < refHeight; j++) {
+		for (int i = 0; i < refWidth; i++) {
+			
+			double w1 = weightPerFeature[offset + idx];
+			idx++;
+			double w2 = weightPerFeature[offset + idx];
+			idx++;
+			double w3 = weightPerFeature[offset + idx];
+			idx++;
+			
+			explanation.at<float>(j, i) = w1 + w2 + w3;
+		}
+	}
+
+
+	return explanation;
 }

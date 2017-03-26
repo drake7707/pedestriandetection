@@ -17,6 +17,10 @@ void FeatureSet::addCreator(std::unique_ptr<IFeatureCreator> creator) {
 	this->creators.push_back(std::move(creator));
 }
 
+int FeatureSet::size() const {
+	return this->creators.size();
+}
+
 FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 	if (creators.size() == 0)
 		throw std::exception("No feature creators were present");
@@ -38,19 +42,22 @@ int FeatureSet::getNumberOfFeatures() const {
 	return nrOfFeatures;
 }
 
-std::string FeatureSet::explainFeature(int featureIndex, double splitValue) const {
+std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
 	int from = 0;
+
+	std::vector<cv::Mat> explainImages(size());
+
+	int i = 0;
 	for (auto&& c : creators) {
 		int nrOfFeatures = c->getNumberOfFeatures();
 		int to = from + nrOfFeatures;
 
-		if (featureIndex >= from && featureIndex < to) {
-			return c->explainFeature(featureIndex - from, splitValue);
-		}
-		from += nrOfFeatures;
-	}
+		explainImages[i] = c->explainFeatures(from, weightPerFeature, occurrencePerFeature, refWidth, refHeight);
 
-	return "";
+		from += nrOfFeatures;
+		i++;
+	}
+	return explainImages;
 }
 
 void FeatureSet::prepare(TrainingDataSet& trainingDataSet, int trainingRound) {

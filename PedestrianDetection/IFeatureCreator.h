@@ -8,6 +8,11 @@ class IFeatureCreator
 private:
 	std::string name;
 
+protected:
+	cv::Mat explainFeaturesHeatMap(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight, int patchSize) const {
+
+	}
+
 public:
 	IFeatureCreator(std::string& name);
 	virtual ~IFeatureCreator();
@@ -18,6 +23,6 @@ public:
 
 	virtual FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const = 0;
 
-	virtual std::string explainFeature(int featureIndex, double featureValue) const = 0;
+	virtual cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const = 0;
 };
 

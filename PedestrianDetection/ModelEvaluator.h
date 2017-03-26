@@ -41,7 +41,8 @@ public:
 	// double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
 
    //EvaluationSlidingWindowResult evaluateWithSlidingWindow(int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const;
-
+	std::vector<cv::Mat> ModelEvaluator::explainModel(const std::unique_ptr<FeatureSet>& set, int refWidth, int refHeight) const;
+	
 	void saveModel(std::string& path);
 	void loadModel(std::string& path);
 

@@ -18,7 +18,6 @@ int HONVFeatureCreator::getNumberOfFeatures() const {
 	int nrOfCellsWidth = refWidth / patchSize;
 	int nrOfCellsHeight = refHeight / patchSize;
 	return nrOfCellsWidth * nrOfCellsHeight * (binSize * binSize);
-	
 }
 
 FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
@@ -64,6 +63,7 @@ FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) cons
 	return result.getFeatureArray();
 }
 
-std::string HONVFeatureCreator::explainFeature(int featureIndex, double featureValue) const {
-	return getName() + " TODO";
+
+cv::Mat HONVFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+	return hog::explain2DHOGFeature(offset, weightPerFeature, occurrencePerFeature, refWidth, refHeight, patchSize, binSize,false);
 }

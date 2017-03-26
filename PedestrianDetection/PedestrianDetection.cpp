@@ -54,11 +54,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -737,7 +737,7 @@ void testSlidingWindow() {
 	int baseWindowStride = 16;
 
 	tSet.getDataSet()->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
-		
+
 		[&](int idx) -> bool { return true; },
 
 		[&](int imageNumber) -> void {
@@ -761,7 +761,7 @@ void testSlidingWindow() {
 			if (!overlapsWithTruePositive)
 				cv::rectangle(tmp, region, cv::Scalar(0, 0, 255), 1);
 		}
-	}, [&](int imageNumber, std::vector<std::string>& truePositiveCategories,std::vector<cv::Rect2d>& truePositives) -> void {
+	}, [&](int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositives) -> void {
 		// end of image
 	}, 1);
 }
@@ -789,7 +789,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, std::string& outputF
 	FeatureSet fset;
 	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HOG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
 	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HOG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), false, patchSize, 20, refWidth, refHeight)));
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
 
 
@@ -1081,12 +1081,49 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 90, false))); }));
 	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, true))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HDD"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, patchSize, 20, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, false,patchSize, 20, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name, refWidth, refHeight))); }));
+
+	
+	KITTIDataSet ds(kittiDatasetPath);
+	auto datasetimgs = ds.getImagesForNumber(0);
+		
+
+	std::set<std::string> set;
+
+	set = { "HDD", "HOG(RGB)", "LBP(RGB)" };
+	auto fset = tester.getFeatureSet(set);
+	std::vector<cv::Mat> imgs(set.size(), cv::Mat(cv::Size(refWidth, refHeight*4), CV_32FC1, cv::Scalar(0)));
+	
+	int rounds = 4;
+	for (int i = 0; i < rounds; i++)
+	{
+		ModelEvaluator model(std::string("HDD+HOG(RGB)+LBP(RGB)"));
+		model.loadModel(std::string("models\\HDD+HOG(RGB)+LBP(RGB) round " + std::to_string(i) + ".xml"));
+		
+		cv::resize(datasetimgs[0], datasetimgs[0], cv::Size(refWidth, refHeight));
+		cv::resize(datasetimgs[1], datasetimgs[1], cv::Size(refWidth, refHeight));
+
+		//FeatureVector v = fset->getFeatures(datasetimgs[0], datasetimgs[1]);
+
+		auto cur = model.explainModel(fset, refWidth, refHeight);
+
+		for (int j = 0; j < cur.size(); j++)
+			cur[j].copyTo(imgs[j](cv::Rect(0, i*refHeight, refWidth, refHeight)));
+	}
 
 
+	auto it = set.begin();
+	for (int i = 0; i < imgs.size(); i++) {
+		cv::Mat img;
+		imgs[i].convertTo(img, CV_8UC1, 255);
+		
+		cv::imshow("explain_" + *it, imgs[i]*255);
+		it++;
+	}
+	cv::waitKey(0);
 	//testClassifier(tester);
 	//testFeature();
 	// show progress window
@@ -1135,7 +1172,7 @@ int main()
 	//return 0;
 
 	int nrOfEvaluations = 300;
-	std::set<std::string> set;
+
 
 
 
@@ -1260,7 +1297,7 @@ int main()
 		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	}
 	tester.runJobs();
-	
+
 	for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { name };
 		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);

@@ -176,6 +176,26 @@ double ModelEvaluator::evaluateFeatures(FeatureVector& v) const {
 	return sum;
 }
 
+
+
+std::vector<cv::Mat> ModelEvaluator::explainModel(const std::unique_ptr<FeatureSet>& set, int refWidth, int refHeight) const {
+	auto& roots = model.boost->getRoots();
+	auto& nodes = model.boost->getNodes();
+	auto& splits = model.boost->getSplits();
+
+	std::vector<float> weightPerFeature(set->getNumberOfFeatures(), 0);
+	std::vector<float> occurrencePerFeature(set->getNumberOfFeatures(), 0);
+	for (auto& r : roots) {
+
+		int varIdx = splits[nodes[r].split].varIdx;
+		float quality = splits[nodes[r].split].quality;
+		weightPerFeature[varIdx] += quality;
+		occurrencePerFeature[varIdx]++;
+	}
+
+	return set->explainFeatures(weightPerFeature, occurrencePerFeature,refWidth, refHeight);
+}
+
 void ModelEvaluator::saveModel(std::string& path) {
 	if (!model.boost->isTrained())
 		throw std::exception("Model is not trained");
@@ -194,7 +214,7 @@ void ModelEvaluator::saveModel(std::string& path) {
 void ModelEvaluator::loadModel(std::string& path) {
 
 	std::string filename = path;
-
+	
 	//model.boost = cv::Algorithm::load<cv::ml::Boost>(filename + ".boost.xml");
 	cv::FileStorage fsRead(filename, cv::FileStorage::READ);
 

@@ -148,7 +148,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RAWRGBFeatureCreator.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -270,7 +270,7 @@
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RAWRGBFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files</Filter>
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

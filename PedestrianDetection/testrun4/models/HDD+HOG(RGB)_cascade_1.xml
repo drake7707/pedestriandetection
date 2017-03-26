@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>2</trainingRound>
+<name_count>2</name_count>
+<name_0>"HDD+HOG(RGB) round 0"</name_0>
+<name_1>"HDD+HOG(RGB) round 1"</name_1>
+<valueShifts>
+  1.97999992e+01 1.58000002e+01 1.56000004e+01 15.</valueShifts>
+</opencv_storage>

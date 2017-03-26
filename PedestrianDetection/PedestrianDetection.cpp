@@ -985,6 +985,62 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 	str.flush();
 }
 
+void generateFinalForEachRound(FeatureTester* tester) {
+	std::set<std::string> set = { "HOG(RGB)", "HDD" };
+
+	auto featureSet = tester->getFeatureSet(set);
+
+	KITTIDataSet dataSet(kittiDatasetPath);
+
+	int nrOfEvaluations = 300;
+	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 20 == 1; };
+
+	for (int i = 0; i <= 2; i++)
+	{
+
+		std::string featureSetName = std::string("HDD+HOG(RGB)_" + std::to_string(i));
+		EvaluatorCascade cascade(featureSetName);
+		cascade.load(std::string("models\\HDD+HOG(RGB)_cascade_" + std::to_string(i) + ".xml"), std::string("models"));
+		std::cout << "Started final evaluation on test set with sliding window and NMS " << std::endl;
+		FinalEvaluationSlidingWindowResult finalresult;
+		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			finalresult = cascade.evaluateWithSlidingWindowAndNMS(windowSizes, &dataSet, *featureSet, nrOfEvaluations, testCriteria);
+
+		});
+		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms" << std::endl;
+
+		std::string finalEvaluationSlidingFile = "results\\" + std::string("HDD+HOG(RGB)_") + std::to_string(i) + ".csv";
+
+		std::ofstream str = std::ofstream(finalEvaluationSlidingFile);
+		str << "Name" << ";";
+		ClassifierEvaluation().toCSVLine(str, true);
+		str << std::endl;
+		for (auto& result : finalresult.evaluations["easy"]) {
+			str << featureSetName << "[S][E]" << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+
+		for (auto& result : finalresult.evaluations["moderate"]) {
+			str << featureSetName << "[S][M]" << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+
+		for (auto& result : finalresult.evaluations["hard"]) {
+			str << featureSetName << "[S][H]" << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+
+		for (auto& result : finalresult.combinedEvaluations) {
+			str << featureSetName << "[S]" << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+	}
+}
+
 int main()
 {
 
@@ -1037,6 +1093,7 @@ int main()
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
+	generateFinalForEachRound(&tester);
 
 	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\LBP(RGB)_train3.txt"), std::string("tptnsimilarity_lbp_train3.csv"));
 
@@ -1199,16 +1256,18 @@ int main()
 	tester.runJobs();*/
 
 	for (auto& name : tester.getFeatureCreatorFactories()) {
+		set = { "HOG(RGB)", name };
+		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
+	}
+	tester.runJobs();
+	
+	for (auto& name : tester.getFeatureCreatorFactories()) {
 		set = { name };
 		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
 	}
 	tester.runJobs();
 
-	for (auto& name : tester.getFeatureCreatorFactories()) {
-		set = { "HOG(RGB)", name };
-		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	}
-	tester.runJobs();
+	
 
 	//// evaluate each creator combined with HOG(RGB)
 	//for (auto& name : tester.getFeatureCreatorFactories()) {

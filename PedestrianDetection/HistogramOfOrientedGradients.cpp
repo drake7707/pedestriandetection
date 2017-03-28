@@ -74,7 +74,7 @@ namespace hog {
 			int x = patchX * patchSize;
 			int y = patchY * patchSize;
 			double angle = 1.0 * binIndex / binSize * (full360 ? 2 * CV_PI : CV_PI);// +CV_PI / 2;
-			double weight = weightPerFeature[offset + featureIndex];
+			double weight = occurrencePerFeature[offset + featureIndex];
 			if (weight > 0) {
 				int cx = x + patchSize / 2;
 				int cy = y + patchSize / 2;
@@ -101,7 +101,7 @@ namespace hog {
 					maxK = -1;
 					max = std::numeric_limits<float>().min();
 					for (int k = 0; k < binSize; k++) {
-						float weight = weightPerFeature[offset + idx + k];
+						float weight = occurrencePerFeature[offset + idx + k];
 						if (weight > max) {
 							max = weight;
 							maxK = k;
@@ -109,7 +109,7 @@ namespace hog {
 					}
 					for (int k = 0; k < binSize; k++) {
 
-						if (maxK == k)
+					//	if (maxK == k)
 							func(idx, x, y, k);
 						idx++;
 					}
@@ -118,7 +118,7 @@ namespace hog {
 					maxK = -1;
 					max = std::numeric_limits<float>().min();
 					for (int k = 0; k < binSize; k++) {
-						float weight = weightPerFeature[offset + idx + k];
+						float weight = occurrencePerFeature[offset + idx + k];
 						if (weight > max) {
 							max = weight;
 							maxK = k;
@@ -126,7 +126,7 @@ namespace hog {
 					}
 					for (int k = 0; k < binSize; k++) {
 
-						if (maxK == k)
+					//	if (maxK == k)
 							func(idx, x+1, y, k);
 						idx++;
 					}
@@ -134,7 +134,7 @@ namespace hog {
 					maxK = -1;
 					max = std::numeric_limits<float>().min();
 					for (int k = 0; k < binSize; k++) {
-						float weight = weightPerFeature[offset + idx + k];
+						float weight = occurrencePerFeature[offset + idx + k];
 						if (weight > max) {
 							max = weight;
 							maxK = k;
@@ -142,7 +142,7 @@ namespace hog {
 					}
 					for (int k = 0; k < binSize; k++) {
 
-						if (maxK == k)
+					//	if (maxK == k)
 							func(idx, x, y+1, k);
 						idx++;
 					}
@@ -152,7 +152,7 @@ namespace hog {
 					maxK = -1;
 					max = std::numeric_limits<float>().min();
 					for (int k = 0; k < binSize; k++) {
-						float weight = weightPerFeature[offset + idx + k];
+						float weight = occurrencePerFeature[offset + idx + k];
 						if (weight > max) {
 							max = weight;
 							maxK = k;
@@ -160,7 +160,7 @@ namespace hog {
 					}
 					for (int k = 0; k < binSize; k++) {
 
-						if (maxK == k)
+					//	if (maxK == k)
 							func(idx, x + 1, y+1, k);
 						idx++;
 					}

@@ -52,7 +52,8 @@ std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFe
 		int nrOfFeatures = c->getNumberOfFeatures();
 		int to = from + nrOfFeatures;
 
-		explainImages[i] = c->explainFeatures(from, weightPerFeature, occurrencePerFeature, refWidth, refHeight);
+		cv::Mat img = c->explainFeatures(from, weightPerFeature, occurrencePerFeature, refWidth, refHeight);
+		explainImages[i] = img;
 
 		from += nrOfFeatures;
 		i++;

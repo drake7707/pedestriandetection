@@ -54,11 +54,11 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -1081,28 +1081,31 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 90, false))); }));
 	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, true))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HDD"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, false,patchSize, 20, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, false, patchSize, 20, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name, refWidth, refHeight))); }));
 
-	
+
 	KITTIDataSet ds(kittiDatasetPath);
 	auto datasetimgs = ds.getImagesForNumber(0);
-		
+
 
 	std::set<std::string> set;
 
-	set = { "HDD", "HOG(RGB)", "LBP(RGB)" };
+	set = { "HDD", "HOG(RGB)" };
 	auto fset = tester.getFeatureSet(set);
-	std::vector<cv::Mat> imgs(set.size(), cv::Mat(cv::Size(refWidth, refHeight*4), CV_32FC1, cv::Scalar(0)));
-	
+	std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
+
+	for (int i = 0; i < set.size(); i++) {
+		imgs.push_back(cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
+	}
 	int rounds = 4;
 	for (int i = 0; i < rounds; i++)
 	{
-		ModelEvaluator model(std::string("HDD+HOG(RGB)+LBP(RGB)"));
-		model.loadModel(std::string("models\\HDD+HOG(RGB)+LBP(RGB) round " + std::to_string(i) + ".xml"));
-		
+		ModelEvaluator model(std::string("HDD+HOG(RGB)"));
+		model.loadModel(std::string("models\\HDD+HOG(RGB) round " + std::to_string(i) + ".xml"));
+
 		cv::resize(datasetimgs[0], datasetimgs[0], cv::Size(refWidth, refHeight));
 		cv::resize(datasetimgs[1], datasetimgs[1], cv::Size(refWidth, refHeight));
 
@@ -1110,17 +1113,26 @@ int main()
 
 		auto cur = model.explainModel(fset, refWidth, refHeight);
 
-		for (int j = 0; j < cur.size(); j++)
-			cur[j].copyTo(imgs[j](cv::Rect(0, i*refHeight, refWidth, refHeight)));
+		for (int j = 0; j < cur.size(); j++) {
+			cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
+
+			cv::Mat& dst = imgs[j](cv::Rect(0, i*refHeight, refWidth, refHeight));
+			cur[j].copyTo(dst);
+
+		//	cv::imshow("Test" + std::to_string(j), cur[j]);
+		//	cv::waitKey(0);
+		}
 	}
 
 
 	auto it = set.begin();
 	for (int i = 0; i < imgs.size(); i++) {
 		cv::Mat img;
+	
 		imgs[i].convertTo(img, CV_8UC1, 255);
-		
-		cv::imshow("explain_" + *it, imgs[i]*255);
+
+
+		cv::imshow("explain_" + *it, img);
 		it++;
 	}
 	cv::waitKey(0);

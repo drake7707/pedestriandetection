@@ -73,7 +73,7 @@ namespace hog {
 		std::function<void(int, int, int, int)> func = [&](int featureIndex, int patchX, int patchY, int binIndex) -> void {
 			int x = patchX * patchSize;
 			int y = patchY * patchSize;
-			double angle = 1.0 * binIndex / binSize * (full360 ? 2 * CV_PI : CV_PI) + CV_PI / 2;
+			double angle = 1.0 * binIndex / binSize * (full360 ? 2 * CV_PI : CV_PI);// +CV_PI / 2;
 			double weight = weightPerFeature[offset + featureIndex];
 			if (weight > 0) {
 				int cx = x + patchSize / 2;
@@ -93,9 +93,81 @@ namespace hog {
 			for (int y = 0; y < nrOfCellsHeight - 1; y++) {
 				for (int x = 0; x < nrOfCellsWidth - 1; x++) {
 
-					std::vector<int> sorted;
+					//std::vector<int> sorted;
 
-					for (int k = 0; k < binSize; k++)
+					float max = std::numeric_limits<float>().min();
+					int maxK = -1;
+
+					maxK = -1;
+					max = std::numeric_limits<float>().min();
+					for (int k = 0; k < binSize; k++) {
+						float weight = weightPerFeature[offset + idx + k];
+						if (weight > max) {
+							max = weight;
+							maxK = k;
+						}
+					}
+					for (int k = 0; k < binSize; k++) {
+
+						if (maxK == k)
+							func(idx, x, y, k);
+						idx++;
+					}
+
+
+					maxK = -1;
+					max = std::numeric_limits<float>().min();
+					for (int k = 0; k < binSize; k++) {
+						float weight = weightPerFeature[offset + idx + k];
+						if (weight > max) {
+							max = weight;
+							maxK = k;
+						}
+					}
+					for (int k = 0; k < binSize; k++) {
+
+						if (maxK == k)
+							func(idx, x+1, y, k);
+						idx++;
+					}
+
+					maxK = -1;
+					max = std::numeric_limits<float>().min();
+					for (int k = 0; k < binSize; k++) {
+						float weight = weightPerFeature[offset + idx + k];
+						if (weight > max) {
+							max = weight;
+							maxK = k;
+						}
+					}
+					for (int k = 0; k < binSize; k++) {
+
+						if (maxK == k)
+							func(idx, x, y+1, k);
+						idx++;
+					}
+
+
+
+					maxK = -1;
+					max = std::numeric_limits<float>().min();
+					for (int k = 0; k < binSize; k++) {
+						float weight = weightPerFeature[offset + idx + k];
+						if (weight > max) {
+							max = weight;
+							maxK = k;
+						}
+					}
+					for (int k = 0; k < binSize; k++) {
+
+						if (maxK == k)
+							func(idx, x + 1, y+1, k);
+						idx++;
+					}
+
+
+
+					/*for (int k = 0; k < binSize; k++)
 						sorted.push_back(k);
 					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
 					for (int k = 0; k < binSize; k++) {
@@ -133,7 +205,7 @@ namespace hog {
 						idx++;
 					}
 					sorted.clear();
-
+					*/
 				}
 			}
 		}
@@ -147,7 +219,7 @@ namespace hog {
 						sorted.push_back(k);
 					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
 					for (int k = 0; k < binSize; k++) {
-						func(idx, x + 1, y, sorted[k]);
+						func(idx, x, y, sorted[k]);
 						idx++;
 					}
 					sorted.clear();

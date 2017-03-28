@@ -282,7 +282,7 @@ void testClassifier(FeatureTester& tester) {
 	EvaluatorCascade cascade(std::string("Test"));
 	cascade.load(std::string("models\\HDD+HOG(RGB)_cascade.xml"), std::string("models"));
 
-	double valueShift = -9.4;
+	double valueShift = -6;
 
 
 	//ModelEvaluator modelFinal(std::string("Test"));
@@ -382,7 +382,7 @@ void testClassifier(FeatureTester& tester) {
 
 
 				nrOfWindowsEvaluated++;
-			}, windowSizes, 16);
+			}, windowSizes, 8);
 
 		});
 
@@ -1087,7 +1087,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name))); }));
 
 
-	//testClassifier(tester);
+	testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
@@ -1197,7 +1197,7 @@ int main()
 	tester.nrOfConcurrentJobs = 1;
 
 	set = { "HOG(RGB)", "HDD" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 8);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 7);
 	tester.runJobs();
 	//
 	//set = { "HOG(RGB)", "RAW(RGB)" };

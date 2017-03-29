@@ -54,6 +54,8 @@
 #include "KITTIDataSet.h"
 #include "DataSet.h"
 
+#include "JetHeatMap.h"
+
 //std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
 //std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
@@ -1041,6 +1043,142 @@ void generateFinalForEachRound(FeatureTester* tester) {
 	}
 }
 
+
+cv::Mat toHeatMap(cv::Mat& input) {
+	cv::Mat heatmap(input.rows, input.cols, CV_8UC3, cv::Scalar(0, 0, 0));
+	for (int j = 0; j < input.rows; j++)
+	{
+		for (int i = 0; i < input.cols; i++)
+		{
+			// 0 - 1 range to -1 - 1
+			float val = input.at<float>(j, i) * 2 - 1;
+			heatmap.at<Vec3b>(j, i) = cv::Vec3b(heatmap::blue(val) * 255, heatmap::green(val) * 255, heatmap::red(val) * 255);
+		}
+	}
+	return heatmap;
+}
+
+
+void explainModel(FeatureTester* tester) {
+	KITTIDataSet ds(kittiDatasetPath);
+	std::vector<DataSetLabel> labels = ds.getLabels();
+
+
+
+	std::set<std::string> set;
+	set = { "HDD", "HOG(RGB)" };
+	std::string filenamePrefix = std::string("HDD+HOG(RGB)");
+	auto fset = tester->getFeatureSet(set);
+
+
+	EvaluatorCascade cascade(filenamePrefix);
+	cascade.load(std::string("models\\" + filenamePrefix + "_cascade.xml"), std::string("models"));
+
+
+
+	std::vector<int> classifierHits(cascade.size(), 0);
+
+	int nrOfImagesEvaluated = 0;
+
+	//std::mutex lock;
+	//ds.iterateDataSetWithSlidingWindow(windowSizes, 16, refWidth, refHeight,
+	//	[&](int imgNr) -> bool { return imgNr % 75 == 0; },
+	//	[&](int imgNr) -> void {
+	//	// image has started
+	//},
+	//	[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
+
+	//	if (idx % 100 == 0)
+	//		ProgressWindow::getInstance()->updateStatus(std::string(filenamePrefix), 1.0 * nrOfImagesEvaluated / ds.getNrOfImages(), std::string("Evaluating with sliding window (") + std::to_string(nrOfImagesEvaluated) + "/" + std::to_string(ds.getNrOfImages()) + ")");
+
+	//	FeatureVector v = fset->getFeatures(rgb, depth);
+
+	//	int classifierHit;
+	//	cascade.evaluateCascadeFeatures(v, &classifierHit);
+
+	//	lock.lock();
+	//	classifierHits[classifierHit]++;
+
+	//	lock.unlock();
+	//}, [&](int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositives) -> void {
+	//	// end of image
+	//	lock.lock();
+	//	nrOfImagesEvaluated++;
+	//	lock.unlock();
+	//}, 6);
+
+	classifierHits = { 376310, 16947, 14280, 12743, 10857, 11272, 42062 };
+
+	int classifierHitSum = 0;
+	for (auto val : classifierHits) classifierHitSum += val;
+
+	for (int i = 0; i < classifierHits.size(); i++) {
+		std::cout << "Hits on classifier " << i << ": " << classifierHits[i] << std::endl;
+	}
+
+
+
+	std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
+	for (int i = 0; i < set.size(); i++)
+		imgs.push_back(cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
+
+
+	std::vector<cv::Mat> totalImgs;
+	for (int i = 0; i < set.size(); i++)
+		totalImgs.push_back(cv::Mat(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
+
+
+	int rounds = 4;
+	for (int i = 0; i < rounds; i++)
+	{
+		ModelEvaluator model(filenamePrefix);
+		model.loadModel(std::string("models\\" + filenamePrefix + " round " + std::to_string(i) + ".xml"));
+
+
+		auto cur = model.explainModel(fset, refWidth, refHeight);
+
+		for (int j = 0; j < cur.size(); j++) {
+
+			totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
+
+			cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
+
+			cv::Mat& dst = imgs[j](cv::Rect(0, i*refHeight, refWidth, refHeight));
+			cur[j].copyTo(dst);
+
+
+
+			//	cv::imshow("Test" + std::to_string(j), toHeatMap(cur[j]));
+			//	cv::waitKey(0);
+		}
+	}
+
+
+	auto it = set.begin();
+	for (int i = 0; i < imgs.size(); i++) {
+		cv::Mat img;
+
+		img = imgs[i];
+		cv::normalize(img, img, 0, 1, cv::NormTypes::NORM_MINMAX);
+		//imgs[i].convertTo(img, CV_8UC1, 255);
+
+		cv::imshow("explaingray_" + *it, img);
+		img = toHeatMap(img);
+
+
+		cv::imshow("explain_" + *it, img);
+
+
+		cv::Mat totalimage = totalImgs[i];
+		cv::normalize(totalimage, totalimage, 0, 1, cv::NormTypes::NORM_MINMAX);
+		cv::imshow("explaintotal_" + *it, toHeatMap(totalimage));
+
+
+		it++;
+	}
+	cv::waitKey(0);
+}
+
 int main()
 {
 
@@ -1087,62 +1225,14 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name, refWidth, refHeight))); }));
 
 
-	KITTIDataSet ds(kittiDatasetPath);
-	auto datasetimgs = ds.getImagesForNumber(0);
 
-
-	std::set<std::string> set;
-
-	set = { "HDD", "HOG(RGB)" };
-	auto fset = tester.getFeatureSet(set);
-	std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
-
-	for (int i = 0; i < set.size(); i++) {
-		imgs.push_back(cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
-	}
-	int rounds = 4;
-	for (int i = 0; i < rounds; i++)
-	{
-		ModelEvaluator model(std::string("HDD+HOG(RGB)"));
-		model.loadModel(std::string("models\\HDD+HOG(RGB) round " + std::to_string(i) + ".xml"));
-
-		cv::resize(datasetimgs[0], datasetimgs[0], cv::Size(refWidth, refHeight));
-		cv::resize(datasetimgs[1], datasetimgs[1], cv::Size(refWidth, refHeight));
-
-		//FeatureVector v = fset->getFeatures(datasetimgs[0], datasetimgs[1]);
-
-		auto cur = model.explainModel(fset, refWidth, refHeight);
-
-		for (int j = 0; j < cur.size(); j++) {
-			//cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
-
-			cv::Mat& dst = imgs[j](cv::Rect(0, i*refHeight, refWidth, refHeight));
-			cur[j].copyTo(dst);
-
-			//	cv::imshow("Test" + std::to_string(j), cur[j]);
-			//	cv::waitKey(0);
-		}
-	}
-
-
-	auto it = set.begin();
-	for (int i = 0; i < imgs.size(); i++) {
-		cv::Mat img;
-
-		img = imgs[i];
-		cv::normalize(img,img, 0, 1, cv::NormTypes::NORM_MINMAX);
-		//imgs[i].convertTo(img, CV_8UC1, 255);
-
-
-		cv::imshow("explain_" + *it, img);
-		it++;
-	}
-	cv::waitKey(0);
 	//testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
+
+	explainModel(&tester);
 
 	//generateFinalForEachRound(&tester);
 
@@ -1247,6 +1337,7 @@ int main()
 
 	tester.nrOfConcurrentJobs = 1;
 
+	std::set<std::string> set;
 	set = { "HOG(RGB)", "HDD" };
 	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 8);
 	tester.runJobs();
@@ -1402,181 +1493,3 @@ int main()
 	getchar();
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-using namespace cv;
-using namespace std;
-
-
-Mat createSegmentationDisplay(Mat & segments, int numOfSegments, Mat & image)
-{
-	//create a new image
-	Mat wshed(segments.size(), CV_8UC3);
-
-	//Create color tab for coloring the segments
-	vector<Vec3b> colorTab;
-	for (int i = 0; i < numOfSegments; i++)
-	{
-		int b = theRNG().uniform(0, 255);
-		int g = theRNG().uniform(0, 255);
-		int r = theRNG().uniform(0, 255);
-
-		colorTab.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
-	}
-
-	//assign different color to different segments
-	for (int i = 0; i < segments.rows; i++)
-	{
-		for (int j = 0; j < segments.cols; j++)
-		{
-			int index = segments.at<int>(i, j);
-			if (index == -1)
-				wshed.at<Vec3b>(i, j) = Vec3b(255, 255, 255);
-			else if (index <= 0 || index > numOfSegments)
-				wshed.at<Vec3b>(i, j) = Vec3b(0, 0, 0);
-			else
-				wshed.at<Vec3b>(i, j) = colorTab[index - 1];
-		}
-	}
-
-	//If the original image available then merge with the colors of segments
-	if (image.dims > 0)
-		wshed = wshed*0.5 + image*0.5;
-
-	return wshed;
-}
-
-
-/**
-* This is an example method showing how to use this implementation.
-*
-* @param input The original image.
-* @return wshedWithImage A merged image of the original and the segments.
-*/
-Mat watershedWithMarkers(Mat input) {
-
-	// Change the background from white to black, since that will help later to extract
-	// better results during the use of Distance Transform
-	for (int x = 0; x < input.rows; x++) {
-		for (int y = 0; y < input.cols; y++) {
-			if (input.at<Vec3b>(x, y) == Vec3b(255, 255, 255)) {
-				input.at<Vec3b>(x, y)[0] = 0;
-				input.at<Vec3b>(x, y)[1] = 0;
-				input.at<Vec3b>(x, y)[2] = 0;
-			}
-		}
-	}
-	// Show output image
-	//imshow("Black Background Image", input);
-
-	// Create a kernel that we will use for accuting/sharpening our image
-	Mat kernel = (Mat_<float>(3, 3) <<
-		1, 1, 1,
-		1, -8, 1,
-		1, 1, 1); // an approximation of second derivative, a quite strong kernel
-
-				  // do the laplacian filtering as it is
-				  // well, we need to convert everything in something more deeper then CV_8U
-				  // because the kernel has some negative values,
-				  // and we can expect in general to have a Laplacian image with negative values
-				  // BUT a 8bits unsigned int (the one we are working with) can contain values from 0 to 255
-				  // so the possible negative number will be truncated
-	Mat imgLaplacian;
-	Mat sharp = input; // copy source image to another temporary one
-	filter2D(sharp, imgLaplacian, CV_32F, kernel);
-	input.convertTo(sharp, CV_32F);
-	Mat imgResult = sharp - imgLaplacian;
-	// convert back to 8bits gray scale
-	imgResult.convertTo(imgResult, CV_8UC3);
-	imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
-	// imshow( "Laplace Filtered Image", imgLaplacian );
-	//imshow( "New Sharped Image", imgResult );
-
-	input = imgResult; // copy back
-					   // Create binary image from source image
-	Mat bw;
-	cvtColor(input, bw, CV_BGR2GRAY);
-	threshold(bw, bw, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
-	//imshow("Binary Image", bw);
-
-	// Perform the distance transform algorithm
-	Mat dist;
-	distanceTransform(bw, dist, CV_DIST_L2, 3);
-	// Normalize the distance image for range = {0.0, 1.0}
-	// so we can visualize and threshold it
-	normalize(dist, dist, 0, 1., NORM_MINMAX);
-	//imshow("Distance Transform Image", dist);
-
-	// Threshold to obtain the peaks
-	// This will be the markers for the foreground objects
-	threshold(dist, dist, .4, 1., CV_THRESH_BINARY);
-	// Dilate a bit the dist image
-	Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
-	dilate(dist, dist, kernel1);
-	//imshow("Peaks", dist);
-
-	// Create the CV_8U version of the distance image
-	// It is needed for findContours()
-	Mat dist_8u;
-	dist.convertTo(dist_8u, CV_8U);
-
-	// Find total markers
-	vector<vector<Point> > contours;
-	findContours(dist_8u, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-
-	// Create the marker image for the watershed algorithm
-	Mat markers = Mat::zeros(dist.size(), CV_32SC1);
-
-	// Draw the foreground markers
-	for (size_t i = 0; i < contours.size(); i++)
-		drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i) + 1), -1);
-
-	// Draw the background marker
-	circle(markers, Point(5, 5), 3, CV_RGB(255, 255, 255), -1);
-	//imshow("Markers", markers*10000);
-
-	// Perform the watershed algorithm
-	watershed(input, markers);
-	Mat mark = Mat::zeros(markers.size(), CV_8UC1);
-	markers.convertTo(mark, CV_8UC1);
-	bitwise_not(mark, mark);
-	//imshow("Markers_v2", mark); // uncomment this if you want to see how the mark image looks like at that point
-
-	int numOfSegments = contours.size();
-	Mat wshed = createSegmentationDisplay(markers, numOfSegments, input);
-
-	return wshed;
-}
-
-
-/*
-
-
-
-*/

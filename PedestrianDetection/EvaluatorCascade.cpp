@@ -4,6 +4,7 @@
 EvaluatorCascade::EvaluatorCascade(std::string& name)
 	: IEvaluator(name)
 {
+	resetClassifierHitCount();
 }
 
 
@@ -11,11 +12,18 @@ EvaluatorCascade::~EvaluatorCascade()
 {
 }
 
+
 double EvaluatorCascade::evaluateFeatures(FeatureVector& v) const {
+	int classifierIndex;
+	return evaluateCascadeFeatures(v, &classifierIndex);
+}
+
+double EvaluatorCascade::evaluateCascadeFeatures(FeatureVector& v, int* classifierIndex) const {
 
 	double result;
 	for (int i = 0; i < cascade.size(); i++)
 	{
+		*classifierIndex = i;
 		result = cascade[i].model.evaluateFeatures(v);
 		int resultClass = (result + cascade[i].valueShift) > 0 ? 1 : -1;
 
@@ -24,7 +32,7 @@ double EvaluatorCascade::evaluateFeatures(FeatureVector& v) const {
 			return result + cascade[i].valueShift;
 		}
 	}
-	return result +cascade[cascade.size() - 1].valueShift;
+	return result + cascade[cascade.size() - 1].valueShift;
 }
 
 void EvaluatorCascade::updateLastModelValueShift(double valueShift) {
@@ -34,11 +42,11 @@ void EvaluatorCascade::updateLastModelValueShift(double valueShift) {
 
 
 void EvaluatorCascade::save(std::string& path) const {
-	
+
 	cv::FileStorage fs(path, cv::FileStorage::WRITE);
 
 	fs << "trainingRound" << trainingRound;
-	
+
 	std::vector<std::string> names;
 	for (auto& c : cascade)
 		names.push_back(c.model.getName());
@@ -46,11 +54,11 @@ void EvaluatorCascade::save(std::string& path) const {
 	std::vector<float> valueShifts;
 	for (auto& c : cascade)
 		valueShifts.push_back(c.valueShift);
-	
+
 	fs << "name_count" << (int)names.size();
 	for (int i = 0; i < names.size(); i++)
 		fs << ("name_" + std::to_string(i)) << names[i];
-	
+
 	fs << "valueShifts" << valueShifts;
 
 	fs.release();
@@ -63,7 +71,7 @@ void EvaluatorCascade::load(std::string& path, std::string& modelsDirectory) {
 
 	cv::FileStorage fsRead(path, cv::FileStorage::READ);
 
-	
+
 	std::vector<std::string> names;
 	//fsRead["names"] >> names;
 	int nameCount;

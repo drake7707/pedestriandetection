@@ -8,7 +8,7 @@
 struct EvaluationCascadeEntry {
 
 	EvaluationCascadeEntry(ModelEvaluator& model, double valueShift)
-		:  model(model), valueShift(valueShift) {
+		: model(model), valueShift(valueShift) {
 
 	}
 
@@ -21,7 +21,7 @@ class EvaluatorCascade : public IEvaluator
 
 	std::vector<EvaluationCascadeEntry> cascade;
 
-	
+	std::vector<int> classifierHitCount;
 
 public:
 
@@ -32,6 +32,7 @@ public:
 
 	void addModelEvaluator(ModelEvaluator& model, double valueShift) {
 		cascade.push_back(EvaluationCascadeEntry(model, valueShift));
+		resetClassifierHitCount();
 	}
 
 	std::vector<EvaluationCascadeEntry> getEntries() const {
@@ -39,10 +40,21 @@ public:
 	}
 
 	virtual double evaluateFeatures(FeatureVector& v) const;
+	double evaluateCascadeFeatures(FeatureVector& v, int* classifierIndex) const;
+
+
+	void resetClassifierHitCount() {
+		classifierHitCount = std::vector<int>(cascade.size(), 0);
+	}
 
 	void updateLastModelValueShift(double valueShift);
 
 	void save(std::string& path) const;
 	void load(std::string& path, std::string& modelsDirectory);
+
+
+	int size() const {
+		return cascade.size();
+	}
 };
 

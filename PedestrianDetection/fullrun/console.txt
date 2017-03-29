@@ -29209,3 +29209,30 @@ Image: 141 Number of windows evaluated: 26004 (skipped 4825) and 0 positive ( 0%
 Image: 808 Number of windows evaluated: 26004 (skipped 9010) and 6 positive (0.0353066%) 30442ms (value shift: -6)
 Image: 644 Number of windows evaluated: 26004 (skipped 5269) and 1 positive (0.00482276%) 36532ms (value shift: -6)
 0.81511
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 7
+Hits on classifier 0: 376310
+Hits on classifier 1: 16947
+Hits on classifier 2: 14280
+Hits on classifier 3: 12743
+Hits on classifier 4: 10857
+Hits on classifier 5: 11272
+Hits on classifier 6: 42062
+Hits on classifier 0: 376310
+Hits on classifier 1: 16947
+Hits on classifier 2: 14280
+Hits on classifier 3: 12743
+Hits on classifier 4: 10857
+Hits on classifier 5: 11272
+Hits on classifier 6: 42062
+Hits on classifier 0: 376310
+Hits on classifier 1: 16947
+Hits on classifier 2: 14280
+Hits on classifier 3: 12743
+Hits on classifier 4: 10857
+Hits on classifier 5: 11272
+Hits on classifier 6: 42062
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 7

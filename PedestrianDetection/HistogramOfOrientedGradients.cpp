@@ -58,7 +58,6 @@ namespace hog {
 			return (nrOfCellsHeight) * (nrOfCellsWidth)* binSize;
 	}
 
-
 	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize) {
 
 		int nrOfCellsWidth = imgWidth / patchSize;
@@ -69,25 +68,7 @@ namespace hog {
 
 		cv::Mat explanation(cv::Size(imgWidth, imgHeight), CV_32FC1, cv::Scalar(0));
 
-
-		std::function<void(int, int, int, int)> func = [&](int featureIndex, int patchX, int patchY, int binIndex) -> void {
-			int x = patchX * patchSize;
-			int y = patchY * patchSize;
-			double angle = 1.0 * binIndex / binSize * (full360 ? 2 * CV_PI : CV_PI);// +CV_PI / 2;
-			double weight = occurrencePerFeature[offset + featureIndex];
-			if (weight > 0) {
-				int cx = x + patchSize / 2;
-				int cy = y + patchSize / 2;
-
-				double radius = patchSize / 2;
-				double vx = cos(angle) * radius;
-				double vy = sin(angle) * radius;
-
-				cv::line(explanation, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(weight), 1);
-			}
-		};
-
-
+		auto histogram = std::vector<std::vector<float>>(nrOfCellsHeight, std::vector<float>(nrOfCellsWidth, 0));
 		int idx = 0;
 		if (l2normalize) {
 			for (int y = 0; y < nrOfCellsHeight - 1; y++) {
@@ -95,117 +76,29 @@ namespace hog {
 
 					//std::vector<int> sorted;
 
-					float max = std::numeric_limits<float>().min();
-					int maxK = -1;
-
-					maxK = -1;
-					max = std::numeric_limits<float>().min();
-					for (int k = 0; k < binSize; k++) {
-						float weight = occurrencePerFeature[offset + idx + k];
-						if (weight > max) {
-							max = weight;
-							maxK = k;
-						}
-					}
 					for (int k = 0; k < binSize; k++) {
 
-					//	if (maxK == k)
-							func(idx, x, y, k);
+						histogram[y][x] += occurrencePerFeature[offset + idx];
 						idx++;
 					}
 
-
-					maxK = -1;
-					max = std::numeric_limits<float>().min();
-					for (int k = 0; k < binSize; k++) {
-						float weight = occurrencePerFeature[offset + idx + k];
-						if (weight > max) {
-							max = weight;
-							maxK = k;
-						}
-					}
 					for (int k = 0; k < binSize; k++) {
 
-					//	if (maxK == k)
-							func(idx, x+1, y, k);
+						histogram[y][x+1] += occurrencePerFeature[offset + idx];
 						idx++;
 					}
 
-					maxK = -1;
-					max = std::numeric_limits<float>().min();
-					for (int k = 0; k < binSize; k++) {
-						float weight = occurrencePerFeature[offset + idx + k];
-						if (weight > max) {
-							max = weight;
-							maxK = k;
-						}
-					}
 					for (int k = 0; k < binSize; k++) {
 
-					//	if (maxK == k)
-							func(idx, x, y+1, k);
+						histogram[y+1][x] += occurrencePerFeature[offset + idx];
 						idx++;
 					}
 
-
-
-					maxK = -1;
-					max = std::numeric_limits<float>().min();
-					for (int k = 0; k < binSize; k++) {
-						float weight = occurrencePerFeature[offset + idx + k];
-						if (weight > max) {
-							max = weight;
-							maxK = k;
-						}
-					}
 					for (int k = 0; k < binSize; k++) {
 
-					//	if (maxK == k)
-							func(idx, x + 1, y+1, k);
+						histogram[y+1][x+1] += occurrencePerFeature[offset + idx];
 						idx++;
 					}
-
-
-
-					/*for (int k = 0; k < binSize; k++)
-						sorted.push_back(k);
-					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
-					for (int k = 0; k < binSize; k++) {
-						func(idx, x, y, sorted[k]);
-						idx++;
-					}
-					sorted.clear();
-
-
-					for (int k = 0; k < binSize; k++)
-						sorted.push_back(k);
-					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
-					for (int k = 0; k < binSize; k++) {
-						func(idx, x + 1, y, sorted[k]);
-						idx++;
-					}
-					sorted.clear();
-
-
-					for (int k = 0; k < binSize; k++)
-						sorted.push_back(k);
-					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
-					for (int k = 0; k < binSize; k++) {
-						func(idx, x , y+1, sorted[k]);
-						idx++;
-					}
-					sorted.clear();
-
-
-					for (int k = 0; k < binSize; k++)
-						sorted.push_back(k);
-					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
-					for (int k = 0; k < binSize; k++) {
-						func(idx, x + 1, y+1, sorted[k]);
-						idx++;
-					}
-					sorted.clear();
-					*/
 				}
 			}
 		}
@@ -213,21 +106,199 @@ namespace hog {
 			for (int y = 0; y < nrOfCellsHeight; y++) {
 				for (int x = 0; x < nrOfCellsWidth; x++) {
 
-					std::vector<int> sorted;
-
-					for (int k = 0; k < binSize; k++)
-						sorted.push_back(k);
-					std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
 					for (int k = 0; k < binSize; k++) {
-						func(idx, x, y, sorted[k]);
+						histogram[y][x] += occurrencePerFeature[offset + idx];
 						idx++;
 					}
-					sorted.clear();
+
 				}
+			}
+		}
+
+
+		for (int y = 0; y < nrOfCellsHeight; y++)
+		{
+			for (int x = 0; x < nrOfCellsWidth; x++)
+			{
+				int offsetX = x * patchSize;
+				int offsetY = y * patchSize;
+				cv::rectangle(explanation, cv::Rect(offsetX, offsetY, patchSize, patchSize), cv::Scalar(histogram[y][x]), -1);
 			}
 		}
 		return explanation;
 	}
+
+
+
+	//cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize) {
+
+	//	int nrOfCellsWidth = imgWidth / patchSize;
+	//	int nrOfCellsHeight = imgHeight / patchSize;
+
+	//	int nrOfFeatures = getNumberOfFeatures(imgWidth, imgHeight, patchSize, binSize, l2normalize);
+	//	int to = offset + nrOfFeatures;
+
+	//	cv::Mat explanation(cv::Size(imgWidth, imgHeight), CV_32FC1, cv::Scalar(0));
+
+
+	//	std::function<void(int, int, int, int)> func = [&](int featureIndex, int patchX, int patchY, int binIndex) -> void {
+	//		int x = patchX * patchSize;
+	//		int y = patchY * patchSize;
+	//		double angle = 1.0 * binIndex / binSize * (full360 ? 2 * CV_PI : CV_PI);// +CV_PI / 2;
+	//		double weight = occurrencePerFeature[offset + featureIndex];
+	//		if (weight > 0) {
+	//			int cx = x + patchSize / 2;
+	//			int cy = y + patchSize / 2;
+
+	//			double radius = patchSize / 2;
+	//			double vx = cos(angle) * radius;
+	//			double vy = sin(angle) * radius;
+
+	//			cv::line(explanation, cv::Point(floor(cx - vx), floor(cy - vy)), cv::Point(floor(cx + vx), floor(cy + vy)), cv::Scalar(weight), 1);
+	//		}
+	//	};
+
+
+	//	int idx = 0;
+	//	if (l2normalize) {
+	//		for (int y = 0; y < nrOfCellsHeight - 1; y++) {
+	//			for (int x = 0; x < nrOfCellsWidth - 1; x++) {
+
+	//				//std::vector<int> sorted;
+
+	//				float max = std::numeric_limits<float>().min();
+	//				int maxK = -1;
+
+	//				maxK = -1;
+	//				max = std::numeric_limits<float>().min();
+	//				for (int k = 0; k < binSize; k++) {
+	//					float weight = occurrencePerFeature[offset + idx + k];
+	//					if (weight > max) {
+	//						max = weight;
+	//						maxK = k;
+	//					}
+	//				}
+	//				for (int k = 0; k < binSize; k++) {
+
+	//				//	if (maxK == k)
+	//						func(idx, x, y, k);
+	//					idx++;
+	//				}
+
+
+	//				maxK = -1;
+	//				max = std::numeric_limits<float>().min();
+	//				for (int k = 0; k < binSize; k++) {
+	//					float weight = occurrencePerFeature[offset + idx + k];
+	//					if (weight > max) {
+	//						max = weight;
+	//						maxK = k;
+	//					}
+	//				}
+	//				for (int k = 0; k < binSize; k++) {
+
+	//				//	if (maxK == k)
+	//						func(idx, x+1, y, k);
+	//					idx++;
+	//				}
+
+	//				maxK = -1;
+	//				max = std::numeric_limits<float>().min();
+	//				for (int k = 0; k < binSize; k++) {
+	//					float weight = occurrencePerFeature[offset + idx + k];
+	//					if (weight > max) {
+	//						max = weight;
+	//						maxK = k;
+	//					}
+	//				}
+	//				for (int k = 0; k < binSize; k++) {
+
+	//				//	if (maxK == k)
+	//						func(idx, x, y+1, k);
+	//					idx++;
+	//				}
+
+
+
+	//				maxK = -1;
+	//				max = std::numeric_limits<float>().min();
+	//				for (int k = 0; k < binSize; k++) {
+	//					float weight = occurrencePerFeature[offset + idx + k];
+	//					if (weight > max) {
+	//						max = weight;
+	//						maxK = k;
+	//					}
+	//				}
+	//				for (int k = 0; k < binSize; k++) {
+
+	//				//	if (maxK == k)
+	//						func(idx, x + 1, y+1, k);
+	//					idx++;
+	//				}
+
+
+
+	//				/*for (int k = 0; k < binSize; k++)
+	//					sorted.push_back(k);
+	//				std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+	//				for (int k = 0; k < binSize; k++) {
+	//					func(idx, x, y, sorted[k]);
+	//					idx++;
+	//				}
+	//				sorted.clear();
+
+
+	//				for (int k = 0; k < binSize; k++)
+	//					sorted.push_back(k);
+	//				std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+	//				for (int k = 0; k < binSize; k++) {
+	//					func(idx, x + 1, y, sorted[k]);
+	//					idx++;
+	//				}
+	//				sorted.clear();
+
+
+	//				for (int k = 0; k < binSize; k++)
+	//					sorted.push_back(k);
+	//				std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+	//				for (int k = 0; k < binSize; k++) {
+	//					func(idx, x , y+1, sorted[k]);
+	//					idx++;
+	//				}
+	//				sorted.clear();
+
+
+	//				for (int k = 0; k < binSize; k++)
+	//					sorted.push_back(k);
+	//				std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+	//				for (int k = 0; k < binSize; k++) {
+	//					func(idx, x + 1, y+1, sorted[k]);
+	//					idx++;
+	//				}
+	//				sorted.clear();
+	//				*/
+	//			}
+	//		}
+	//	}
+	//	else {
+	//		for (int y = 0; y < nrOfCellsHeight; y++) {
+	//			for (int x = 0; x < nrOfCellsWidth; x++) {
+
+	//				std::vector<int> sorted;
+
+	//				for (int k = 0; k < binSize; k++)
+	//					sorted.push_back(k);
+	//				std::sort(sorted.begin(), sorted.end(), [&](int a, int b) -> bool { return weightPerFeature[offset + idx + a] < weightPerFeature[offset + idx + b];  });
+	//				for (int k = 0; k < binSize; k++) {
+	//					func(idx, x, y, sorted[k]);
+	//					idx++;
+	//				}
+	//				sorted.clear();
+	//			}
+	//		}
+	//	}
+	//	return explanation;
+	//}
 
 
 	HistogramResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {

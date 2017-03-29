@@ -182,6 +182,7 @@
     <ClInclude Include="HONVFeatureCreator.h" />
     <ClInclude Include="IEvaluator.h" />
     <ClInclude Include="IFeatureCreator.h" />
+    <ClInclude Include="JetHeatMap.h" />
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="LBPFeatureCreator.h" />
     <ClInclude Include="LocalBinaryPatterns.h" />
@@ -223,6 +224,7 @@
     <ClCompile Include="HONVFeatureCreator.cpp" />
     <ClCompile Include="IEvaluator.cpp" />
     <ClCompile Include="IFeatureCreator.cpp" />
+    <ClCompile Include="JetHeatMap.cpp" />
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="LBPFeatureCreator.cpp" />
     <ClCompile Include="LocalBinaryPatterns.cpp" />

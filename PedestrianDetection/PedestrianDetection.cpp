@@ -1114,13 +1114,13 @@ int main()
 		auto cur = model.explainModel(fset, refWidth, refHeight);
 
 		for (int j = 0; j < cur.size(); j++) {
-			cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
+			//cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
 
 			cv::Mat& dst = imgs[j](cv::Rect(0, i*refHeight, refWidth, refHeight));
 			cur[j].copyTo(dst);
 
-		//	cv::imshow("Test" + std::to_string(j), cur[j]);
-		//	cv::waitKey(0);
+			//	cv::imshow("Test" + std::to_string(j), cur[j]);
+			//	cv::waitKey(0);
 		}
 	}
 
@@ -1128,8 +1128,10 @@ int main()
 	auto it = set.begin();
 	for (int i = 0; i < imgs.size(); i++) {
 		cv::Mat img;
-	
-		imgs[i].convertTo(img, CV_8UC1, 255);
+
+		img = imgs[i];
+		cv::normalize(img,img, 0, 1, cv::NormTypes::NORM_MINMAX);
+		//imgs[i].convertTo(img, CV_8UC1, 255);
 
 
 		cv::imshow("explain_" + *it, img);

@@ -41,7 +41,7 @@ cv::Mat HOGHistogramVarianceFeatureCreator::explainFeatures(int offset, std::vec
 	std::function<void(int, int, int)> func = [&](int featureIndex, int patchX, int patchY) -> void {
 		int x = patchX * patchSize;
 		int y = patchY * patchSize;
-		double weight = weightPerFeature[offset + featureIndex];
+		double weight = occurrencePerFeature[offset + featureIndex];
 		cv::rectangle(explanation, cv::Rect(x, y, patchSize, patchSize), cv::Scalar(weight), -1);
 	};
 

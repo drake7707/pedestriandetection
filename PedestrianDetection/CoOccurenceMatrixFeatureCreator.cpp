@@ -2,8 +2,8 @@
 #include "CoOccurenceMatrix.h"
 
 
-CoOccurenceMatrixFeatureCreator::CoOccurenceMatrixFeatureCreator(std::string& name, int patchSize, int binSize)
-	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize)
+CoOccurenceMatrixFeatureCreator::CoOccurenceMatrixFeatureCreator(std::string& name, int patchSize, int binSize, int refWidth, int refHeight)
+	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight)
 {
 }
 
@@ -14,7 +14,10 @@ CoOccurenceMatrixFeatureCreator::~CoOccurenceMatrixFeatureCreator()
 
 
 int CoOccurenceMatrixFeatureCreator::getNumberOfFeatures() const {
-	return binSize*binSize;
+	int nrOfCellsWidth = refWidth / patchSize;
+	int nrOfCellsHeight = refHeight / patchSize;
+
+	return nrOfCellsWidth * nrOfCellsHeight * binSize*binSize;
 }
 
 FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {

@@ -1064,7 +1064,7 @@ void explainModel(FeatureTester* tester) {
 
 
 	std::set<std::string> set;
-	set = { "LBP(RGB)" };
+	set = { "CoOccurrence(RGB)" };
 
 	std::string featureSetName("");
 	for (auto& name : set) {

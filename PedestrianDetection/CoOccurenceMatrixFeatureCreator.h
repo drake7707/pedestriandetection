@@ -7,9 +7,11 @@ class CoOccurenceMatrixFeatureCreator : public IFeatureCreator
 private:
 	int patchSize = 8;
 	int binSize = 16;
+	int refWidth = 64;
+	int refHeight = 128;
 
 public:
-	CoOccurenceMatrixFeatureCreator(std::string& name, int patchSize = 8, int binSize = 16);
+	CoOccurenceMatrixFeatureCreator(std::string& name, int patchSize = 8, int binSize = 16, int refWidth = 64, int refHeight = 128);
 	virtual ~CoOccurenceMatrixFeatureCreator();
 
 	int getNumberOfFeatures() const;

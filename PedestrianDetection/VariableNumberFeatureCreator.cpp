@@ -149,6 +149,7 @@ int VariableNumberFeatureCreator::getNumberOfFeatures() const {
 cv::Mat VariableNumberFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
 	// TODO draw centroids as keypoints
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
+
 	return explanation;
 }
 

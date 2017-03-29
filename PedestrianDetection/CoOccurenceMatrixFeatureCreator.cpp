@@ -51,7 +51,40 @@ FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat
 }
 
 cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
-	//TODO
+	int nrOfCellsWidth = refWidth / patchSize;
+	int nrOfCellsHeight = refHeight / patchSize;
+
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
+
+
+	auto histogram = std::vector<std::vector<float>>(nrOfCellsHeight, std::vector<float>(nrOfCellsWidth, 0));
+
+	int idx = 0;
+	for (int y = 0; y < nrOfCellsHeight; y++)
+	{
+		for (int x = 0; x < nrOfCellsWidth; x++)
+		{
+			for (int l = 0; l < binSize; l++)
+			{
+				for (int k = 0; k < binSize; k++)
+				{
+					histogram[y][x] += occurrencePerFeature[offset + idx];
+					idx++;
+				}
+			}
+		}
+	}
+
+
+	for (int y = 0; y < nrOfCellsHeight; y++)
+	{
+		for (int x = 0; x < nrOfCellsWidth; x++)
+		{
+			int offsetX = x * patchSize;
+			int offsetY = y * patchSize;
+			cv::rectangle(explanation, cv::Rect(offsetX, offsetY, patchSize, patchSize), cv::Scalar(histogram[y][x]), -1);
+		}
+	}
+
 	return explanation;
 }

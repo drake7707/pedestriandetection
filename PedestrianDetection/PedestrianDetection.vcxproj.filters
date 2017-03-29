@@ -31,6 +31,9 @@
     <Filter Include="Resource Files\Source Files\Histogram">
       <UniqueIdentifier>{77d9d8e4-fde4-4360-958d-a0c56610e564}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Source Files\FeatureCreators\Sparse">
+      <UniqueIdentifier>{b67e6c8e-e3d4-4909-89b7-78c457c4d56e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FeatureVector.h">
@@ -191,40 +194,10 @@
     <ClCompile Include="HistogramDepthFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
-    <ClCompile Include="VariableNumberFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="SURFFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
     <ClCompile Include="HoGFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
     <ClCompile Include="HoGHistogramVarianceFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="CornerFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="ORBFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="MSDFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="SIFTFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="CenSurEFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="BRISKFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="FASTFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="HDDFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
     <ClCompile Include="LocalBinaryPatterns.cpp">
@@ -277,6 +250,36 @@
     </ClCompile>
     <ClCompile Include="JetHeatMap.cpp">
       <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BRISKFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="CenSurEFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="CornerFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="FASTFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="HDDFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="MSDFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="SIFTFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="SURFFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="ORBFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="VariableNumberFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

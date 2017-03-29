@@ -29236,3 +29236,17 @@ Hits on classifier 6: 42062
 --------------------- New console session -----------------------
 Starting job HDD+HOG(RGB)
 Started training of HDD+HOG(RGB), round 7
+Hits on classifier 0: 376310
+Hits on classifier 1: 16947
+Hits on classifier 2: 14280
+Hits on classifier 3: 12743
+Hits on classifier 4: 10857
+Hits on classifier 5: 11272
+Hits on classifier 6: 42062
+Hits on classifier 0: 376310
+Hits on classifier 1: 16947
+Hits on classifier 2: 14280
+Hits on classifier 3: 12743
+Hits on classifier 4: 10857
+Hits on classifier 5: 11272
+Hits on classifier 6: 42062

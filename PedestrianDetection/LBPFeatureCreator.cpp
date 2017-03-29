@@ -23,9 +23,9 @@ FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const
 
 	cv::Mat img;
 	if (onDepth)
-		cv::cvtColor(rgb, img, CV_BGR2GRAY);
-	else
 		cv::cvtColor(depth, img, CV_BGR2GRAY);
+	else
+		cv::cvtColor(rgb, img, CV_BGR2GRAY);
 
 	cv::Mat lbp = Algorithms::OLBP(img);
 	lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
@@ -44,6 +44,5 @@ FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const
 }
 
 cv::Mat LBPFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
-	// TODO change this to histogram
 	return hog::explainHOGFeature(offset, weightPerFeature, occurrencePerFeature, refWidth, refHeight, patchSize, binSize, false, false);
 }

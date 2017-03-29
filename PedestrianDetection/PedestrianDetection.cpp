@@ -1060,25 +1060,31 @@ cv::Mat toHeatMap(cv::Mat& input) {
 
 
 void explainModel(FeatureTester* tester) {
-	KITTIDataSet ds(kittiDatasetPath);
-	std::vector<DataSetLabel> labels = ds.getLabels();
-
+	
 
 
 	std::set<std::string> set;
-	set = { "HDD", "HOG(RGB)" };
-	std::string filenamePrefix = std::string("HDD+HOG(RGB)");
+	set = { "LBP(RGB)" };
+
+	std::string featureSetName("");
+	for (auto& name : set) {
+		if (name != *(set.begin()))
+			featureSetName += "+" + name;
+		else
+			featureSetName += name;
+	}
+
 	auto fset = tester->getFeatureSet(set);
 
-
-	EvaluatorCascade cascade(filenamePrefix);
-	cascade.load(std::string("models\\" + filenamePrefix + "_cascade.xml"), std::string("models"));
-
-
+	EvaluatorCascade cascade(featureSetName);
+	cascade.load(std::string("models\\" + featureSetName + "_cascade.xml"), std::string("models"));
 
 	std::vector<int> classifierHits(cascade.size(), 0);
 
 	int nrOfImagesEvaluated = 0;
+
+	//KITTIDataSet ds(kittiDatasetPath);
+	//std::vector<DataSetLabel> labels = ds.getLabels();
 
 	//std::mutex lock;
 	//ds.iterateDataSetWithSlidingWindow(windowSizes, 16, refWidth, refHeight,
@@ -1127,21 +1133,25 @@ void explainModel(FeatureTester* tester) {
 	for (int i = 0; i < set.size(); i++)
 		totalImgs.push_back(cv::Mat(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
 
+	cv::Mat rgb(128, 64, CV_8UC3, cv::Scalar(0));
+	cv::Mat depth(128, 64, CV_32FC1, cv::Scalar(0));
+
 
 	int rounds = 4;
 	for (int i = 0; i < rounds; i++)
 	{
-		ModelEvaluator model(filenamePrefix);
-		model.loadModel(std::string("models\\" + filenamePrefix + " round " + std::to_string(i) + ".xml"));
-
+		ModelEvaluator model(featureSetName);
+		model.loadModel(std::string("models\\" + featureSetName + " round " + std::to_string(i) + ".xml"));
+		fset->getFeatures(rgb, depth);
 
 		auto cur = model.explainModel(fset, refWidth, refHeight);
 
 		for (int j = 0; j < cur.size(); j++) {
 
+			cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
+		
 			totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
 
-			cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
 
 			cv::Mat& dst = imgs[j](cv::Rect(0, i*refHeight, refWidth, refHeight));
 			cur[j].copyTo(dst);

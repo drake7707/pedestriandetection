@@ -42,11 +42,11 @@ cv::Mat RAWRGBFeatureCreator::explainFeatures(int offset, std::vector<float>& we
 	for (int j = 0; j < refHeight; j++) {
 		for (int i = 0; i < refWidth; i++) {
 			
-			double w1 = weightPerFeature[offset + idx];
+			double w1 = occurrencePerFeature[offset + idx];
 			idx++;
-			double w2 = weightPerFeature[offset + idx];
+			double w2 = occurrencePerFeature[offset + idx];
 			idx++;
-			double w3 = weightPerFeature[offset + idx];
+			double w3 = occurrencePerFeature[offset + idx];
 			idx++;
 			
 			explanation.at<float>(j, i) = w1 + w2 + w3;

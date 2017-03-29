@@ -56,11 +56,11 @@
 
 #include "JetHeatMap.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -1044,27 +1044,15 @@ void generateFinalForEachRound(FeatureTester* tester) {
 }
 
 
-cv::Mat toHeatMap(cv::Mat& input) {
-	cv::Mat heatmap(input.rows, input.cols, CV_8UC3, cv::Scalar(0, 0, 0));
-	for (int j = 0; j < input.rows; j++)
-	{
-		for (int i = 0; i < input.cols; i++)
-		{
-			// 0 - 1 range to -1 - 1
-			float val = input.at<float>(j, i) * 2 - 1;
-			heatmap.at<Vec3b>(j, i) = cv::Vec3b(heatmap::blue(val) * 255, heatmap::green(val) * 255, heatmap::red(val) * 255);
-		}
-	}
-	return heatmap;
-}
+
 
 
 void explainModel(FeatureTester* tester) {
-	
+
 
 
 	std::set<std::string> set;
-	set = { "CoOccurrence(RGB)" };
+	set = { "S2HOG(RGB)" };
 
 	std::string featureSetName("");
 	for (auto& name : set) {
@@ -1081,52 +1069,18 @@ void explainModel(FeatureTester* tester) {
 
 	std::vector<int> classifierHits(cascade.size(), 0);
 
-	int nrOfImagesEvaluated = 0;
-
-	//KITTIDataSet ds(kittiDatasetPath);
-	//std::vector<DataSetLabel> labels = ds.getLabels();
-
-	//std::mutex lock;
-	//ds.iterateDataSetWithSlidingWindow(windowSizes, 16, refWidth, refHeight,
-	//	[&](int imgNr) -> bool { return imgNr % 75 == 0; },
-	//	[&](int imgNr) -> void {
-	//	// image has started
-	//},
-	//	[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
-
-	//	if (idx % 100 == 0)
-	//		ProgressWindow::getInstance()->updateStatus(std::string(filenamePrefix), 1.0 * nrOfImagesEvaluated / ds.getNrOfImages(), std::string("Evaluating with sliding window (") + std::to_string(nrOfImagesEvaluated) + "/" + std::to_string(ds.getNrOfImages()) + ")");
-
-	//	FeatureVector v = fset->getFeatures(rgb, depth);
-
-	//	int classifierHit;
-	//	cascade.evaluateCascadeFeatures(v, &classifierHit);
-
-	//	lock.lock();
-	//	classifierHits[classifierHit]++;
-
-	//	lock.unlock();
-	//}, [&](int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositives) -> void {
-	//	// end of image
-	//	lock.lock();
-	//	nrOfImagesEvaluated++;
-	//	lock.unlock();
-	//}, 6);
-
-	classifierHits = { 376310, 16947, 14280, 12743, 10857, 11272, 42062 };
+	classifierHits = cascade.getClassifierHitCount(); // { 376310, 16947, 14280, 12743, 10857, 11272, 42062 };
 
 	int classifierHitSum = 0;
 	for (auto val : classifierHits) classifierHitSum += val;
 
-	for (int i = 0; i < classifierHits.size(); i++) {
-		std::cout << "Hits on classifier " << i << ": " << classifierHits[i] << std::endl;
-	}
+	int rounds = cascade.size();
+	int padding = 5;
 
-
-
+	// don't initialize directly or it will point to the same data
 	std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
 	for (int i = 0; i < set.size(); i++)
-		imgs.push_back(cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
+		imgs.push_back(cv::Mat(cv::Size((refWidth + padding)*rounds + 4 * padding + refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
 
 
 	std::vector<cv::Mat> totalImgs;
@@ -1137,7 +1091,7 @@ void explainModel(FeatureTester* tester) {
 	cv::Mat depth(128, 64, CV_32FC1, cv::Scalar(0));
 
 
-	int rounds = 4;
+
 	for (int i = 0; i < rounds; i++)
 	{
 		ModelEvaluator model(featureSetName);
@@ -1149,11 +1103,11 @@ void explainModel(FeatureTester* tester) {
 		for (int j = 0; j < cur.size(); j++) {
 
 			cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
-		
+
 			totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
 
 
-			cv::Mat& dst = imgs[j](cv::Rect(0, i*refHeight, refWidth, refHeight));
+			cv::Mat& dst = imgs[j](cv::Rect(i*(refWidth + padding), 0, refWidth, refHeight));
 			cur[j].copyTo(dst);
 
 
@@ -1169,19 +1123,23 @@ void explainModel(FeatureTester* tester) {
 		cv::Mat img;
 
 		img = imgs[i];
-		cv::normalize(img, img, 0, 1, cv::NormTypes::NORM_MINMAX);
-		//imgs[i].convertTo(img, CV_8UC1, 255);
+		//	cv::normalize(img, img, 0, 1, cv::NormTypes::NORM_MINMAX);
+			//imgs[i].convertTo(img, CV_8UC1, 255);
 
 		cv::imshow("explaingray_" + *it, img);
-		img = toHeatMap(img);
-
-
-		cv::imshow("explain_" + *it, img);
+		img = heatmap::toHeatMap(img);
 
 
 		cv::Mat totalimage = totalImgs[i];
 		cv::normalize(totalimage, totalimage, 0, 1, cv::NormTypes::NORM_MINMAX);
-		cv::imshow("explaintotal_" + *it, toHeatMap(totalimage));
+		cv::Mat heatmapTotalImage = heatmap::toHeatMap(totalimage);
+		heatmapTotalImage.copyTo(img(cv::Rect(imgs[i].cols - refWidth, 0, refWidth, refHeight)));
+
+		cv::imshow("explain_" + *it, img);
+
+
+
+		cv::imshow("explaintotal_" + *it, heatmap::toHeatMap(totalimage));
 
 
 		it++;

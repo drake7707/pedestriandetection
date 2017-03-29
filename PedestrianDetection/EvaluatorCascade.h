@@ -47,6 +47,10 @@ public:
 		classifierHitCount = std::vector<int>(cascade.size(), 0);
 	}
 
+	std::vector<int> getClassifierHitCount() const {
+		return classifierHitCount;
+	}
+
 	void updateLastModelValueShift(double valueShift);
 
 	void save(std::string& path) const;

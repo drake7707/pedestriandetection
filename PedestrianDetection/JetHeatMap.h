@@ -1,4 +1,5 @@
 #pragma once
+#include "opencv2/opencv.hpp"
 
 namespace heatmap {
 
@@ -11,5 +12,5 @@ namespace heatmap {
 
 	double blue(double gray);
 
-
+	cv::Mat toHeatMap(cv::Mat& input);
 };

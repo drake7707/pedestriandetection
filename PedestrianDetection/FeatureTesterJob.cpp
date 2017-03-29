@@ -1,5 +1,4 @@
 #include "FeatureTesterJob.h"
-#include "EvaluatorCascade.h"
 
 
 
@@ -30,11 +29,11 @@ void FeatureTesterJob::run() const {
 
 	int maxNrWorstPosNeg = 4000;
 	float requiredTPRRate = 0.95;
+	int maxWeakClassifiers = 1000;
 
 	// faster, change later
 	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 0; };
 	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 1; };
-	int maxWeakClassifiers = 1000;
 
 	std::string featureSetName = getFeatureName();
 
@@ -105,7 +104,7 @@ void FeatureTesterJob::run() const {
 			std::cout << "Evaluation complete after " << elapsedEvaluationTime << "ms for " << featureSetName << std::endl;
 		}
 
-		// --------------- Evaluation sliding window --------------------
+		// --------------- Evaluation of training with sliding window --------------------
 		if (evaluateOnSlidingWindow) {
 
 			// do not try and evaluate multiple jobs together with sliding window. The sliding window evaluation is already parallelized will just interfere with each other then
@@ -172,7 +171,7 @@ void FeatureTesterJob::run() const {
 		cascade.save(cascadeFile);
 	}
 
-
+	// --------------- Evaluation sliding window and NMS on test set --------------------
 	// Note: no true negatives will be tracked due to NMS
 	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_final.csv";
 	if (!FileExists(finalEvaluationSlidingFile)) {
@@ -216,5 +215,79 @@ void FeatureTesterJob::run() const {
 		}
 	}
 
+
+	// ---- Generate feature importance images ----
+
+	auto featureSet = tester->getFeatureSet(set);
+	featureSet->prepare(trainingDataSet, 0);
+	generateFeatureImportanceImage(cascade, featureSet);
+}
+
+
+void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const {
+	int refWidth = 64;
+	int refHeight = 128;
+
+	auto classifierHits = cascade.getClassifierHitCount();
+
+	int classifierHitSum = 0;
+	for (auto val : classifierHits) classifierHitSum += val;
+
+	int rounds = cascade.size();
+	int padding = 5;
+
+	// don't initialize directly or it will point to the same data
+	std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
+	for (int i = 0; i < cascade.size(); i++)
+		imgs.push_back(cv::Mat(cv::Size((refWidth + padding)*rounds + 4 * padding + refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
+
+
+	std::vector<cv::Mat> totalImgs;
+	for (int i = 0; i < cascade.size(); i++)
+		totalImgs.push_back(cv::Mat(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
+
+	cv::Mat rgb(128, 64, CV_8UC3, cv::Scalar(0));
+	cv::Mat depth(128, 64, CV_32FC1, cv::Scalar(0));
+
+
+	std::string featureSetName = getFeatureName();
+
+	for (int i = 0; i < rounds; i++)
+	{
+		ModelEvaluator model(featureSetName);
+		model.loadModel(std::string("models") + PATH_SEPARATOR + featureSetName + " round " + std::to_string(i) + ".xml");
+
+		auto cur = model.explainModel(fset, refWidth, refHeight);
+
+		for (int j = 0; j < cur.size(); j++) {
+			if (cur[j].rows > 0 && cur[j].cols > 0) {
+				cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
+
+				totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
+
+				cv::Mat& dst = imgs[j](cv::Rect(i*(refWidth + padding), 0, refWidth, refHeight));
+				cur[j].copyTo(dst);
+			}
+		}
+	}
+
+
+	auto it = set.begin();
+	for (int i = 0; i < imgs.size(); i++) {
+		cv::Mat img;
+
+		img = imgs[i];
+		img = heatmap::toHeatMap(img);
+
+
+		cv::Mat totalimage = totalImgs[i];
+		cv::normalize(totalimage, totalimage, 0, 1, cv::NormTypes::NORM_MINMAX);
+		cv::Mat heatmapTotalImage = heatmap::toHeatMap(totalimage);
+		heatmapTotalImage.copyTo(img(cv::Rect(img.cols - refWidth, 0, refWidth, refHeight)));
+
+		std::string featureImportanceFilename = std::string("results") + PATH_SEPARATOR + *it + "_featureimportance.png";
+		cv::imwrite(featureImportanceFilename, img);
+		it++;
+	}
 
 }

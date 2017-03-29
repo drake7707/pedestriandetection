@@ -11,13 +11,15 @@
 #include <memory>
 #include "FeatureTester.h"
 #include <mutex>
+#include "EvaluatorCascade.h"
+#include "JetHeatMap.h"
 
 class FeatureTester;
 
 class FeatureTesterJob {
 
 
-	
+
 	std::set<std::string> set;
 	std::vector<cv::Size>& windowSizes;
 	std::string baseDataSetPath;
@@ -32,5 +34,8 @@ public:
 
 	std::string FeatureTesterJob::getFeatureName() const;
 	void run() const;
+
+
+	void generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const;
 
 };

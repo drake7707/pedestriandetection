@@ -15,6 +15,7 @@ EvaluatorCascade::~EvaluatorCascade()
 
 double EvaluatorCascade::evaluateFeatures(FeatureVector& v) const {
 	int classifierIndex;
+	classifierHitCount[classifierIndex++];
 	return evaluateCascadeFeatures(v, &classifierIndex);
 }
 
@@ -61,6 +62,9 @@ void EvaluatorCascade::save(std::string& path) const {
 
 	fs << "valueShifts" << valueShifts;
 
+	fs << "classifierHitCount" << classifierHitCount;
+
+
 	fs.release();
 
 }
@@ -90,6 +94,7 @@ void EvaluatorCascade::load(std::string& path, std::string& modelsDirectory) {
 
 	fsRead["trainingRound"] >> trainingRound;
 
+	fsRead["classifierHitCount"] >> classifierHitCount;
 
 	cascade.clear();
 	for (int i = 0; i < names.size(); i++)
@@ -103,6 +108,8 @@ void EvaluatorCascade::load(std::string& path, std::string& modelsDirectory) {
 		cascade.push_back(EvaluationCascadeEntry(evaluator, valueShifts[i]));
 	}
 
+	if (classifierHitCount.size() != cascade.size())
+		resetClassifierHitCount();
 
 	fsRead.release();
 }

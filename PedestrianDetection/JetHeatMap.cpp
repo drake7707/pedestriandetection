@@ -27,4 +27,18 @@ namespace heatmap {
 		return base(gray + 0.5);
 	}
 
+	cv::Mat toHeatMap(cv::Mat& input) {
+		cv::Mat heatmap(input.rows, input.cols, CV_8UC3, cv::Scalar(0, 0, 0));
+		for (int j = 0; j < input.rows; j++)
+		{
+			for (int i = 0; i < input.cols; i++)
+			{
+				// 0 - 1 range to -1 - 1
+				float val = input.at<float>(j, i) * 2 - 1;
+				heatmap.at<cv::Vec3b>(j, i) = cv::Vec3b(heatmap::blue(val) * 255, heatmap::green(val) * 255, heatmap::red(val) * 255);
+			}
+		}
+		return heatmap;
+	}
+
 };

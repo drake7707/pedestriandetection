@@ -30,7 +30,7 @@ class FeatureTesterJob {
 	FeatureTester* tester;
 
 public:
-	FeatureTesterJob(FeatureTester* tester, std::vector<cv::Size>& windowSizes, std::set<std::string>& set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow);
+	FeatureTesterJob(FeatureTester* tester, std::vector<cv::Size>& windowSizes, std::set<std::string> set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow);
 
 	std::string FeatureTesterJob::getFeatureName() const;
 	void run() const;

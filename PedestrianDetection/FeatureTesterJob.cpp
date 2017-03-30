@@ -3,7 +3,7 @@
 
 
 
-FeatureTesterJob::FeatureTesterJob(FeatureTester* tester, std::vector<cv::Size>& windowSizes, std::set<std::string>& set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow)
+FeatureTesterJob::FeatureTesterJob(FeatureTester* tester, std::vector<cv::Size>& windowSizes, std::set<std::string> set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow)
 	: tester(tester), baseDataSetPath(baseDataPath), windowSizes(windowSizes), set(set), nrOfEvaluations(nrOfEvaluations), nrOfTrainingRounds(nrOfTrainingRounds), evaluateOnSlidingWindow(evaluateOnSlidingWindow) {
 
 	if (nrOfTrainingRounds > 1 && !evaluateOnSlidingWindow) {
@@ -29,7 +29,7 @@ void FeatureTesterJob::run() const {
 
 	int maxNrWorstPosNeg = 4000;
 	float requiredTPRRate = 0.95;
-	int maxWeakClassifiers = 1000;
+	int maxWeakClassifiers = 500;
 
 	// faster, change later
 	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 0; };
@@ -175,6 +175,10 @@ void FeatureTesterJob::run() const {
 	// Note: no true negatives will be tracked due to NMS
 	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_final.csv";
 	if (!FileExists(finalEvaluationSlidingFile)) {
+
+		// reset classifier hit count
+		cascade.resetClassifierHitCount();
+
 		auto featureSet = tester->getFeatureSet(set);
 		featureSet->prepare(trainingDataSet, 0); // always use base bag of words
 
@@ -184,6 +188,9 @@ void FeatureTesterJob::run() const {
 			finalresult = cascade.evaluateWithSlidingWindowAndNMS(windowSizes, trainingDataSet.getDataSet(), *featureSet, nrOfEvaluations, testCriteria);
 
 		});
+
+		// save the hit count on the cascade
+		cascade.save(cascadeFile);
 		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 
 		std::ofstream str = std::ofstream(finalEvaluationSlidingFile);
@@ -285,7 +292,7 @@ void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade,
 		cv::Mat heatmapTotalImage = heatmap::toHeatMap(totalimage);
 		heatmapTotalImage.copyTo(img(cv::Rect(img.cols - refWidth, 0, refWidth, refHeight)));
 
-		std::string featureImportanceFilename = std::string("results") + PATH_SEPARATOR + *it + "_featureimportance.png";
+		std::string featureImportanceFilename = std::string("results") + PATH_SEPARATOR + featureSetName + "_" + *it + "_featureimportance.png";
 		cv::imwrite(featureImportanceFilename, img);
 		it++;
 	}

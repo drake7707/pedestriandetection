@@ -56,11 +56,11 @@
 
 #include "JetHeatMap.h"
 
-std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
@@ -1200,7 +1200,7 @@ int main()
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
-	explainModel(&tester);
+	//explainModel(&tester);
 
 	//generateFinalForEachRound(&tester);
 
@@ -1307,7 +1307,7 @@ int main()
 
 	std::set<std::string> set;
 	set = { "HOG(RGB)", "HDD" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 8);
+	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 7);
 	tester.runJobs();
 	//
 	//set = { "HOG(RGB)", "RAW(RGB)" };

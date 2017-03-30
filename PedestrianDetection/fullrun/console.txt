@@ -29250,3 +29250,10 @@ Hits on classifier 3: 12743
 Hits on classifier 4: 10857
 Hits on classifier 5: 11272
 Hits on classifier 6: 42062
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Evaluation with sliding window and NMS complete after 10341409ms for HDD+HOG(RGB)
+--------------------- New console session -----------------------
+Starting job HDD+HOG(RGB)
+Error: bad allocation

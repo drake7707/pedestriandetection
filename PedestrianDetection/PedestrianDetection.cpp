@@ -1052,7 +1052,7 @@ void explainModel(FeatureTester* tester) {
 
 
 	std::set<std::string> set;
-	set = { "S2HOG(RGB)" };
+	set = { "FAST(RGB)" };
 
 	std::string featureSetName("");
 	for (auto& name : set) {
@@ -1096,7 +1096,7 @@ void explainModel(FeatureTester* tester) {
 	{
 		ModelEvaluator model(featureSetName);
 		model.loadModel(std::string("models\\" + featureSetName + " round " + std::to_string(i) + ".xml"));
-		fset->getFeatures(rgb, depth);
+
 
 		auto cur = model.explainModel(fset, refWidth, refHeight);
 
@@ -1193,14 +1193,13 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name, refWidth, refHeight))); }));
 
 
-
 	//testClassifier(tester);
 	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
-	//explainModel(&tester);
+	explainModel(&tester);
 
 	//generateFinalForEachRound(&tester);
 

@@ -25,7 +25,7 @@ public:
 
 	int size() const;
 
-	void prepare(TrainingDataSet& trainingDataSet, int trainingRound);
+	void prepare(TrainingDataSet& trainingDataSet);
 
 	int getNumberOfFeatures() const;
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;

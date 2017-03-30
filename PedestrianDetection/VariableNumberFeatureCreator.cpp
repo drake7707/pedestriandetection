@@ -6,6 +6,11 @@
 VariableNumberFeatureCreator::VariableNumberFeatureCreator(std::string& creatorName, int clusterSize)
 	: IFeatureCreator(creatorName), clusterSize(clusterSize)
 {
+
+	// try and load first
+	std::string featureCachePath = (std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml");
+	if (FileExists(featureCachePath))
+		loadCentroids(featureCachePath);
 }
 
 
@@ -13,14 +18,12 @@ VariableNumberFeatureCreator::~VariableNumberFeatureCreator()
 {
 }
 
-void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, int trainingRound) {
+void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
 
-	std::string name = "Feature " + this->getName() + " preparation round " + std::to_string(trainingRound);
+	std::string name = "Feature " + this->getName() + " preparation";
+	std::string featureCachePath = (std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml");
 
-	// try and load first
-	std::string featureCachePath = trainingRound == 0 ? (std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml") : (std::string("featurecache") + PATH_SEPARATOR + getName() + "_round" + std::to_string(trainingRound) + ".xml");
-	loadCentroids(featureCachePath);
-	if (centroids.size() > 0)
+	if (FileExists(featureCachePath))
 		return;
 
 	int k = clusterSize;
@@ -150,6 +153,27 @@ cv::Mat VariableNumberFeatureCreator::explainFeatures(int offset, std::vector<fl
 	// TODO draw centroids as keypoints
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 
+	for (int i = 0; i < centroids.size(); i++) {
+
+		double weight = occurrencePerFeature[offset + i];
+
+		cv::KeyPoint p;
+		p.pt = cv::Point2f(centroids[i][0], centroids[i][1]);
+		p.size = centroids[i][2];
+		p.octave = centroids[i][3];
+		p.angle = centroids[i][4];
+		p.class_id = centroids[i][5];
+		std::vector<cv::KeyPoint> keypoints = { p };
+		cv::Scalar color(weight);
+		cv::Mat outputImg;
+
+		int radius = p.size / 2;
+		cv::circle(explanation, p.pt, radius, color, 1);
+		cv::line(explanation, p.pt, cv::Point(p.pt.x + radius * cos(p.angle / 180 * CV_PI), p.pt.y + radius * sin(p.angle / 180 * CV_PI)), color, 1);
+
+		//cv::
+		//cv::drawKeypoints(explanation, keypoints, explanation, color);// , cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	}
 	return explanation;
 }
 

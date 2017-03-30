@@ -51,10 +51,12 @@ void FeatureTesterJob::run() const {
 	TrainingDataSet trainingDataSet(dataSetPath);
 	trainingDataSet.load(cascade.trainingRound == 0 ? (std::string("trainingsets") + PATH_SEPARATOR + "train0.txt") : (std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound) + ".txt"));
 
+	auto featureSet = tester->getFeatureSet(set);
+	featureSet->prepare(trainingDataSet);
+
 	while (cascade.trainingRound < nrOfTrainingRounds) {
 		// ---------------- Build a feature set & prepare variable feature creators --------------------
-		auto featureSet = tester->getFeatureSet(set);
-		featureSet->prepare(trainingDataSet, 0); // always use base
+		
 		//featureSet->prepare(trainingDataSet, cascade.trainingRound);
 
 		ModelEvaluator evaluator(featureSetName + " round " + std::to_string(cascade.trainingRound));
@@ -179,9 +181,6 @@ void FeatureTesterJob::run() const {
 		// reset classifier hit count
 		cascade.resetClassifierHitCount();
 
-		auto featureSet = tester->getFeatureSet(set);
-		featureSet->prepare(trainingDataSet, 0); // always use base bag of words
-
 		std::cout << "Started final evaluation on test set with sliding window and NMS of " << featureSetName << std::endl;
 		FinalEvaluationSlidingWindowResult finalresult;
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
@@ -224,9 +223,6 @@ void FeatureTesterJob::run() const {
 
 
 	// ---- Generate feature importance images ----
-
-	auto featureSet = tester->getFeatureSet(set);
-	featureSet->prepare(trainingDataSet, 0);
 	generateFeatureImportanceImage(cascade, featureSet);
 }
 

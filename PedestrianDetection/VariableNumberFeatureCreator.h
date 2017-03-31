@@ -20,8 +20,7 @@ public:
 
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
 
-	virtual cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
-
+	virtual cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;	
 
 	void saveCentroids(std::string& path);
 	void loadCentroids(std::string& path);

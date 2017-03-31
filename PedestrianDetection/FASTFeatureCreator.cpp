@@ -44,3 +44,8 @@ std::vector<FeatureVector> FASTFeatureCreator::getVariableNumberFeatures(cv::Mat
 
 	return features;
 }
+
+
+std::vector<bool> FASTFeatureCreator::getRequirements() const {
+	return{ !onDepth, onDepth, false };
+}

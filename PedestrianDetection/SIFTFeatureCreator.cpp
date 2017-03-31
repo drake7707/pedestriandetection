@@ -65,3 +65,8 @@ std::vector<FeatureVector> SIFTFeatureCreator::getVariableNumberFeatures(cv::Mat
 
 	return features;
 }
+
+
+std::vector<bool> SIFTFeatureCreator::getRequirements() const {
+	return{ !onDepth, onDepth, false };
+}

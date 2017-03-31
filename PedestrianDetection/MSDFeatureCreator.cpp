@@ -44,3 +44,8 @@ std::vector<FeatureVector> MSDFeatureCreator::getVariableNumberFeatures(cv::Mat&
 
 	return features;
 }
+
+
+std::vector<bool> MSDFeatureCreator::getRequirements() const {
+	return{ !onDepth, onDepth, false };
+}

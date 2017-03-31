@@ -100,7 +100,9 @@ std::vector<cv::Mat> KITTIDataSet::getImagesForNumber(int number) const {
 		throw std::exception(std::string("Depth image " + depthPath + " is corrupt").c_str());
 	}
 
-	return{ rgb, depth };
+	cv::Mat thermal;
+
+	return{ rgb, depth, thermal };
 }
 
 int KITTIDataSet::getNrOfImages() const
@@ -147,4 +149,8 @@ bool KITTIDataSet::isWithinValidDepthRange(int height, float depthAverage) const
 		}
 	}
 	return true;
+}
+
+std::vector<bool> KITTIDataSet::getFullfillsRequirements() const {
+	return{ true,true, false }; // rgb and depth only
 }

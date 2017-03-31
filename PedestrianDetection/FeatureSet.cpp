@@ -37,7 +37,7 @@ FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
 
 int FeatureSet::getNumberOfFeatures() const {
 	int nrOfFeatures = 0;
-	for(int i = 0; i < creators.size(); i++)
+	for (int i = 0; i < creators.size(); i++)
 		nrOfFeatures += creators[i]->getNumberOfFeatures();
 	return nrOfFeatures;
 }
@@ -67,4 +67,17 @@ void FeatureSet::prepare(TrainingDataSet& trainingDataSet) {
 			(dynamic_cast<VariableNumberFeatureCreator*>(c.get()))->prepare(trainingDataSet);
 		}
 	}
+}
+
+std::vector<bool> FeatureSet::getRequirements() const {
+	std::vector<bool> v(3, false);
+	for (auto&& c : creators) {
+		auto requirementsOfCreator = c->getRequirements();
+		for (int i = 0; i < requirementsOfCreator.size(); i++)
+		{
+			bool req = requirementsOfCreator[i];
+			v[i] = v[i] || req;
+		}
+	}
+	return v;
 }

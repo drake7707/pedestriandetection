@@ -44,3 +44,8 @@ std::vector<FeatureVector> CenSurEFeatureCreator::getVariableNumberFeatures(cv::
 
 	return features;
 }
+
+
+std::vector<bool> CenSurEFeatureCreator::getRequirements() const {
+	return { !onDepth, onDepth, false };
+}

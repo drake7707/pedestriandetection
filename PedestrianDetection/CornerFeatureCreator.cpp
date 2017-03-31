@@ -42,3 +42,8 @@ std::vector<FeatureVector> CornerFeatureCreator::getVariableNumberFeatures(cv::M
 	}
 	return features;
 }
+
+
+std::vector<bool> CornerFeatureCreator::getRequirements() const {
+	return{ !onDepth, onDepth, false };
+}

@@ -40,3 +40,8 @@ cv::Mat HistogramDepthFeatureCreator::explainFeatures(int offset, std::vector<fl
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 	return explanation;
 }
+
+
+std::vector<bool> HistogramDepthFeatureCreator::getRequirements() const {
+	return{ false, true, false };
+}

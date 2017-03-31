@@ -11,6 +11,8 @@ public:
 	virtual ~FASTFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const;
+
+	virtual std::vector<bool> getRequirements() const;
 };
 
 

@@ -63,3 +63,9 @@ std::vector<FeatureVector> SURFFeatureCreator::getVariableNumberFeatures(cv::Mat
 
 	return features;
 }
+
+
+
+std::vector<bool> SURFFeatureCreator::getRequirements() const {
+	return{ !onDepth, onDepth, false };
+}

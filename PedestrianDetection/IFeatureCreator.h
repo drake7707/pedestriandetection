@@ -24,5 +24,7 @@ public:
 	virtual FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const = 0;
 
 	virtual cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const = 0;
+
+	virtual std::vector<bool> getRequirements() const = 0;
 };
 

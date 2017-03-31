@@ -13,3 +13,4 @@ IFeatureCreator::~IFeatureCreator() {
 std::string IFeatureCreator::getName() const {
 	return name;
 }
+

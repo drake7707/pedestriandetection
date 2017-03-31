@@ -91,3 +91,8 @@ cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector
 
 	return explanation;
 }
+
+
+std::vector<bool> CoOccurenceMatrixFeatureCreator::getRequirements() const {
+	return{ true, false, false };
+}

@@ -31,5 +31,7 @@ public:
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
 
 	std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
+
+	std::vector<bool> FeatureSet::getRequirements() const;
 };
 

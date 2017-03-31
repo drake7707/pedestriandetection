@@ -37,22 +37,26 @@ cv::Mat RAWRGBFeatureCreator::explainFeatures(int offset, std::vector<float>& we
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 
 	int nrOfFeatures = getNumberOfFeatures();
-	
+
 	int idx = 0;
 	for (int j = 0; j < refHeight; j++) {
 		for (int i = 0; i < refWidth; i++) {
-			
+
 			double w1 = occurrencePerFeature[offset + idx];
 			idx++;
 			double w2 = occurrencePerFeature[offset + idx];
 			idx++;
 			double w3 = occurrencePerFeature[offset + idx];
 			idx++;
-			
+
 			explanation.at<float>(j, i) = w1 + w2 + w3;
 		}
 	}
 
 
 	return explanation;
+}
+
+std::vector<bool> RAWRGBFeatureCreator::getRequirements() const {
+	return { true,false, false };
 }

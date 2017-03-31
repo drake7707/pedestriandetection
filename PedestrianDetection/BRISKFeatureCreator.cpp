@@ -63,3 +63,9 @@ std::vector<FeatureVector> BRISKFeatureCreator::getVariableNumberFeatures(cv::Ma
 
 	return features;
 }
+
+
+
+std::vector<bool> BRISKFeatureCreator::getRequirements() const {
+	return{ !onDepth, onDepth, false };
+}

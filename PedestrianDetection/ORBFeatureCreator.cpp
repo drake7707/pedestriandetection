@@ -62,3 +62,8 @@ std::vector<FeatureVector> ORBFeatureCreator::getVariableNumberFeatures(cv::Mat&
 
 	return features;
 }
+
+
+std::vector<bool> ORBFeatureCreator::getRequirements() const {
+	return{ !onDepth, onDepth, false };
+}

@@ -34,6 +34,9 @@
     <Filter Include="Resource Files\Source Files\FeatureCreators\Sparse">
       <UniqueIdentifier>{b67e6c8e-e3d4-4909-89b7-78c457c4d56e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\FeatureCreators\Sparse">
+      <UniqueIdentifier>{44652a9f-81bb-4992-9e78-8b6d91cea99e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FeatureVector.h">
@@ -69,40 +72,10 @@
     <ClInclude Include="HistogramDepthFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
-    <ClInclude Include="VariableNumberFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="SURFFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
     <ClInclude Include="HoGFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
     <ClInclude Include="HoGHistogramVarianceFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="CornerFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="ORBFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="MSDFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="SIFTFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="CenSurEFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="BRISKFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="FASTFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
-    </ClInclude>
-    <ClInclude Include="HDDFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
     <ClInclude Include="LocalBinaryPatterns.h">
@@ -125,9 +98,6 @@
     </ClInclude>
     <ClInclude Include="Histogram2D.h">
       <Filter>Header Files\Histogram</Filter>
-    </ClInclude>
-    <ClInclude Include="HONVFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
     <ClInclude Include="TrainingDataSet.h">
       <Filter>Header Files</Filter>
@@ -155,6 +125,48 @@
     </ClInclude>
     <ClInclude Include="JetHeatMap.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EvaluationSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ini.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INIReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BRISKFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="CenSurEFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="CornerFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="FASTFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="HDDFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
+    <ClInclude Include="MSDFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="ORBFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="HONVFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="SIFTFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="SURFFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
+    </ClInclude>
+    <ClInclude Include="VariableNumberFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators\Sparse</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -263,9 +275,6 @@
     <ClCompile Include="FASTFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
     </ClCompile>
-    <ClCompile Include="HDDFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
-    </ClCompile>
     <ClCompile Include="MSDFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
     </ClCompile>
@@ -280,6 +289,18 @@
     </ClCompile>
     <ClCompile Include="VariableNumberFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
+    </ClCompile>
+    <ClCompile Include="EvaluationSettings.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ini.c">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="INIReader.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HDDFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

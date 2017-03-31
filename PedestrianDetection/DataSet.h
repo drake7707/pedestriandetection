@@ -37,5 +37,7 @@ public:
 	virtual std::vector<std::string> getCategories() const = 0;
 	virtual std::string getCategory(DataSetLabel* label) const = 0;
 
+
+	virtual std::vector<bool> getFullfillsRequirements() const = 0;
 };
 

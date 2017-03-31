@@ -75,3 +75,7 @@ cv::Mat HOGHistogramVarianceFeatureCreator::explainFeatures(int offset, std::vec
 	}
 	return explanation;
 }
+
+std::vector<bool> HOGHistogramVarianceFeatureCreator::getRequirements() const {
+	return{ !onDepth, onDepth, false };
+}

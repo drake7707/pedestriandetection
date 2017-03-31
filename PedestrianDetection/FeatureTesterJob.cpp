@@ -38,6 +38,22 @@ void FeatureTesterJob::run() const {
 	trainingDataSet.load(cascade.trainingRound == 0 ? (std::string("trainingsets") + PATH_SEPARATOR + dataSet->getName() + "_" + "train0.txt") : (std::string("trainingsets") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound) + ".txt"));
 
 	auto featureSet = tester->getFeatureSet(set);
+
+	std::vector<bool> fullfillment = dataSet->getFullfillsRequirements();
+	std::vector<bool> requirements = featureSet->getRequirements();
+	bool isFullfilled = true;
+	// check if the requirements of the feature set matches the fullfillment of the dataset
+	for (int i = 0; i < requirements.size(); i++) {
+		if (requirements[i] && !fullfillment[i]) { // feature set needs req i, but the dataset doesn't provide this data
+			isFullfilled = false;
+			break;
+		}
+	}
+	if (!isFullfilled) {
+		std::cout << "Can't evaluate the feature set " << featureSetName << " against the data set " << dataSet->getName() << ", requirements not met" << std::endl;
+		return;
+	}
+
 	featureSet->prepare(trainingDataSet);
 
 	while (cascade.trainingRound < settings.nrOfTrainingRounds) {

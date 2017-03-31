@@ -17,5 +17,7 @@ public:
 
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
 
+	virtual std::vector<bool> getRequirements() const;
+
 };
 

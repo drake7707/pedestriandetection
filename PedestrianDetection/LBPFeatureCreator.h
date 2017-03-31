@@ -18,5 +18,7 @@ public:
 	cv::Mat LBPFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
+
+	virtual std::vector<bool> getRequirements() const;
 };
 

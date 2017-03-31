@@ -337,5 +337,7 @@ public:
 	virtual std::vector<std::string> getCategories() const;
 
 	virtual std::string getCategory(DataSetLabel* label) const;
+
+	virtual std::vector<bool> getFullfillsRequirements() const;
 };
 

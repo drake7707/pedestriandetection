@@ -65,5 +65,9 @@ FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) cons
 
 
 cv::Mat HONVFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
-	return hog::explain2DHOGFeature(offset, weightPerFeature, occurrencePerFeature, refWidth, refHeight, patchSize, binSize,false);
+	return hog::explain2DHOGFeature(offset, weightPerFeature, occurrencePerFeature, refWidth, refHeight, patchSize, binSize, false);
+}
+
+std::vector<bool> HONVFeatureCreator::getRequirements() const {
+	return{ false, true, false };
 }

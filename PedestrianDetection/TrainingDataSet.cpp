@@ -4,14 +4,15 @@
 #include "KITTIDataSet.h"
 
 
-TrainingDataSet::TrainingDataSet(std::string& baseDataSetPath)
-	: baseDataSetPath(baseDataSetPath), dataSet(baseDataSetPath)
+TrainingDataSet::TrainingDataSet(DataSet* dataSet)
+	: baseDataSetPath(baseDataSetPath), dataSet(dataSet)
 {
 }
 
-TrainingDataSet::TrainingDataSet(const TrainingDataSet& trainingDataSet) : dataSet(trainingDataSet.baseDataSetPath) {
+TrainingDataSet::TrainingDataSet(const TrainingDataSet& trainingDataSet) {
 	this->baseDataSetPath = trainingDataSet.baseDataSetPath;
 	this->images = trainingDataSet.images;
+	this->dataSet = trainingDataSet.dataSet;
 }
 
 TrainingDataSet::~TrainingDataSet()
@@ -86,13 +87,13 @@ void TrainingDataSet::load(std::string & path)
 }
 
 int TrainingDataSet::getNumberOfImages() const {
-	return dataSet.getNrOfImages();
+	return dataSet->getNrOfImages();
 }
 
 
 void TrainingDataSet::iterateDataSetImages(std::function<void(int imageNumber, cv::Mat&rgb, cv::Mat&depth, const std::vector<TrainingRegion>& regions)> func) const {
 	for (auto& pair : images) {
-		auto imgs = dataSet.getImagesForNumber(pair.first);
+		auto imgs = dataSet->getImagesForNumber(pair.first);
 		cv::Mat rgb = imgs[0];
 		cv::Mat depth = imgs[1];
 		func(pair.first, rgb, depth, pair.second.regions);
@@ -106,7 +107,7 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 	for (auto& pair : images) {
 
 		if (canSelectFunc(pair.first)) {
-			auto imgs = dataSet.getImagesForNumber(pair.first);
+			auto imgs = dataSet->getImagesForNumber(pair.first);
 			cv::Mat rgb = imgs[0];
 			cv::Mat depth = imgs[1];
 
@@ -229,9 +230,9 @@ std::string TrainingDataSet::getBaseDataSetPath() const
 }
 
 bool TrainingDataSet::isWithinValidDepthRange(int height, float depthAverage) const {
-	return dataSet.isWithinValidDepthRange(height, depthAverage);
+	return dataSet->isWithinValidDepthRange(height, depthAverage);
 }
 
 DataSet* TrainingDataSet::getDataSet() const {
-	return (DataSet*)&dataSet;
+	return (DataSet*)dataSet;
 }

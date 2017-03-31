@@ -304,7 +304,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 	auto it = worstFalsePositives.rbegin();
 	while (it != worstFalsePositives.rend() && nrAdded < maxNrOfFalsePosOrNeg) {
 		auto& wnd = *it;
-		std::cout << "Worst FP region score= " << wnd.score << " image= " << wnd.imageNumber << " bbox=" << wnd.bbox.x << "," << wnd.bbox.y << " " << wnd.bbox.width << "x" << wnd.bbox.height << std::endl;
+		//std::cout << "Worst FP region score= " << wnd.score << " image= " << wnd.imageNumber << " bbox=" << wnd.bbox.x << "," << wnd.bbox.y << " " << wnd.bbox.width << "x" << wnd.bbox.height << std::endl;
 		swresult.worstFalsePositives.push_back(wnd);
 		nrAdded++;
 		it++;
@@ -328,10 +328,9 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 	int refWidth, int refHeight, int paralellization) const {
 
 	FinalEvaluationSlidingWindowResult swresult;
-	// TODO don't hardcode categories
-	swresult.evaluations["easy"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
-	swresult.evaluations["moderate"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
-	swresult.evaluations["hard"] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
+
+	for (auto& category : dataSet->getCategories())
+		swresult.evaluations[category] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
 	swresult.combinedEvaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
 	double sumTimesRegions = 0;
 	int nrRegions = 0;
@@ -396,9 +395,9 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 			predictedPositives = applyNonMaximumSuppression(predictedPositives);
 
 			lock([&]() -> void {
-				swresult.evaluations["easy"][i].valueShift = valueShift;
-				swresult.evaluations["moderate"][i].valueShift = valueShift;
-				swresult.evaluations["hard"][i].valueShift = valueShift;
+				for (auto& category : dataSet->getCategories())
+					swresult.evaluations[category][i].valueShift = valueShift;
+
 				swresult.combinedEvaluations[i].valueShift = valueShift;
 
 				int tp = 0;
@@ -413,12 +412,11 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 						swresult.combinedEvaluations[i].nrOfTruePositives++;
 					}
 					else {
-						swresult.evaluations["easy"][i].nrOfFalsePositives++;
-						swresult.evaluations["easy"][i].falsePositivesPerImage[imgNr]++;
-						swresult.evaluations["moderate"][i].nrOfFalsePositives++;
-						swresult.evaluations["moderate"][i].falsePositivesPerImage[imgNr]++;
-						swresult.evaluations["hard"][i].nrOfFalsePositives++;
-						swresult.evaluations["hard"][i].falsePositivesPerImage[imgNr]++;
+						for (auto& category : dataSet->getCategories()) {
+							swresult.evaluations[category][i].nrOfFalsePositives++;
+							swresult.evaluations[category][i].falsePositivesPerImage[imgNr]++;
+						}
+
 						swresult.combinedEvaluations[i].nrOfFalsePositives++;
 						swresult.combinedEvaluations[i].falsePositivesPerImage[imgNr]++;
 					}
@@ -444,9 +442,9 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 			map.erase(imgNr);
 
 			for (int i = 0; i < nrOfEvaluations; i++) {
-				swresult.evaluations["easy"][i].nrOfImagesEvaluated++;
-				swresult.evaluations["moderate"][i].nrOfImagesEvaluated++;
-				swresult.evaluations["hard"][i].nrOfImagesEvaluated++;
+				for (auto& category : dataSet->getCategories())
+					swresult.evaluations[category][i].nrOfImagesEvaluated++;
+
 				swresult.combinedEvaluations[i].nrOfImagesEvaluated++;
 			}
 			nrOfImagesEvaluated++;
@@ -456,9 +454,10 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
 
 	for (int i = 0; i < nrOfEvaluations; i++) {
-		swresult.evaluations["easy"][i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
-		swresult.evaluations["moderate"][i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
-		swresult.evaluations["hard"][i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
+
+		for (auto& category : dataSet->getCategories())
+			swresult.evaluations[category][i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
+
 		swresult.combinedEvaluations[i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
 	}
 

@@ -12,6 +12,8 @@ public:
 	DataSet();
 	~DataSet();
 
+	virtual std::string getName() const = 0;
+
 	virtual std::vector<DataSetLabel> getLabels() const = 0;
 
 	std::vector<std::vector<DataSetLabel>> getLabelsPerNumber() const;
@@ -31,5 +33,9 @@ public:
 	virtual bool isWithinValidDepthRange(int height, float depthAverage) const {
 		return true;
 	}
+
+	virtual std::vector<std::string> getCategories() const = 0;
+	virtual std::string getCategory(DataSetLabel* label) const = 0;
+
 };
 

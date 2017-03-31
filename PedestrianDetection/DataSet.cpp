@@ -56,7 +56,7 @@ void DataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes
 			for (auto& r : labelsPerNumber[imgNumber]) {
 				if (!r.isDontCareArea()) {
 					truePositiveRegions.push_back(r.getBbox());
-					truePositiveCategories.push_back(r.getCategory());
+					truePositiveCategories.push_back(getCategory(&r));
 				}
 				else
 					dontCareRegions.push_back(r.getBbox());

@@ -51,7 +51,7 @@ public:
 
 	std::vector<std::string> getFeatureCreatorFactories() const;
 
-	void addJob(std::set<std::string>& set, std::string& baseDataSetPath, EvaluationSettings& settings);
+	void FeatureTester::addJob(std::set<std::string>& set, DataSet* dataSet, EvaluationSettings& settings);
 
 	void runJobs();
 

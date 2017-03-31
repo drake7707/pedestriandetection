@@ -1,6 +1,11 @@
 #include "KITTIDataSet.h"
 #include <fstream>
 
+std::string KITTIDataSet::getName() const {
+	return "KITTI";
+}
+
+
 std::vector<DataSetLabel> KITTIDataSet::getLabels() const {
 	std::string baseLabelPath = folderPath + PATH_SEPARATOR + "labels";
 
@@ -101,6 +106,30 @@ std::vector<cv::Mat> KITTIDataSet::getImagesForNumber(int number) const {
 int KITTIDataSet::getNrOfImages() const
 {
 	return 7481;
+}
+
+
+std::vector<std::string> KITTIDataSet::getCategories() const {
+	return{ "easy", "moderate", "hard" };
+}
+
+std::string KITTIDataSet::getCategory(DataSetLabel* label) const {
+
+	//Easy: Min.bounding box height : 40 Px, Max.occlusion level : Fully visible, Max.truncation : 15 %
+	//Moderate : Min.bounding box height : 25 Px, Max.occlusion level : Partly occluded, Max.truncation : 30 %
+	//Hard : Min.bounding box height : 25 Px, Max.occlusion level : Difficult to see, Max.truncation : 50 %
+
+	//double intersectionArea = (bbox & cv::Rect2d(0, 0, img.cols, img.rows)).area();
+	//double truncationPercentage = (bbox.area() - intersectionArea) / bbox.area();
+
+	if (label->getBbox().height >= 40 && (label->occlusion <= OcclusionEnum::FullyVisible) && label->truncation <= 0.15)
+		return "easy";
+	else if (label->getBbox().height >= 25 && (label->occlusion <= OcclusionEnum::PartlyOccluded) && label->truncation <= 0.30)
+		return "moderate";
+	else if (label->getBbox().height >= 25 && (label->occlusion <= OcclusionEnum::DifficultToSee) && label->truncation <= 0.50)
+		return "hard";
+
+	return "";
 }
 
 bool KITTIDataSet::isWithinValidDepthRange(int height, float depthAverage) const {

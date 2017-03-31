@@ -29257,3 +29257,4 @@ Evaluation with sliding window and NMS complete after 10341409ms for HDD+HOG(RGB
 --------------------- New console session -----------------------
 Starting job HDD+HOG(RGB)
 Error: bad allocation
+Input sets file does not exist

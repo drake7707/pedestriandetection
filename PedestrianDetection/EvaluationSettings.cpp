@@ -18,8 +18,14 @@ void EvaluationSettings::read(std::string& iniPath) {
 	maxNrWorstPosNeg = reader.GetInteger("general", "maxNrWorstPosNeg", maxNrWorstPosNeg);
 	requiredTPRRate = reader.GetReal("general", "requiredTPRRate", requiredTPRRate);
 
-	maxWeakClassifiers = reader.GetInteger("general", "refHeight", maxWeakClassifiers);
+	maxWeakClassifiers = reader.GetInteger("general", "maxWeakClassifiers", maxWeakClassifiers);
 	nrOfTrainingRounds = reader.GetInteger("general", "nrOfTrainingRounds", nrOfTrainingRounds);
+
+
+	int mod = reader.GetInteger("general", "sampleSetEvery", 2);
+
+	trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % mod == 0; };
+	testCriteria = [=](int imageNumber) -> bool { return imageNumber % mod == 1; };
 
 
 	std::string windowSizesStr = reader.Get("general", "windowSizes", "");

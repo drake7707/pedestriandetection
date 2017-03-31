@@ -60,9 +60,9 @@ FactoryCreator FeatureTester::getAvailableCreator(std::string& name) const {
 	return creators.find(name)->second;
 }
 
-void FeatureTester::addJob(std::set<std::string>& set, std::string& baseDataSetPath, EvaluationSettings& settings) {
+void FeatureTester::addJob(std::set<std::string>& set, DataSet* dataSet, EvaluationSettings& settings) {
 	FeatureTester* tester = this;
-	FeatureTesterJob* job = new FeatureTesterJob(tester, set, baseDataSetPath, settings);
+	FeatureTesterJob* job = new FeatureTesterJob(tester, set, dataSet, settings);
 	jobs.push(job);
 }
 

@@ -59,16 +59,12 @@
 
 
 std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
 //std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
 //std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
-int refWidth = 64;
-int refHeight = 128;
-
 
 void cornerFeatureTest() {
 	cv::Mat mRGB = cv::imread(kittiDatasetPath + "\\test.jpg");
@@ -125,16 +121,14 @@ void cornerFeatureTest() {
 
 }
 
-TrainingDataSet buildInitialTrainingSet() {
+TrainingDataSet buildInitialTrainingSet(EvaluationSettings& settings) {
 
-
-	TrainingDataSet trainingSet(kittiDatasetPath);
-
-	KITTIDataSet dataSet = KITTIDataSet(kittiDatasetPath);
+	KITTIDataSet dataSet(kittiDatasetPath);
+	TrainingDataSet trainingSet(&dataSet);
 
 	srand(7707);
 
-	ProgressWindow::getInstance()->updateStatus(std::string("Initial training set (train0)"), 0, "Loading KITTI dataset labels");
+	ProgressWindow::getInstance()->updateStatus(std::string("Initial training set (train0)"), 0, "Loading dataset labels");
 
 	std::vector<std::vector<DataSetLabel>> labelsPerNumber = dataSet.getLabelsPerNumber();
 
@@ -182,8 +176,8 @@ TrainingDataSet buildInitialTrainingSet() {
 			int iteration = 0;
 			do {
 				double sizeMultiplier = 0.25 * (1 + rand() * 1.0 / RAND_MAX * sizeVariance);
-				double width = refWidth * sizeMultiplier;
-				double height = refHeight * sizeMultiplier;
+				double width = settings.refWidth * sizeMultiplier;
+				double height = settings.refHeight * sizeMultiplier;
 				rTN = cv::Rect2d(randBetween(0, currentImages[0].cols - width), randBetween(0, currentImages[0].rows - height), width, height);
 			} while (iteration++ < 10000 && (intersectsWith(rTN, selectedRegions) || rTN.x < 0 || rTN.y < 0 || rTN.x + rTN.width >= currentImages[0].cols || rTN.y + rTN.height >= currentImages[0].rows));
 
@@ -320,10 +314,10 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
 				cv::Mat regionRGB;
-				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+				cv::resize(mRGB(bbox), regionRGB, cv::Size2d(settings.refWidth, settings.refHeight));
 
 				cv::Mat regionDepth;
-				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+				cv::resize(mDepth(bbox), regionDepth, cv::Size2d(settings.refWidth, settings.refHeight));
 
 				bool mustContinue = true;
 
@@ -474,7 +468,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 		for (auto& l : labelsPerNumber[i]) {
 			if (!l.isDontCareArea()) {
 
-				std::string category = l.getCategory();
+				std::string category = dataSet.getCategory(&l);
 				if (category == "easy")
 					cv::rectangle(mRGB, l.getBbox(), cv::Scalar(255, 255, 0), 2);
 				else if (category == "moderate")
@@ -707,7 +701,9 @@ void testFeature() {
 
 void testSlidingWindow(EvaluationSettings& settings) {
 
-	TrainingDataSet tSet(kittiDatasetPath);
+	KITTIDataSet dataSet(kittiDatasetPath);
+	TrainingDataSet tSet(&dataSet);
+
 	tSet.load(std::string("trainingsets\\train0.txt"));
 
 	cv::namedWindow("Test");
@@ -720,7 +716,7 @@ void testSlidingWindow(EvaluationSettings& settings) {
 	float maxScaleReduction = 4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
 	int baseWindowStride = 16;
 
-	tSet.getDataSet()->iterateDataSetWithSlidingWindow(settings.windowSizes, baseWindowStride, refWidth, refHeight,
+	tSet.getDataSet()->iterateDataSetWithSlidingWindow(settings.windowSizes, baseWindowStride, settings.refWidth, settings.refHeight,
 
 		[&](int idx) -> bool { return true; },
 
@@ -766,14 +762,16 @@ struct DistanceBetween {
 	}
 };
 
-void checkDistanceBetweenTPAndTN(std::string& trainingFile, std::string& outputFile) {
-	TrainingDataSet tSet(kittiDatasetPath);
+void checkDistanceBetweenTPAndTN(std::string& trainingFile, EvaluationSettings& settings, std::string& outputFile) {
+	KITTIDataSet dataSet(kittiDatasetPath);
+	TrainingDataSet tSet(&dataSet);
+
 	tSet.load(trainingFile);
 
 	FeatureSet fset;
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HOG(Depth)"), true, patchSize, binSize, refWidth, refHeight)));
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HOG(RGB)"), false, patchSize, binSize, refWidth, refHeight)));
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), false, patchSize, 20, refWidth, refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HOG(Depth)"), true, patchSize, binSize, settings.refWidth, settings.refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HOG(RGB)"), false, patchSize, binSize, settings.refWidth, settings.refHeight)));
+	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), false, patchSize, 20, settings.refWidth, settings.refHeight)));
 	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
 
 
@@ -1004,7 +1002,9 @@ void browseThroughDataSet(DataSet* set) {
 }
 
 void browseThroughTrainingSet(std::string& trainingFile) {
-	TrainingDataSet tSet(kittiDatasetPath);
+	KITTIDataSet dataSet(kittiDatasetPath);
+	TrainingDataSet tSet(&dataSet);
+
 	tSet.load(trainingFile);
 
 	cv::namedWindow("TrainingSet");
@@ -1028,7 +1028,8 @@ void browseThroughTrainingSet(std::string& trainingFile) {
 
 
 void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstream& str) {
-	TrainingDataSet tSet(kittiDatasetPath);
+	KITTIDataSet dataSet(kittiDatasetPath);
+	TrainingDataSet tSet(&dataSet);
 	tSet.load(trainingFile);
 
 	str << std::fixed;
@@ -1126,7 +1127,7 @@ void generateFinalForEachRound(FeatureTester* tester, EvaluationSettings& settin
 
 
 
-void explainModel(FeatureTester* tester) {
+void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 
 
 
@@ -1141,7 +1142,7 @@ void explainModel(FeatureTester* tester) {
 			featureSetName += name;
 	}
 
-	auto fset = tester->getFeatureSet(set);
+	auto fset = tester.getFeatureSet(set);
 
 	EvaluatorCascade cascade(featureSetName);
 	cascade.load(std::string("models\\" + featureSetName + "_cascade.xml"), std::string("models"));
@@ -1159,12 +1160,12 @@ void explainModel(FeatureTester* tester) {
 	// don't initialize directly or it will point to the same data
 	std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
 	for (int i = 0; i < set.size(); i++)
-		imgs.push_back(cv::Mat(cv::Size((refWidth + padding)*rounds + 4 * padding + refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
+		imgs.push_back(cv::Mat(cv::Size((settings.refWidth + padding)*rounds + 4 * padding + settings.refWidth, settings.refHeight), CV_32FC1, cv::Scalar(0)));
 
 
 	std::vector<cv::Mat> totalImgs;
 	for (int i = 0; i < set.size(); i++)
-		totalImgs.push_back(cv::Mat(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
+		totalImgs.push_back(cv::Mat(cv::Size(settings.refWidth, settings.refHeight), CV_32FC1, cv::Scalar(0)));
 
 	cv::Mat rgb(128, 64, CV_8UC3, cv::Scalar(0));
 	cv::Mat depth(128, 64, CV_32FC1, cv::Scalar(0));
@@ -1177,7 +1178,7 @@ void explainModel(FeatureTester* tester) {
 		model.loadModel(std::string("models\\" + featureSetName + " round " + std::to_string(i) + ".xml"));
 
 
-		auto cur = model.explainModel(fset, refWidth, refHeight);
+		auto cur = model.explainModel(fset, settings.refWidth, settings.refHeight);
 
 		for (int j = 0; j < cur.size(); j++) {
 
@@ -1186,7 +1187,7 @@ void explainModel(FeatureTester* tester) {
 			totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
 
 
-			cv::Mat& dst = imgs[j](cv::Rect(i*(refWidth + padding), 0, refWidth, refHeight));
+			cv::Mat& dst = imgs[j](cv::Rect(i*(settings.refWidth + padding), 0, settings.refWidth, settings.refHeight));
 			cur[j].copyTo(dst);
 
 
@@ -1212,7 +1213,7 @@ void explainModel(FeatureTester* tester) {
 		cv::Mat totalimage = totalImgs[i];
 		cv::normalize(totalimage, totalimage, 0, 1, cv::NormTypes::NORM_MINMAX);
 		cv::Mat heatmapTotalImage = heatmap::toHeatMap(totalimage);
-		heatmapTotalImage.copyTo(img(cv::Rect(imgs[i].cols - refWidth, 0, refWidth, refHeight)));
+		heatmapTotalImage.copyTo(img(cv::Rect(imgs[i].cols - settings.refWidth, 0, settings.refWidth, settings.refHeight)));
 
 		cv::imshow("explain_" + *it, img);
 
@@ -1226,9 +1227,10 @@ void explainModel(FeatureTester* tester) {
 	cv::waitKey(0);
 }
 
-void runJobsFromInputSets(FeatureTester* tester, EvaluationSettings& settings) {
+void runJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, EvaluationSettings& settings) {
 
-	tester->nrOfConcurrentJobs = 1;
+
+	tester.nrOfConcurrentJobs = 1;
 	if (FileExists("inputsets.txt")) {
 		std::ifstream istr("inputsets.txt");
 		std::string line;
@@ -1239,7 +1241,7 @@ void runJobsFromInputSets(FeatureTester* tester, EvaluationSettings& settings) {
 			for (auto& p : parts)
 				set.emplace(p);
 
-			tester->addJob(set, kittiDatasetPath, settings);
+			tester.addJob(set, dataSet, settings);
 		}
 		istr.close();
 	}
@@ -1249,75 +1251,108 @@ void runJobsFromInputSets(FeatureTester* tester, EvaluationSettings& settings) {
 
 
 	// --------- Build initial training set file if it does not exist ----------
-	std::string initialTrain0File = std::string("trainingsets") + PATH_SEPARATOR + "train0.txt";
+	std::string initialTrain0File = std::string("trainingsets") + PATH_SEPARATOR + dataSet->getName() + "_" + "train0.txt";
 	if (!FileExists(initialTrain0File)) {
 		std::cout << "The initial train0 file does not exist, building training set";
-		TrainingDataSet initialSet = buildInitialTrainingSet();
+		TrainingDataSet initialSet = buildInitialTrainingSet(settings);
 		initialSet.save(initialTrain0File);
 	}
 
-	tester->runJobs();
+	tester.runJobs();
 }
+
+
+void evaluateClusterSize(FeatureTester& tester, EvaluationSettings settings) {
+
+	KITTIDataSet dataSet(kittiDatasetPath);
+
+	std::vector<std::string> clustersToTest = { "ORB(RGB)", "SIFT(RGB)", "CenSurE(RGB)", "MSD(RGB)", "FAST(RGB)" };
+	std::set<std::string> set;
+
+	settings.nrOfTrainingRounds = 1;
+
+	for (int k = 10; k <= 100; k += 10)
+	{
+		tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, k, false))); }));
+		set = { std::string("ORB(RGB)_") + std::to_string(k) };
+		tester.addJob(set, &dataSet, settings);
+	}
+	for (int k = 10; k <= 100; k += 10)
+	{
+		tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, k, false))); }));
+		set = { std::string("SIFT(RGB)_") + std::to_string(k) };
+		tester.addJob(set, &dataSet, settings);
+	}
+	for (int k = 10; k <= 100; k += 10)
+	{
+		tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, k, false))); }));
+		set = { std::string("CenSurE(RGB)_") + std::to_string(k) };
+		tester.addJob(set, &dataSet, settings);
+	}
+	for (int k = 10; k <= 100; k += 10)
+	{
+		tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, k, false))); }));
+		set = { std::string("MSD(RGB)_") + std::to_string(k) };
+		tester.addJob(set, &dataSet, settings);
+	}
+	for (int k = 10; k <= 100; k += 10)
+	{
+		tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, k, false))); }));
+		set = { std::string("FAST(RGB)_") + std::to_string(k) };
+		tester.addJob(set, &dataSet, settings);
+	}
+	tester.runJobs();
+}
+
 
 int main()
 {
-
-	/*std::vector<std::pair<float, SlidingWindowRegion>> testregions;
-	testregions.push_back(std::pair<float, SlidingWindowRegion>(1, SlidingWindowRegion(0, cv::Rect(50, 50, 100, 100))));
-	testregions.push_back(std::pair<float, SlidingWindowRegion>(2, SlidingWindowRegion(0, cv::Rect(58, 50, 100, 100))));
-	testregions.push_back(std::pair<float, SlidingWindowRegion>(1.5, SlidingWindowRegion(0, cv::Rect(66, 50, 80, 80))));
-	testregions.push_back(std::pair<float, SlidingWindowRegion>(0, SlidingWindowRegion(0, cv::Rect(46, 30, 150, 150))));
-
-
-	auto result = applyNonMaximumSuppression(testregions);
-
-	for (auto& r : result) {
-		std::cout << r.first << " - " << r.second.bbox.x << "," << r.second.bbox.y << " " << r.second.bbox.width << "x" << r.second.bbox.height << std::endl;
-	}
-*/
-
 	EvaluationSettings settings;
 	settings.read(std::string("settings.ini"));
 
 	FeatureTester tester;
 	tester.nrOfConcurrentJobs = 4;
 
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, false, patchSize, binSize, refWidth, refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("S2HOG(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGHistogramVarianceFeatureCreator(name, false, patchSize, binSize, refWidth, refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, true, patchSize, binSize, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, false, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("S2HOG(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGHistogramVarianceFeatureCreator(name, false, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, true, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, false))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, true))); }));
 
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Histogram(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HistogramDepthFeatureCreator(name))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, false))); }));
-	///tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 90, false))); }));
-	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 10, false))); }));
-	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 30, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Histogram(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HistogramDepthFeatureCreator(name))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, false))); }));
+	///tester.addFeatureCreatorFactory(FactoryCreator(std::string("SURF(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SURFFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 90, false))); }));
+	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 10, false))); }));
+	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, 80, true))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 30, false))); }));
 	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, 80, false))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, 80, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, 80, false))); }));
 	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 90, false))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 90, false))); }));
 	//tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(Depth)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, 80, true))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HDD"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, false, patchSize, 20, refWidth, refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(name, patchSize, binSize, refWidth, refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name, refWidth, refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HDD"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(name, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("LBP(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(name, false, patchSize, 20, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(name, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name, settings.refWidth, settings.refHeight))); }));
 
-
-	//testClassifier(tester);
-	//testFeature();
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
 
 	KITTIDataSet dataSet(kittiDatasetPath);
-	browseThroughDataSet(&dataSet);
+	//browseThroughDataSet(&dataSet);
+
+	runJobsFromInputSets(tester, &dataSet, settings);
+
+
+	//testClassifier(tester);
+
+	//testFeature();
 
 	//explainModel(&tester);
 
@@ -1327,248 +1362,18 @@ int main()
 
 	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
 
-
-
-
 	/*std::ofstream str("heightdepthvaluesTN.csv");
 	printHeightVerticalAvgDepthRelation(std::string("trainingsets\\train0.txt"), str);*/
 
 	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
-//	testSlidingWindow();
 
-	/*TrainingDataSet testTrainingSet(kittiDatasetPath);
-	testTrainingSet.load(std::string("trainingsets\\HOG(Depth)+HOG(RGB)+LBP(RGB)_train1.txt"));
+	//	testSlidingWindow();
 
 
-	testTrainingSet.iterateDataSet([](int idx) -> bool { return true; }, [&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
-		if(resultClass == 1)
-			cv::imshow("TP", rgb);
-		else
-			cv::imshow("TN", rgb);
-
-		cv::waitKey(0);
-
-	});*/
 	//trainDetailedClassifier();
 	//testFeature();
 
-
-
-
-
-	//testFeature();
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
-	//testClassifier();
-	//saveTNTP();
-	//return 0;
-
-	int nrOfEvaluations = 300;
-
-
-
-
-
-
-
-
-
-	//std::vector<std::string> clustersToTest = { "ORB(RGB)", "SIFT(RGB)", "CenSurE(RGB)", "MSD(RGB)", "FAST(RGB)" };
-	//for (int k = 10; k <= 100; k += 10)
-	//{
-	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("ORB(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new ORBFeatureCreator(name, k, false))); }));
-	//	set = { std::string("ORB(RGB)_") + std::to_string(k) };
-	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
-	//}
-	//for (int k = 10; k <= 100; k += 10)
-	//{
-	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SIFT(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SIFTFeatureCreator(name, k, false))); }));
-	//	set = { std::string("SIFT(RGB)_") + std::to_string(k) };
-	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
-	//}
-	//for (int k = 10; k <= 100; k += 10)
-	//{
-	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CenSurE(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CenSurEFeatureCreator(name, k, false))); }));
-	//	set = { std::string("CenSurE(RGB)_") + std::to_string(k) };
-	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
-	//}
-	//for (int k = 10; k <= 100; k += 10)
-	//{
-	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("MSD(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new MSDFeatureCreator(name, k, false))); }));
-	//	set = { std::string("MSD(RGB)_") + std::to_string(k) };
-	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
-	//}
-	//for (int k = 10; k <= 100; k += 10)
-	//{
-	//	tester.addFeatureCreatorFactory(FactoryCreator(std::string("FAST(RGB)_") + std::to_string(k), [=](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new FASTFeatureCreator(name, k, false))); }));
-	//	set = { std::string("FAST(RGB)_") + std::to_string(k) };
-	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
-	//}
-	//tester.runJobs();
-	//return 0;
-
-
-	//evaluate each creator individually, but don't do a sliding window evaluation yet
-	//tester.nrOfConcurrentJobs = 6;
-	//for (auto& name : tester.getFeatureCreatorFactories()) {
-	//	set = { name };
-	//	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1, false);
-	//}
-	//tester.runJobs();
-
-	tester.nrOfConcurrentJobs = 1;
-
-	std::set<std::string> set;
-	set = { "HOG(RGB)", "HDD" };
-	tester.addJob(set, kittiDatasetPath, settings);
-	tester.runJobs();
-	//
-	//set = { "HOG(RGB)", "RAW(RGB)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HOG(RGB)", "HOG(Depth)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HOG(RGB)", "HONV" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HOG(RGB)", "LBP(RGB)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HOG(RGB)", "S2HOG(RGB)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HOG(RGB)", "CoOccurrence(RGB)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	//tester.runJobs();
-
-	//set = { "CoOccurrence(RGB)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "LBP(RGB)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HOG(RGB)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HONV" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HDD" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HOG(Depth)", "HOG(RGB)","LBP(RGB)" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-	//set = { "HOG(RGB)","LBP(RGB)", "HDD" };
-	//tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-
-
-	//tester.runJobs();
-
-	/*set = { "HOG(Depth)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
-
-	set = { "LBP(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
-	set = { "HDD" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
-	set = { "S2HOG(RGB)" };
-	tester.addJob(set, kittiDatasetPath, nrOfEvaluations, 1);
-
-	tester.runJobs();*/
-
-	/*for (auto& name : tester.getFeatureCreatorFactories()) {
-		set = { "HOG(RGB)", name };
-		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	}
-	tester.runJobs();
-
-	for (auto& name : tester.getFeatureCreatorFactories()) {
-		set = { name };
-		tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 4);
-	}
-	tester.runJobs();
-
-	*/
-
-	//// evaluate each creator combined with HOG(RGB)
-	//for (auto& name : tester.getFeatureCreatorFactories()) {
-	//	if (name != "HOG(RGB)") {
-	//		set = { "HOG(RGB)", name };
-	//		tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
-	//	}
-	//}
-	//tester.runJobs();
-
-	//for (auto& name : tester.getFeatureCreatorFactories()) {
-	//	if (name != "HOG(RGB)" && name != "HOG(Depth)") {
-	//		set = { "HOG(Depth)", "HOG(RGB)", name };
-	//		tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
-	//	}
-	//}
-	//tester.runJobs();
-
-	//for (auto& name : tester.getFeatureCreatorFactories()) {
-	//	if (name != "HOG(RGB)" && name != "HOG(Depth)" && name != "LBP(RGB)") {
-	//		set = { "HOG(Depth)", "HOG(RGB)", "LBP(RGB)",  name };
-	//		tester.addJob(set, kittiDatasetPath, nrOfEvaluations);
-	//	}
-	//}
-	//tester.runJobs();
-
-	/*
-
-		set = { "HOG(RGB)", "Corner(RGB)" };
-		tester.addJob(set, nrOfEvaluations);
-
-		set = { "HOG(RGB)","Histogram(Depth)" };
-		tester.addJob(set, nrOfEvaluations);
-
-		set = { "HOG(RGB)", "S2HOG(RGB)" };
-		tester.addJob(set, nrOfEvaluations);
-
-		set = { "HOG(RGB)", "HOG(Depth)" };
-		tester.addJob(set, nrOfEvaluations);
-
-		set = { "HOG(RGB)",  "S2HOG(RGB)",  "HOG(Depth)" };
-		tester.addJob(set, nrOfEvaluations);
-
-	*/
-
-
-
-
-
-
-
-	//FeatureSet set;
-	//set.addCreator(&HOGRGBFeatureCreator());
-	////set.addCreator(&HOGDepthFeatureCreator());
-
-
-
-	//{
-	//	std::cout << "Testing with 0.8/0.2 prior weights" << std::endl;
-	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.8, 0.2);
-	//	evaluator.train();
-	//	ClassifierEvaluation eval = evaluator.evaluate();
-	//	eval.print(std::cout);
-	//}
-	//{
-	//	std::cout << "Testing with 0.5/0.5 prior weights" << std::endl;
-	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.5, 0.5);
-	//	evaluator.train();
-	//	ClassifierEvaluation eval = evaluator.evaluate();
-	//	eval.print(std::cout);
-	//}
-	//{
-	//	std::cout << "Testing with 0.2/0.8 prior weights" << std::endl;
-	//	ModelEvaluator evaluator(baseDatasetPath, set, 0.2, 0.8);
-	//	evaluator.train();
-	//	ClassifierEvaluation eval = evaluator.evaluate();
-	//	eval.print(std::cout);
-	//}
-
 
 	getchar();
 	return 0;

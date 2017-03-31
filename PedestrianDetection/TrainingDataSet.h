@@ -4,6 +4,7 @@
 #include <map>
 #include <functional>
 #include "KITTIDataSet.h"
+#include <memory>
 
 struct TrainingRegion {
 	cv::Rect region;
@@ -26,12 +27,12 @@ class TrainingDataSet
 	int refWidth = 64;
 	int refHeight = 128;
 
-	KITTIDataSet dataSet;
+	DataSet* dataSet;
 
 public:
 	int nrOfSamples = 0;
 
-	TrainingDataSet(std::string& baseDataSetPath);
+	TrainingDataSet(DataSet* dataSet);
 
 	TrainingDataSet(const TrainingDataSet& dataSet);
 

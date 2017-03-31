@@ -325,11 +325,17 @@ public:
 	KITTIDataSet(const std::string& folderPath) : DataSet(), folderPath(folderPath) { }
 	~KITTIDataSet() {}
 
+	virtual std::string getName() const;
+
 	virtual std::vector<DataSetLabel> getLabels() const;
 	virtual std::vector<cv::Mat> getImagesForNumber(int number) const;
 
 	virtual int getNrOfImages() const;
 
 	virtual bool isWithinValidDepthRange(int height, float depthAverage) const;
+
+	virtual std::vector<std::string> getCategories() const;
+
+	virtual std::string getCategory(DataSetLabel* label) const;
 };
 

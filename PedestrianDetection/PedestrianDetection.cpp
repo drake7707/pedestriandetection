@@ -55,30 +55,19 @@
 #include "DataSet.h"
 
 #include "JetHeatMap.h"
+#include "EvaluationSettings.h"
 
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
 
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
-std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
+std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
+std::string baseDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti\\regions";
+
+//std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
+//std::string baseDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti\\regions";
 
 int patchSize = 8;
 int binSize = 9;
 int refWidth = 64;
 int refHeight = 128;
-
-std::vector<cv::Size> windowSizes = {
-	/*cv::Size(24,48),*/
-	cv::Size(32,64),
-	cv::Size(48,96),
-	cv::Size(64,128),
-	cv::Size(80,160),
-	cv::Size(96,192),
-	cv::Size(104,208),
-	cv::Size(112,224),
-	cv::Size(120,240),
-	cv::Size(128,256)
-};
 
 
 void cornerFeatureTest() {
@@ -136,7 +125,7 @@ void cornerFeatureTest() {
 
 }
 
-TrainingDataSet saveTNTP() {
+TrainingDataSet buildInitialTrainingSet() {
 
 
 	TrainingDataSet trainingSet(kittiDatasetPath);
@@ -147,11 +136,7 @@ TrainingDataSet saveTNTP() {
 
 	ProgressWindow::getInstance()->updateStatus(std::string("Initial training set (train0)"), 0, "Loading KITTI dataset labels");
 
-	std::vector<DataSetLabel> labels = dataSet.getLabels();
-
-	std::vector<std::vector<DataSetLabel>> labelsPerNumber(dataSet.getNrOfImages(), std::vector<DataSetLabel>());
-	for (auto& l : labels)
-		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber = dataSet.getLabelsPerNumber();
 
 	int sizeVariance = 8; // from 0.25 to 2 times the refWidth and refHeight ( so anything between 16x32 - 32x64 - 64x128 - 128x256, more scales might be evaluated later )
 	int nrOfTNPerImage = 2;
@@ -275,7 +260,7 @@ TrainingDataSet saveTNTP() {
 
 
 
-void testClassifier(FeatureTester& tester) {
+void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 	std::set<std::string> set = { "HDD", "HOG(RGB)" };
 
@@ -307,10 +292,7 @@ void testClassifier(FeatureTester& tester) {
 
 	std::vector<DataSetLabel> labels = dataSet.getLabels();
 
-	std::vector<std::vector<DataSetLabel>> labelsPerNumber(dataSet.getNrOfImages(), std::vector<DataSetLabel>());
-	for (auto& l : labels)
-		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
-
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber = dataSet.getLabelsPerNumber();
 
 	ClassifierEvaluation eval(dataSet.getNrOfImages());
 
@@ -384,7 +366,7 @@ void testClassifier(FeatureTester& tester) {
 
 
 				nrOfWindowsEvaluated++;
-			}, windowSizes, 16);
+			}, settings.windowSizes, 16);
 
 		});
 
@@ -723,7 +705,7 @@ void testFeature() {
 
 }
 
-void testSlidingWindow() {
+void testSlidingWindow(EvaluationSettings& settings) {
 
 	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(std::string("trainingsets\\train0.txt"));
@@ -738,7 +720,7 @@ void testSlidingWindow() {
 	float maxScaleReduction = 4; // this is excluded, so 64x128 windows will be at most scaled to 32x64 with 4, or 16x32 with 8
 	int baseWindowStride = 16;
 
-	tSet.getDataSet()->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
+	tSet.getDataSet()->iterateDataSetWithSlidingWindow(settings.windowSizes, baseWindowStride, refWidth, refHeight,
 
 		[&](int idx) -> bool { return true; },
 
@@ -924,7 +906,104 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, std::string& outputF
 	}
 }
 
-void browseThroughDataSet(std::string& trainingFile) {
+void browseThroughDataSet(DataSet* set) {
+
+	float imgHeight = 400; // px
+	float imgWidth = 800; //px
+	float max_depth = 70.0; // m
+	float tireroadFriction = 0.7;
+	float gravity = 9.81; // m/s²
+
+	float max_pedestrian_speed = 0 * 1000 / 3600.0; // m/s
+	std::vector<float> vehicle_speed = { 10 / 3.6f, 20 / 3.6f, 30 / 3.6f, 50 / 3.6f }; // m/s
+	float vehicleSpeedForRating = 30 / 3.6f; // m/s
+	float t = 1;
+	float max_seconds_remaining = 10;
+
+
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber = set->getLabelsPerNumber();
+
+	for (int imgNr = 0; imgNr < set->getNrOfImages(); imgNr++)
+	{
+		auto& labels = labelsPerNumber[imgNr];
+		if (labels.size() > 0) {
+			auto imgs = set->getImagesForNumber(imgNr);
+
+
+			cv::Mat topdown(imgHeight, imgWidth, CV_8UC3, cv::Scalar(0, 0, 0));
+
+
+			cv::Point2f carPoint = cv::Point2f(imgWidth / 2, imgHeight);
+			cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), 10, cv::Scalar(255, 128, 128), -1);
+			cv::line(topdown, carPoint, cv::Point(carPoint.x + imgWidth * cos(-CV_PI / 4), carPoint.y + imgWidth * sin(-CV_PI / 4)), cv::Scalar(255, 128, 128));
+			cv::line(topdown, carPoint, cv::Point(carPoint.x + imgWidth * cos(-3 * CV_PI / 4), carPoint.y + imgWidth * sin(-3 * CV_PI / 4)), cv::Scalar(255, 128, 128));
+
+			for (float vehicleSpeed : vehicle_speed) {
+				float t1secRadius = (vehicleSpeed*t / max_depth * imgHeight);
+
+				double stoppingDistance = vehicleSpeed * vehicleSpeed / (2 * tireroadFriction * gravity);
+				double stoppingDistanceRadius = stoppingDistance / max_depth * imgHeight;
+
+				//cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), t1secRadius, cv::Scalar(255, 128, 128), 1);
+				cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), stoppingDistanceRadius, cv::Scalar(255, 255, 255), 1);
+			}
+
+			for (int i = 0; i < max_depth; i += 10)
+			{
+				// draw 10 meter lines
+				float depth = (i / max_depth);
+				float y = imgHeight * (1 - depth);
+
+				cv::line(topdown, cv::Point2f(0, y), cv::Point2f(imgWidth, y), cv::Scalar(192, 192, 192));
+
+				cv::putText(topdown, std::to_string(i) + "m", cv::Point2f(0, y + 5), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(192, 192, 192));
+			}
+
+			for (auto& l : labels) {
+				if (!l.isDontCareArea()) {
+
+
+					float depth = (l.z_3d / max_depth);
+					float y = imgHeight * (1 - depth);
+
+					float x = imgWidth / 2 + (l.x_3d / max_depth) * imgWidth / 2;
+
+
+					float t1secVehicleRadius = vehicleSpeedForRating * t;
+					double stoppingDistance = vehicleSpeedForRating * vehicleSpeedForRating / (2 * tireroadFriction * gravity);
+					// vehicle on origin point, so - 0
+					double distanceToPedestrian = sqrt(l.x_3d * l.x_3d + l.z_3d * l.z_3d); // m
+					double remainingDistanceToAct = distanceToPedestrian - (max_pedestrian_speed*t) - (stoppingDistance); // m
+					// remainingTime * vehicleSpeedForRating = remainingDistanceToAct;
+					double remainingTime = remainingDistanceToAct / vehicleSpeedForRating;
+
+
+					cv::putText(topdown, std::to_string(remainingTime), cv::Point2f(x, y), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 255));
+
+					cv::rectangle(imgs[0], l.getBbox(), cv::Scalar(255, 255, 0), 2);
+					cv::putText(imgs[0], std::to_string(remainingTime), l.getBbox().tl(), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 0));
+
+					if (remainingTime < 0) {
+						// already too late
+						remainingTime = 0;
+					}
+
+					// from 0,0,255 -> 0,255,0
+					float alpha = remainingTime / max_seconds_remaining;
+
+					cv::circle(topdown, cv::Point2f(x, y), 3, cv::Scalar(0, alpha * 255, (1 - alpha) * 255), -1);
+					float t1secRadiusPx = (max_pedestrian_speed*t / max_depth * imgHeight);
+					cv::circle(topdown, cv::Point2f(x, y), t1secRadiusPx, cv::Scalar(0, alpha * 255, (1 - alpha) * 255), 1);
+				}
+			}
+			cv::imshow("TopDown", topdown);
+			cv::imshow("RGB", imgs[0]);
+			cv::waitKey(0);
+		}
+	}
+}
+
+void browseThroughTrainingSet(std::string& trainingFile) {
 	TrainingDataSet tSet(kittiDatasetPath);
 	tSet.load(trainingFile);
 
@@ -987,7 +1066,7 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 	str.flush();
 }
 
-void generateFinalForEachRound(FeatureTester* tester) {
+void generateFinalForEachRound(FeatureTester* tester, EvaluationSettings& settings) {
 	std::set<std::string> set = { "HOG(RGB)", "HDD" };
 
 	auto featureSet = tester->getFeatureSet(set);
@@ -1006,7 +1085,7 @@ void generateFinalForEachRound(FeatureTester* tester) {
 		std::cout << "Started final evaluation on test set with sliding window and NMS " << std::endl;
 		FinalEvaluationSlidingWindowResult finalresult;
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			finalresult = cascade.evaluateWithSlidingWindowAndNMS(windowSizes, &dataSet, *featureSet, nrOfEvaluations, testCriteria);
+			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings.windowSizes, &dataSet, *featureSet, nrOfEvaluations, testCriteria);
 
 		});
 		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms" << std::endl;
@@ -1147,6 +1226,39 @@ void explainModel(FeatureTester* tester) {
 	cv::waitKey(0);
 }
 
+void runJobsFromInputSets(FeatureTester* tester, EvaluationSettings& settings) {
+
+	tester->nrOfConcurrentJobs = 1;
+	if (FileExists("inputsets.txt")) {
+		std::ifstream istr("inputsets.txt");
+		std::string line;
+		while (std::getline(istr, line)) {
+
+			std::set<std::string> set;
+			auto parts = splitString(line, '+');
+			for (auto& p : parts)
+				set.emplace(p);
+
+			tester->addJob(set, kittiDatasetPath, settings);
+		}
+		istr.close();
+	}
+	else {
+		std::cout << "Input sets file does not exist" << std::endl;
+	}
+
+
+	// --------- Build initial training set file if it does not exist ----------
+	std::string initialTrain0File = std::string("trainingsets") + PATH_SEPARATOR + "train0.txt";
+	if (!FileExists(initialTrain0File)) {
+		std::cout << "The initial train0 file does not exist, building training set";
+		TrainingDataSet initialSet = buildInitialTrainingSet();
+		initialSet.save(initialTrain0File);
+	}
+
+	tester->runJobs();
+}
+
 int main()
 {
 
@@ -1163,6 +1275,10 @@ int main()
 		std::cout << r.first << " - " << r.second.bbox.x << "," << r.second.bbox.y << " " << r.second.bbox.width << "x" << r.second.bbox.height << std::endl;
 	}
 */
+
+	EvaluationSettings settings;
+	settings.read(std::string("settings.ini"));
+
 	FeatureTester tester;
 	tester.nrOfConcurrentJobs = 4;
 
@@ -1199,7 +1315,11 @@ int main()
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
-	explainModel(&tester);
+
+	KITTIDataSet dataSet(kittiDatasetPath);
+	browseThroughDataSet(&dataSet);
+
+	//explainModel(&tester);
 
 	//generateFinalForEachRound(&tester);
 
@@ -1249,13 +1369,6 @@ int main()
 
 
 
-	// --------- Build initial training set file if it does not exist ----------
-	std::string initialTrain0File = std::string("trainingsets") + PATH_SEPARATOR + "train0.txt";
-	if (!FileExists(initialTrain0File)) {
-		std::cout << "The initial train0 file does not exist, building training set";
-		TrainingDataSet initialSet = saveTNTP();
-		initialSet.save(initialTrain0File);
-	}
 
 
 
@@ -1306,7 +1419,7 @@ int main()
 
 	std::set<std::string> set;
 	set = { "HOG(RGB)", "HDD" };
-	tester.addJob(set, windowSizes, kittiDatasetPath, nrOfEvaluations, 7);
+	tester.addJob(set, kittiDatasetPath, settings);
 	tester.runJobs();
 	//
 	//set = { "HOG(RGB)", "RAW(RGB)" };

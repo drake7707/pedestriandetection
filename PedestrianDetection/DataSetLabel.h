@@ -20,11 +20,23 @@ class DataSetLabel
 private:
 	std::string number;
 	cv::Rect2d bbox;
+	
+	
 	bool isDontCare;
 	OcclusionEnum occlusion;
 	double truncation;
-
 public:
+
+
+	float height;
+	float width;
+	float length;
+
+	float x_3d;
+	float y_3d;
+	float z_3d;
+
+
 	DataSetLabel(const std::string& number, const cv::Rect2d& bbox, OcclusionEnum occlusion, double truncation, bool isDontCare) : number(number), bbox(bbox), occlusion(occlusion), truncation(truncation) , isDontCare(isDontCare) {
 
 	}

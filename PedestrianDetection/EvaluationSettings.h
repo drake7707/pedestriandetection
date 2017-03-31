@@ -1,0 +1,39 @@
+#pragma once
+#include "INIReader.h"
+#include <string>
+#include "Helper.h"
+#include <functional>
+#include "opencv2/opencv.hpp"
+
+struct EvaluationSettings
+{
+public:
+	int refWidth = 64;
+	int refHeight = 128;
+
+	int nrOfEvaluations = 300;
+	int maxNrWorstPosNeg = 4000;
+	float requiredTPRRate = 0.95;
+	int maxWeakClassifiers = 500;
+	int nrOfTrainingRounds = 4;
+
+	std::vector<cv::Size> windowSizes = {
+		/*cv::Size(24,48),*/
+		cv::Size(32,64),
+		cv::Size(48,96),
+		cv::Size(64,128),
+		cv::Size(80,160),
+		cv::Size(96,192),
+		cv::Size(104,208),
+		cv::Size(112,224),
+		cv::Size(120,240),
+		cv::Size(128,256)
+	};
+
+	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 0; };
+	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 1; };
+
+
+	void read(std::string& iniPath);
+};
+

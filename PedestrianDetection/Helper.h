@@ -60,6 +60,8 @@ double getIntersectionOverUnion(const cv::Rect& r1, const cv::Rect& r2);
 bool FileExists(const std::string &Filename);
 
 
+std::vector<std::string>  splitString(const std::string &s, char delim);
+
 template <typename T, typename T2>
 void parallel_foreach(const std::map<T, T2>& map, int nrOfThreads, std::function<void(std::pair<T, T2>&)> func);
 

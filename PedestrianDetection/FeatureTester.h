@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include "FeatureTesterJob.h"
+#include "EvaluationSettings.h"
 
 class FeatureTesterJob;
 
@@ -25,7 +26,7 @@ class FeatureTester
 {
 private:
 	std::unordered_map<std::string, FactoryCreator> creators;
-	
+
 	std::queue<FeatureTesterJob*> jobs;
 
 	std::set<std::string> processedFeatureSets;
@@ -33,8 +34,8 @@ private:
 	void markFeatureSetProcessed(std::string& featureSetName);
 
 
-	
-		std::mutex singletonLock;
+
+	std::mutex singletonLock;
 
 
 
@@ -50,7 +51,7 @@ public:
 
 	std::vector<std::string> getFeatureCreatorFactories() const;
 
-	void addJob(std::set<std::string>& set, std::vector<cv::Size>& windowSizes, std::string& baseDataSetPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow = true);
+	void addJob(std::set<std::string>& set, std::string& baseDataSetPath, EvaluationSettings& settings);
 
 	void runJobs();
 

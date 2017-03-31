@@ -86,7 +86,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 }
 
 
-EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size>& windowSizes,
+EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size> windowSizes,
 	const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound,
 	float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg,
 	std::function<bool(int number)> canSelectFunc) const {
@@ -323,7 +323,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 }
 
 
-FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::vector<cv::Size>& windowSizes,
+FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::vector<cv::Size> windowSizes,
 	const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, std::function<bool(int number)> canSelectFunc,
 	int refWidth, int refHeight, int paralellization) const {
 

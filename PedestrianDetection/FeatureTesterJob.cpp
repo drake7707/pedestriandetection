@@ -3,12 +3,8 @@
 
 
 
-FeatureTesterJob::FeatureTesterJob(FeatureTester* tester, std::vector<cv::Size>& windowSizes, std::set<std::string> set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow)
-	: tester(tester), baseDataSetPath(baseDataPath), windowSizes(windowSizes), set(set), nrOfEvaluations(nrOfEvaluations), nrOfTrainingRounds(nrOfTrainingRounds), evaluateOnSlidingWindow(evaluateOnSlidingWindow) {
-
-	if (nrOfTrainingRounds > 1 && !evaluateOnSlidingWindow) {
-		throw std::exception("Evaluate on sliding window is required when running multiple training rounds");
-	}
+FeatureTesterJob::FeatureTesterJob(FeatureTester* tester, std::set<std::string> set, std::string& baseDataPath, EvaluationSettings settings)
+	: tester(tester), baseDataSetPath(baseDataPath), set(set), settings(settings) {
 }
 
 
@@ -26,15 +22,6 @@ std::string FeatureTesterJob::getFeatureName() const {
 
 
 void FeatureTesterJob::run() const {
-
-	int maxNrWorstPosNeg = 4000;
-	float requiredTPRRate = 0.95;
-	int maxWeakClassifiers = 500;
-
-	// faster, change later
-	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 0; };
-	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 1; };
-
 	std::string featureSetName = getFeatureName();
 
 
@@ -54,10 +41,8 @@ void FeatureTesterJob::run() const {
 	auto featureSet = tester->getFeatureSet(set);
 	featureSet->prepare(trainingDataSet);
 
-	while (cascade.trainingRound < nrOfTrainingRounds) {
+	while (cascade.trainingRound < settings.nrOfTrainingRounds) {
 		// ---------------- Build a feature set & prepare variable feature creators --------------------
-		
-		//featureSet->prepare(trainingDataSet, cascade.trainingRound);
 
 		ModelEvaluator evaluator(featureSetName + " round " + std::to_string(cascade.trainingRound));
 
@@ -70,7 +55,7 @@ void FeatureTesterJob::run() const {
 		else {
 			std::cout << "Started training of " << featureSetName << ", round " << cascade.trainingRound << std::endl;
 			long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluator.train(trainingDataSet, *featureSet, maxWeakClassifiers, trainingCriteria);
+				evaluator.train(trainingDataSet, *featureSet, settings.maxWeakClassifiers, settings.trainingCriteria);
 			});
 			std::cout << "Training round " << cascade.trainingRound << " complete after " << elapsedTrainingTime << "ms for " << featureSetName << std::endl;
 
@@ -81,9 +66,6 @@ void FeatureTesterJob::run() const {
 
 
 		// --------------- Evaluation --------------------
-
-		double valueShiftRequiredForTPR95Percent = 0;
-
 		std::vector<ClassifierEvaluation> evaluations;
 		std::string evaluationFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_round" + std::to_string(cascade.trainingRound) + ".csv";
 		if (FileExists(evaluationFile)) {
@@ -92,7 +74,7 @@ void FeatureTesterJob::run() const {
 		else {
 			std::cout << "Started evaluation of " << featureSetName << std::endl;
 			long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluations = cascade.evaluateDataSet(trainingDataSet, *featureSet, nrOfEvaluations, false, trainingCriteria);
+				evaluations = cascade.evaluateDataSet(trainingDataSet, *featureSet, settings.nrOfEvaluations, false, settings.trainingCriteria);
 			});
 			std::ofstream str(evaluationFile);
 			str << "Name" << ";";
@@ -107,64 +89,8 @@ void FeatureTesterJob::run() const {
 		}
 
 		// --------------- Evaluation of training with sliding window --------------------
-		if (evaluateOnSlidingWindow) {
+		evaluateTrainingWithSlidingWindow(cascade, featureSetName, trainingDataSet, featureSet);
 
-			// do not try and evaluate multiple jobs together with sliding window. The sliding window evaluation is already parallelized will just interfere with each other then
-			tester->getLock()->lock();
-
-			std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(cascade.trainingRound) + ".csv";
-			std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt";
-			if (FileExists(evaluationSlidingFile) && FileExists(nextRoundTrainingFile)) {
-				std::cout << "Skipped evaluation with sliding window of " << featureSetName << ", evaluation was already done and next training set was already present." << std::endl;
-				// load the training set for next round
-				trainingDataSet.load(nextRoundTrainingFile);
-			}
-			else {
-				std::cout << "Started training evaluation with sliding window of " << featureSetName << std::endl;
-				EvaluationSlidingWindowResult result;
-				long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-					result = cascade.evaluateWithSlidingWindow(windowSizes, trainingDataSet.getDataSet(), *featureSet, nrOfEvaluations, cascade.trainingRound, requiredTPRRate, maxNrWorstPosNeg,
-						trainingCriteria);
-				});
-				std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
-
-				std::ofstream str = std::ofstream(evaluationSlidingFile);
-				str << "Name" << ";";
-				ClassifierEvaluation().toCSVLine(str, true);
-				str << std::endl;
-				for (auto& result : result.evaluations) {
-					str << featureSetName << "[S]_round" << cascade.trainingRound << ";";
-					result.toCSVLine(str, false);
-					str << std::endl;
-				}
-
-				cascade.updateLastModelValueShift(result.evaluations[result.evaluationIndexWhenTPRThresholdIsReached].valueShift);
-
-
-				std::string worstFalsePositivesFile = std::string("models") + PATH_SEPARATOR + featureSetName + "_" + "worstfalsepositives_" + std::to_string(cascade.trainingRound) + ".csv";
-				std::ofstream wfpStr = std::ofstream(worstFalsePositivesFile);
-
-				wfpStr << std::fixed;
-				wfpStr << "Name;Score;ImageNumber;X;Y;Width;Height" << std::endl;
-				// --------------- New training set --------------------
-				TrainingDataSet newTrainingSet = trainingDataSet;
-				for (auto& swregion : result.worstFalsePositives) {
-
-					TrainingRegion r;
-					r.region = swregion.bbox;
-					r.regionClass = -1; // it was a negative but positive was specified
-					newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
-
-					wfpStr << featureSetName << ";" << swregion.score << ";" << swregion.imageNumber << ";" << swregion.bbox.x << ";" << swregion.bbox.y << ";" << swregion.bbox.width << ";" << swregion.bbox.height << std::endl;
-				}
-				wfpStr.close();
-
-				newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt");
-				trainingDataSet = newTrainingSet;
-			}
-
-			tester->getLock()->unlock();
-		}
 
 		// round is finished
 		ProgressWindow::getInstance()->finish(featureSetName + " round " + std::to_string(cascade.trainingRound));
@@ -184,7 +110,7 @@ void FeatureTesterJob::run() const {
 		std::cout << "Started final evaluation on test set with sliding window and NMS of " << featureSetName << std::endl;
 		FinalEvaluationSlidingWindowResult finalresult;
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			finalresult = cascade.evaluateWithSlidingWindowAndNMS(windowSizes, trainingDataSet.getDataSet(), *featureSet, nrOfEvaluations, testCriteria);
+			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings.windowSizes, trainingDataSet.getDataSet(), *featureSet, settings.nrOfEvaluations, settings.testCriteria);
 
 		});
 
@@ -226,6 +152,63 @@ void FeatureTesterJob::run() const {
 	generateFeatureImportanceImage(cascade, featureSet);
 }
 
+void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& cascade, std::string& featureSetName, TrainingDataSet& trainingDataSet, std::unique_ptr<FeatureSet>& featureSet) const {
+	// do not try and evaluate multiple jobs together with sliding window. The sliding window evaluation is already parallelized will just interfere with each other then
+	tester->getLock()->lock();
+
+	std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + featureSetName + "_sliding_round" + std::to_string(cascade.trainingRound) + ".csv";
+	std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt";
+	if (FileExists(evaluationSlidingFile) && FileExists(nextRoundTrainingFile)) {
+		std::cout << "Skipped evaluation with sliding window of " << featureSetName << ", evaluation was already done and next training set was already present." << std::endl;
+		// load the training set for next round
+		trainingDataSet.load(nextRoundTrainingFile);
+	}
+	else {
+		std::cout << "Started training evaluation with sliding window of " << featureSetName << std::endl;
+		EvaluationSlidingWindowResult result;
+		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			result = cascade.evaluateWithSlidingWindow(settings.windowSizes, trainingDataSet.getDataSet(), *featureSet, settings.nrOfEvaluations, cascade.trainingRound, settings.requiredTPRRate, settings.maxNrWorstPosNeg,
+				settings.trainingCriteria);
+		});
+		std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
+
+		std::ofstream str = std::ofstream(evaluationSlidingFile);
+		str << "Name" << ";";
+		ClassifierEvaluation().toCSVLine(str, true);
+		str << std::endl;
+		for (auto& result : result.evaluations) {
+			str << featureSetName << "[S]_round" << cascade.trainingRound << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+
+		cascade.updateLastModelValueShift(result.evaluations[result.evaluationIndexWhenTPRThresholdIsReached].valueShift);
+
+
+		std::string worstFalsePositivesFile = std::string("models") + PATH_SEPARATOR + featureSetName + "_" + "worstfalsepositives_" + std::to_string(cascade.trainingRound) + ".csv";
+		std::ofstream wfpStr = std::ofstream(worstFalsePositivesFile);
+
+		wfpStr << std::fixed;
+		wfpStr << "Name;Score;ImageNumber;X;Y;Width;Height" << std::endl;
+		// --------------- New training set --------------------
+		TrainingDataSet newTrainingSet = trainingDataSet;
+		for (auto& swregion : result.worstFalsePositives) {
+
+			TrainingRegion r;
+			r.region = swregion.bbox;
+			r.regionClass = -1; // it was a negative but positive was specified
+			newTrainingSet.addTrainingRegion(swregion.imageNumber, r);
+
+			wfpStr << featureSetName << ";" << swregion.score << ";" << swregion.imageNumber << ";" << swregion.bbox.x << ";" << swregion.bbox.y << ";" << swregion.bbox.width << ";" << swregion.bbox.height << std::endl;
+		}
+		wfpStr.close();
+
+		newTrainingSet.save(std::string("trainingsets") + PATH_SEPARATOR + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt");
+		trainingDataSet = newTrainingSet;
+	}
+
+	tester->getLock()->unlock();
+}
 
 void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const {
 	int refWidth = 64;

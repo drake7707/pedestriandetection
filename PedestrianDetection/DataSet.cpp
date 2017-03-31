@@ -11,6 +11,14 @@ DataSet::~DataSet()
 {
 }
 
+std::vector<std::vector<DataSetLabel>> DataSet::getLabelsPerNumber() const {
+
+	auto labels = getLabels();
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber(getNrOfImages(), std::vector<DataSetLabel>());
+	for (auto& l : labels)
+		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
+	return labelsPerNumber;
+}
 
 
 void DataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
@@ -21,14 +29,14 @@ void DataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes
 	std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 	int parallization) const {
 
-	
-	
+
+
 	auto labels = getLabels();
 	std::vector<std::vector<DataSetLabel>> labelsPerNumber(getNrOfImages(), std::vector<DataSetLabel>());
 	for (auto& l : labels)
 		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
 
-	parallel_for(0, labelsPerNumber.size(), parallization,  [&](int imgNumber) -> void {
+	parallel_for(0, labelsPerNumber.size(), parallization, [&](int imgNumber) -> void {
 		//for (auto& pair : images) {
 
 
@@ -41,7 +49,7 @@ void DataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes
 			cv::Mat mDepth = imgs[1];
 
 
-			
+
 			std::vector<cv::Rect2d> truePositiveRegions;
 			std::vector<std::string> truePositiveCategories;
 			std::vector<cv::Rect2d> dontCareRegions;

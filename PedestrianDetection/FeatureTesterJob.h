@@ -13,6 +13,7 @@
 #include <mutex>
 #include "EvaluatorCascade.h"
 #include "JetHeatMap.h"
+#include "EvaluationSettings.h"
 
 class FeatureTester;
 
@@ -21,16 +22,17 @@ class FeatureTesterJob {
 
 
 	std::set<std::string> set;
-	std::vector<cv::Size>& windowSizes;
 	std::string baseDataSetPath;
-	int nrOfEvaluations;
-	int nrOfTrainingRounds;
-	bool evaluateOnSlidingWindow;
+	
+	EvaluationSettings settings;
 
 	FeatureTester* tester;
 
+private:
+	void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& cascade, std::string& featureSetName, TrainingDataSet& trainingDataSet, std::unique_ptr<FeatureSet>& fset) const ;
+
 public:
-	FeatureTesterJob(FeatureTester* tester, std::vector<cv::Size>& windowSizes, std::set<std::string> set, std::string& baseDataPath, int nrOfEvaluations, int nrOfTrainingRounds, bool evaluateOnSlidingWindow);
+	FeatureTesterJob(FeatureTester* tester, std::set<std::string> set, std::string& baseDataPath, EvaluationSettings settings);
 
 	std::string FeatureTesterJob::getFeatureName() const;
 	void run() const;

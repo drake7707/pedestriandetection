@@ -14,6 +14,8 @@ public:
 
 	virtual std::vector<DataSetLabel> getLabels() const = 0;
 
+	std::vector<std::vector<DataSetLabel>> getLabelsPerNumber() const;
+
 	virtual std::vector<cv::Mat> getImagesForNumber(int number) const = 0;
 
 	virtual int getNrOfImages() const = 0;

@@ -210,3 +210,15 @@ bool FileExists(const std::string &Filename)
 {
 	return access(Filename.c_str(), 0) == 0;
 }
+
+
+std::vector<std::string>  splitString(const std::string &s, char delim) {
+	std::vector<std::string> parts;
+	std::stringstream ss;
+	ss.str(s);
+	std::string item;
+	while (std::getline(ss, item, delim)) {
+		parts.push_back(item);
+	}
+	return parts;
+}

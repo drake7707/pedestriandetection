@@ -19,7 +19,7 @@ int LBPFeatureCreator::getNumberOfFeatures() const {
 	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, false);
 }
 
-FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 	cv::Mat img;
 	if (onDepth)

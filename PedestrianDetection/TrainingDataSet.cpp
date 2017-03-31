@@ -100,7 +100,7 @@ void TrainingDataSet::iterateDataSetImages(std::function<void(int imageNumber, c
 	}
 }
 
-void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth)> func) const {
+void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal)> func) const {
 
 
 	int idx = 0;
@@ -110,24 +110,36 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 			auto imgs = dataSet->getImagesForNumber(pair.first);
 			cv::Mat rgb = imgs[0];
 			cv::Mat depth = imgs[1];
+			cv::Mat thermal = imgs[2];
 
 			for (auto& r : pair.second.regions) {
 				if (r.regionClass != 0) { // exclude don't care regions
 					cv::Mat regionRGB;
-					cv::resize(rgb(r.region), regionRGB, cv::Size2d(refWidth, refHeight));
+					if (rgb.cols > 0 && rgb.rows > 0)
+						cv::resize(rgb(r.region), regionRGB, cv::Size2d(refWidth, refHeight));
 
 					cv::Mat regionDepth;
-					cv::resize(depth(r.region), regionDepth, cv::Size2d(refWidth, refHeight));
+					if (depth.cols > 0 && depth.rows > 0)
+						cv::resize(depth(r.region), regionDepth, cv::Size2d(refWidth, refHeight));
 
+					cv::Mat regionThermal;
+					if (thermal.cols > 0 && thermal.rows > 0)
+						cv::resize(thermal(r.region), regionThermal, cv::Size2d(refWidth, refHeight));
 
-					func(idx, r.regionClass, pair.first, r.region, regionRGB, regionDepth);
+					func(idx, r.regionClass, pair.first, r.region, regionRGB, regionDepth, regionThermal);
 					idx++;
 
 					cv::Mat rgbFlipped;
 					cv::Mat depthFlipped;
-					cv::flip(regionRGB, rgbFlipped, 1);
-					cv::flip(regionDepth, depthFlipped, 1);
-					func(idx, r.regionClass, pair.first, r.region, rgbFlipped, depthFlipped);
+					cv::Mat thermalFlipped;
+					if (rgb.cols > 0 && rgb.rows > 0)
+						cv::flip(regionRGB, rgbFlipped, 1);
+
+					if (depth.cols > 0 && depth.rows > 0)
+						cv::flip(regionDepth, depthFlipped, 1);
+
+					if (thermal.cols > 0 && thermal.rows > 0)
+						func(idx, r.regionClass, pair.first, r.region, rgbFlipped, depthFlipped, thermalFlipped);
 					idx++;
 				}
 			}

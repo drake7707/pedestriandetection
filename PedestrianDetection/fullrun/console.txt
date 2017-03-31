@@ -29258,3 +29258,194 @@ Evaluation with sliding window and NMS complete after 10341409ms for HDD+HOG(RGB
 Starting job HDD+HOG(RGB)
 Error: bad allocation
 Input sets file does not exist
+The initial train0 file does not exist, building training setStarting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 0
+Training boost classifier on 19372 samples (4408 TP, 14964 TN), feature size 7560
+The initial train0 file does not exist, building training setStarting job HDD+HOG(RGB)
+Can't evaluate the feature set HDD+HOG(RGB) against the data set KAIST, requirements not met
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Error: Unknown exception
+Starting job HOG(Depth)+HOG(RGB)
+Can't evaluate the feature set HOG(Depth)+HOG(RGB) against the data set KAIST, requirements not met
+Starting job HOG(RGB)+HONV
+Can't evaluate the feature set HOG(RGB)+HONV against the data set KAIST, requirements not met
+Starting job HOG(RGB)+LBP(RGB)
+Started training of HOG(RGB)+LBP(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+S2HOG(RGB)
+Started training of HOG(RGB)+S2HOG(RGB), round 0
+Error: Unknown exception
+Starting job CoOccurrence(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job CoOccurrence(RGB)
+Started training of CoOccurrence(RGB), round 0
+Error: Unknown exception
+Starting job LBP(RGB)
+Started training of LBP(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)
+Started training of HOG(RGB), round 0
+Error: Unknown exception
+Starting job HONV
+Can't evaluate the feature set HONV against the data set KAIST, requirements not met
+Starting job HDD
+Can't evaluate the feature set HDD against the data set KAIST, requirements not met
+Starting job HOG(Depth)+HOG(RGB)+LBP(RGB)
+Can't evaluate the feature set HOG(Depth)+HOG(RGB)+LBP(RGB) against the data set KAIST, requirements not met
+Starting job HDD+HOG(RGB)+LBP(RGB)
+Can't evaluate the feature set HDD+HOG(RGB)+LBP(RGB) against the data set KAIST, requirements not met
+Starting job S2HOG(RGB)
+Started training of S2HOG(RGB), round 0
+Error: Unknown exception
+Starting job Corner(Depth)
+Can't evaluate the feature set Corner(Depth) against the data set KAIST, requirements not met
+Starting job SIFT(RGB)
+Started training of SIFT(RGB), round 0
+Error: Unknown exception
+Starting job HOG(Depth)
+Can't evaluate the feature set HOG(Depth) against the data set KAIST, requirements not met
+Starting job Corner(RGB)
+Started training of Corner(RGB), round 0
+Error: Unknown exception
+Starting job Histogram(Depth)
+Can't evaluate the feature set Histogram(Depth) against the data set KAIST, requirements not met
+Starting job ORB(RGB)
+Started training of ORB(RGB), round 0
+Error: Unknown exception
+Starting job CenSurE(RGB)
+Started training of CenSurE(RGB), round 0
+Error: Unknown exception
+Starting job FAST(RGB)
+Started training of FAST(RGB), round 0
+Error: Unknown exception
+Starting job MSD(RGB)
+Started training of MSD(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+SIFT(RGB)
+Started training of HOG(RGB)+SIFT(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+MSD(RGB)
+Started training of HOG(RGB)+MSD(RGB), round 0
+Error: Unknown exception
+Starting job RAW(RGB)
+Started training of RAW(RGB), round 0
+Error: Unknown exception
+Starting job Corner(Depth)+HOG(RGB)
+Can't evaluate the feature set Corner(Depth)+HOG(RGB) against the data set KAIST, requirements not met
+Starting job Corner(RGB)+HOG(RGB)
+Started training of Corner(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+Histogram(Depth)
+Can't evaluate the feature set HOG(RGB)+Histogram(Depth) against the data set KAIST, requirements not met
+Starting job HOG(RGB)+SURF(RGB)
+Started training of HOG(RGB)+SURF(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+ORB(RGB)
+Started training of HOG(RGB)+ORB(RGB), round 0
+Error: Unknown exception
+Starting job CenSurE(RGB)+HOG(RGB)
+Started training of CenSurE(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job FAST(RGB)+HOG(RGB)
+Started training of FAST(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job SURF(RGB)
+Started training of SURF(RGB), round 0
+Error: Unknown exception
+--------------------- New console session -----------------------
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Started training of HOG(RGB)+RAW(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+LBP(RGB)
+Started training of HOG(RGB)+LBP(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+S2HOG(RGB)
+Started training of HOG(RGB)+S2HOG(RGB), round 0
+Error: Unknown exception
+Starting job CoOccurrence(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job CoOccurrence(RGB)
+Started training of CoOccurrence(RGB), round 0
+Error: Unknown exception
+Starting job LBP(RGB)
+Started training of LBP(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)
+Job HONV is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HDD+HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Started training of HOG(RGB), round 0
+Error: Unknown exception
+Starting job Job Corner(Depth)S2HOG(RGB) is already processed and will be skipped
+
+Started training of S2HOG(RGB), round 0
+Error: Unknown exception
+Starting job SIFT(RGB)
+Job HOG(Depth) is already processed and will be skipped
+Started training of SIFT(RGB), round 0
+Error: Unknown exception
+Starting job Corner(RGB)
+Job Histogram(Depth) is already processed and will be skipped
+Started training of Corner(RGB), round 0
+Error: Unknown exception
+Starting job ORB(RGB)
+Started training of ORB(RGB), round 0
+Error: Unknown exception
+Starting job CenSurE(RGB)
+Started training of CenSurE(RGB), round 0
+Error: Unknown exception
+Starting job FAST(RGB)
+Started training of FAST(RGB), round 0
+Error: Unknown exception
+Starting job MSD(RGB)
+Started training of MSD(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+SIFT(RGB)
+Started training of HOG(RGB)+SIFT(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+MSD(RGB)
+Started training of HOG(RGB)+MSD(RGB), round 0
+Error: Unknown exception
+Starting job RAW(RGB)
+Job Corner(Depth)+HOG(RGB) is already processed and will be skipped
+Started training of RAW(RGB), round 0
+Error: Unknown exception
+Starting job Corner(RGB)+HOG(RGB)
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Started training of Corner(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+SURF(RGB)
+Started training of HOG(RGB)+SURF(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+ORB(RGB)
+Started training of HOG(RGB)+ORB(RGB), round 0
+Error: Unknown exception
+Starting job CenSurE(RGB)+HOG(RGB)
+Started training of CenSurE(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job FAST(RGB)+HOG(RGB)
+Started training of FAST(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job SURF(RGB)
+Started training of SURF(RGB), round 0
+Error: Unknown exception
+--------------------- New console session -----------------------
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Started training of HOG(RGB)+RAW(RGB), round 0
+Error: Unknown exception
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Started training of HOG(RGB)+RAW(RGB), round 0
+Training boost classifier on 13750 samples (4214 TP, 9536 TN), feature size 28356

@@ -14,7 +14,7 @@ SURFFeatureCreator::~SURFFeatureCreator() {
 
 
 
-std::vector<FeatureVector> SURFFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+std::vector<FeatureVector> SURFFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 
 	cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create();

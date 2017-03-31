@@ -12,7 +12,7 @@ CornerFeatureCreator::~CornerFeatureCreator()
 {
 }
 
-std::vector<FeatureVector> CornerFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+std::vector<FeatureVector> CornerFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 	cv::Mat gray;
 	if (onDepth) {
 

@@ -14,7 +14,7 @@ ORBFeatureCreator::~ORBFeatureCreator() {
 
 
 
-std::vector<FeatureVector> ORBFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+std::vector<FeatureVector> ORBFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 	cv::Ptr<cv::ORB> detector = cv::ORB::create(500, 1.2, 8, 10, 0, 2, 0, 8);
 	std::vector<cv::KeyPoint> keypoints;

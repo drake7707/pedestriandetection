@@ -14,7 +14,7 @@ BRISKFeatureCreator::~BRISKFeatureCreator() {
 
 
 
-std::vector<FeatureVector> BRISKFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+std::vector<FeatureVector> BRISKFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 
 	cv::Ptr<cv::BRISK> detector = cv::BRISK::create(5, 5);

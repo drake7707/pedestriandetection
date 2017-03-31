@@ -14,7 +14,7 @@ public:
 	CornerFeatureCreator(std::string& name, bool onDepth, int clusterSize = 80);
 	virtual ~CornerFeatureCreator();
 
-	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const;
+	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;
 
 	virtual std::vector<bool> getRequirements() const;
 };

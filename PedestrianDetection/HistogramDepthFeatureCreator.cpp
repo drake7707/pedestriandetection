@@ -16,7 +16,7 @@ int HistogramDepthFeatureCreator::getNumberOfFeatures() const {
 	return 26;
 }
 
-FeatureVector HistogramDepthFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+FeatureVector HistogramDepthFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 
 	FeatureVector v(26, 0);

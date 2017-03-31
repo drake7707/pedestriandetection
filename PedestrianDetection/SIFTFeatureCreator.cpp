@@ -14,7 +14,7 @@ SIFTFeatureCreator::~SIFTFeatureCreator() {
 
 
 
-std::vector<FeatureVector> SIFTFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+std::vector<FeatureVector> SIFTFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 
 	cv::Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();

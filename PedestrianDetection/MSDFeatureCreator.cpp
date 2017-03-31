@@ -14,7 +14,7 @@ MSDFeatureCreator::~MSDFeatureCreator() {
 
 
 
-std::vector<FeatureVector> MSDFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+std::vector<FeatureVector> MSDFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 
 	cv::Ptr<cv::xfeatures2d::MSDDetector> detector = cv::xfeatures2d::MSDDetector::create(3, 5, 5, 0, 250, 4, 1.25, -1, true);;

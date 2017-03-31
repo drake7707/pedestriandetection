@@ -34,14 +34,14 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
 	std::vector<FeatureVector> samples;
 
 	trainingDataSet.iterateDataSet([](int idx) -> bool { return true; },
-		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth) -> void {
+		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Aggregating feature vectors (") + std::to_string(imageNumber) + ")");
 
 		// aggregate vectors
 
-		std::vector<FeatureVector> localSamples = getVariableNumberFeatures(rgb, depth);
+		std::vector<FeatureVector> localSamples = getVariableNumberFeatures(rgb, depth, thermal);
 		for (auto& s : localSamples)
 			samples.push_back(s);
 	});
@@ -113,8 +113,8 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
 	saveCentroids(featureCachePath);
 }
 
-FeatureVector VariableNumberFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
-	std::vector<FeatureVector> localSamples = getVariableNumberFeatures(rgb, depth);
+FeatureVector VariableNumberFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
+	std::vector<FeatureVector> localSamples = getVariableNumberFeatures(rgb, depth, thermal);
 
 
 	// tally closest centroids

@@ -14,7 +14,7 @@ CenSurEFeatureCreator::~CenSurEFeatureCreator() {
 
 
 
-std::vector<FeatureVector> CenSurEFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+std::vector<FeatureVector> CenSurEFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 
 	cv::Ptr<cv::xfeatures2d::StarDetector> detector = cv::xfeatures2d::StarDetector::create(5, 5, 5, 10, 1);

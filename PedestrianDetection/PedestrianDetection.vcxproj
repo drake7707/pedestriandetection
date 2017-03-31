@@ -186,6 +186,7 @@
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
     <ClInclude Include="JetHeatMap.h" />
+    <ClInclude Include="KAISTDataSet.h" />
     <ClInclude Include="KITTIDataSet.h" />
     <ClInclude Include="LBPFeatureCreator.h" />
     <ClInclude Include="LocalBinaryPatterns.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="JetHeatMap.cpp" />
+    <ClCompile Include="KAISTDataSet.cpp" />
     <ClCompile Include="KITTIDataSet.cpp" />
     <ClCompile Include="LBPFeatureCreator.cpp" />
     <ClCompile Include="LocalBinaryPatterns.cpp" />

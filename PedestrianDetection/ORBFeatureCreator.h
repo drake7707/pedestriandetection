@@ -10,7 +10,7 @@ public:
 	ORBFeatureCreator(std::string& name, int clusterSize, bool onDepth);
 	virtual ~ORBFeatureCreator();
 
-	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const;
+	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;
 
 	virtual std::vector<bool> getRequirements() const;
 };

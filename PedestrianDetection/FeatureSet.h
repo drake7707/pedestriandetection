@@ -28,7 +28,8 @@ public:
 	void prepare(TrainingDataSet& trainingDataSet);
 
 	int getNumberOfFeatures() const;
-	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const;
+	FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;
+
 
 	std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 

@@ -31,7 +31,7 @@ private:
 
 	std::set<std::string> processedFeatureSets;
 	void loadProcessedFeatureSets();
-	void markFeatureSetProcessed(std::string& featureSetName);
+	void FeatureTester::markFeatureSetProcessed(DataSet* dataSet, std::string& featureSetName);
 
 
 

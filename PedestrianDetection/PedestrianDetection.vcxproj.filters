@@ -168,6 +168,9 @@
     <ClInclude Include="VariableNumberFeatureCreator.h">
       <Filter>Header Files\FeatureCreators\Sparse</Filter>
     </ClInclude>
+    <ClInclude Include="KAISTDataSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -301,6 +304,9 @@
     </ClCompile>
     <ClCompile Include="HDDFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="KAISTDataSet.cpp">
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -21,7 +21,7 @@ public:
 
 	virtual int getNumberOfFeatures() const = 0;
 
-	virtual FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth) const = 0;
+	virtual FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const = 0;
 
 	virtual cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const = 0;
 

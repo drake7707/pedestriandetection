@@ -33,12 +33,12 @@ void FeatureTester::loadProcessedFeatureSets() {
 	}
 }
 
-void FeatureTester::markFeatureSetProcessed(std::string& featureSetName) {
-	processedFeatureSets.emplace(featureSetName);
+void FeatureTester::markFeatureSetProcessed(DataSet* dataSet, std::string& featureSetName) {
+	processedFeatureSets.emplace(dataSet->getName() + "_" + featureSetName);
 	std::ofstream str("processedsets.txt", std::ofstream::out | std::ofstream::app);
 	if (!str.is_open())
 		return;
-	str << featureSetName << std::endl;
+	str << dataSet->getName() + "_" + featureSetName << std::endl;
 	str.flush();
 }
 
@@ -86,7 +86,7 @@ void FeatureTester::runJobs() {
 
 
 		std::string featureSetName = job->getFeatureName();
-		if (processedFeatureSets.find(featureSetName) != processedFeatureSets.end()) {
+		if (processedFeatureSets.find(job->getDataSet()->getName() + "_" + featureSetName) != processedFeatureSets.end()) {
 			std::cout << "Job " << featureSetName << " is already processed and will be skipped" << std::endl;
 		}
 		else {
@@ -100,7 +100,7 @@ void FeatureTester::runJobs() {
 					job->run();
 
 					resultsFileMutex.lock();
-					ft->markFeatureSetProcessed(std::string(featureSetName));
+					ft->markFeatureSetProcessed(job->getDataSet(), std::string(featureSetName));
 					resultsFileMutex.unlock();
 					semaphore.notify();
 				}

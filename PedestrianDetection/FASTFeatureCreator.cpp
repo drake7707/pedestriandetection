@@ -14,7 +14,7 @@ FASTFeatureCreator::~FASTFeatureCreator() {
 
 
 
-std::vector<FeatureVector> FASTFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+std::vector<FeatureVector> FASTFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 
 	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();

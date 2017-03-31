@@ -20,7 +20,7 @@ int HONVFeatureCreator::getNumberOfFeatures() const {
 	return nrOfCellsWidth * nrOfCellsHeight * (binSize * binSize);
 }
 
-FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 	cv::Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
 

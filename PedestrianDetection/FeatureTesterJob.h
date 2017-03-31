@@ -39,6 +39,7 @@ public:
 	std::string FeatureTesterJob::getFeatureName() const;
 	void run() const;
 
+	DataSet* FeatureTesterJob::getDataSet() const;
 
 	void generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const;
 

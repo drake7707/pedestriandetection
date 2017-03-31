@@ -19,6 +19,9 @@ std::string FeatureTesterJob::getFeatureName() const {
 	return featureSetName;
 }
 
+DataSet* FeatureTesterJob::getDataSet() const {
+	return FeatureTesterJob::dataSet;
+}
 
 
 void FeatureTesterJob::run() const {

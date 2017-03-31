@@ -21,14 +21,14 @@ int FeatureSet::size() const {
 	return this->creators.size();
 }
 
-FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth) const {
+FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth,cv::Mat& thermal) const {
 	if (creators.size() == 0)
 		throw std::exception("No feature creators were present");
 
-	FeatureVector v = creators[0]->getFeatures(rgb, depth);
+	FeatureVector v = creators[0]->getFeatures(rgb, depth, thermal);
 	for (int i = 1; i < creators.size(); i++)
 	{
-		FeatureVector v2 = creators[i]->getFeatures(rgb, depth);
+		FeatureVector v2 = creators[i]->getFeatures(rgb, depth, thermal);
 		for (auto& f : v2)
 			v.push_back(f);
 	}

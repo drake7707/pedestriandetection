@@ -7,6 +7,8 @@
 #include "FeatureVector.h"
 #include <functional>
 #include "Helper.h"
+#include "EvaluationSettings.h"
+
 
 struct EvaluationResult {
 	int resultClass;
@@ -26,6 +28,9 @@ struct EvaluationSlidingWindowResult {
 struct FinalEvaluationSlidingWindowResult {
 	std::map<std::string, std::vector<ClassifierEvaluation>> evaluations;
 	std::vector<ClassifierEvaluation> combinedEvaluations;
+
+
+	std::map<int, std::vector<std::vector<cv::Rect>>> missedPositivesPerImage;
 };
 
 
@@ -36,30 +41,31 @@ protected:
 
 	std::string name;
 
-	int refWidth = 64;
-	int refHeight = 128;
-	int parallelization = 8;
-	int baseWindowStride = 16;
-	int slidingWindowEveryXImage = 1;
-	int evaluationRange = 60;
+	//int refWidth = 64;
+	//int refHeight = 128;
+	//int parallelization = 8;
+	//int baseWindowStride = 16;
+	//int slidingWindowEveryXImage = 1;
+
 
 public:
 	IEvaluator(std::string& name);
 	virtual ~IEvaluator();
 
 
-	std::vector<ClassifierEvaluation> evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) const;
+	float getValueShift(int i, int nrOfEvaluations, float evaluationRange) const;
 
-	EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size> windowSizes,
-		const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound,
-		float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg, std::function<bool(int number)> canSelectFunc) const;
+	std::vector<ClassifierEvaluation> evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc);
 
-	FinalEvaluationSlidingWindowResult evaluateWithSlidingWindowAndNMS(std::vector<cv::Size> windowSizes, 
-		const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, std::function<bool(int number)> canSelectFunc,
-		int refWidth = 64, int refHeight = 128, int paralellization = 8) const;
+	EvaluationSlidingWindowResult evaluateWithSlidingWindow(const EvaluationSettings& settings,
+		const DataSet* dataSet, const FeatureSet& set, int trainingRound,
+		std::function<bool(int number)> canSelectFunc);
+
+	FinalEvaluationSlidingWindowResult evaluateWithSlidingWindowAndNMS(const EvaluationSettings& settings,
+		const DataSet* dataSet, const FeatureSet& set, std::function<bool(int number)> canSelectFunc);
 
 	//double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
 
-	virtual double evaluateFeatures(FeatureVector& v) const = 0;
+	virtual double evaluateFeatures(FeatureVector& v) = 0;
 };
 

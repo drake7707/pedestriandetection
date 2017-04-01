@@ -31,7 +31,7 @@ public:
 
 	
 	
-	double evaluateFeatures(FeatureVector& v) const;
+	double evaluateFeatures(FeatureVector& v);
 
 
 

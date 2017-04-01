@@ -13,13 +13,18 @@ EvaluatorCascade::~EvaluatorCascade()
 }
 
 
-double EvaluatorCascade::evaluateFeatures(FeatureVector& v) const {
+double EvaluatorCascade::evaluateFeatures(FeatureVector& v) {
 	int classifierIndex;
-	classifierHitCount[classifierIndex++];
-	return evaluateCascadeFeatures(v, &classifierIndex);
+	double result = evaluateCascadeFeatures(v, &classifierIndex);
+	if (trackClassifierHitCount) {
+		lockClassifierHitCount.lock();
+		classifierHitCount[classifierIndex] = classifierHitCount[classifierIndex] + 1;
+		lockClassifierHitCount.unlock();
+	}
+	return result;
 }
 
-double EvaluatorCascade::evaluateCascadeFeatures(FeatureVector& v, int* classifierIndex) const {
+double EvaluatorCascade::evaluateCascadeFeatures(FeatureVector& v, int* classifierIndex) {
 
 	double result;
 	for (int i = 0; i < cascade.size(); i++)

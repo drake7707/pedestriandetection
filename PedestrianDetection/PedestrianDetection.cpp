@@ -1203,8 +1203,7 @@ void generateFinalForEachRound(FeatureTester* tester, EvaluationSettings& settin
 		std::cout << "Started final evaluation on test set with sliding window and NMS " << std::endl;
 		FinalEvaluationSlidingWindowResult finalresult;
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings.windowSizes, &dataSet, *featureSet, nrOfEvaluations, testCriteria);
-
+			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings, &dataSet, *featureSet, testCriteria);
 		});
 		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms" << std::endl;
 
@@ -1249,7 +1248,7 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 
 
 	std::set<std::string> set;
-	set = { "FAST(RGB)" };
+	set = { "HOG(RGB)", "HDD" };
 
 	std::string featureSetName("");
 	for (auto& name : set) {
@@ -1262,7 +1261,7 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 	auto fset = tester.getFeatureSet(set);
 
 	EvaluatorCascade cascade(featureSetName);
-	cascade.load(std::string("models\\" + featureSetName + "_cascade.xml"), std::string("models"));
+	cascade.load(std::string("models\\KITTI_" + featureSetName + "_cascade.xml"), std::string("models"));
 
 	std::vector<int> classifierHits(cascade.size(), 0);
 
@@ -1291,8 +1290,8 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 
 	for (int i = 0; i < rounds; i++)
 	{
-		ModelEvaluator model(featureSetName);
-		model.loadModel(std::string("models\\" + featureSetName + " round " + std::to_string(i) + ".xml"));
+		ModelEvaluator model = cascade.getModelEvaluator(i);
+	//	model.loadModel(std::string("models\\" + featureSetName + " round " + std::to_string(i) + ".xml"));
 
 
 		auto cur = model.explainModel(fset, settings.refWidth, settings.refHeight);
@@ -1460,23 +1459,26 @@ int main()
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
-
-
-	KITTIDataSet dataSet(kittiDatasetPath);
 	//browseThroughDataSet(&dataSet);
+	//KAISTDataSet kaistDataSet(kaistDatasetPath);
+	//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
 
-	KAISTDataSet kaistDataSet(kaistDatasetPath);
 
-	browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+	//explainModel(tester, settings);
 
-	runJobsFromInputSets(tester, &kaistDataSet, settings);
-
+	if (settings.kittiDataSetPath != "") {
+		KITTIDataSet dataSet(settings.kittiDataSetPath);
+		runJobsFromInputSets(tester, &dataSet, settings);
+	}
+	if (settings.kaistDataSetPath != "") {
+		KAISTDataSet dataSet(settings.kaistDataSetPath);
+		runJobsFromInputSets(tester, &dataSet, settings);
+	}
 
 	//testClassifier(tester);
 
 	//testFeature();
 
-	//explainModel(&tester);
 
 	//generateFinalForEachRound(&tester);
 

@@ -22,6 +22,8 @@ class EvaluatorCascade : public IEvaluator
 	std::vector<EvaluationCascadeEntry> cascade;
 
 	std::vector<int> classifierHitCount;
+	std::mutex lockClassifierHitCount;
+	bool trackClassifierHitCount = false;
 
 public:
 
@@ -39,8 +41,12 @@ public:
 		return cascade;
 	}
 
-	virtual double evaluateFeatures(FeatureVector& v) const;
-	double evaluateCascadeFeatures(FeatureVector& v, int* classifierIndex) const;
+	void setTrackClassifierHitCountEnabled(bool enabled) {
+		trackClassifierHitCount = enabled;
+	}
+
+	virtual double evaluateFeatures(FeatureVector& v);
+	double evaluateCascadeFeatures(FeatureVector& v, int* classifierIndex);
 
 
 	void resetClassifierHitCount() {
@@ -49,6 +55,10 @@ public:
 
 	std::vector<int> getClassifierHitCount() const {
 		return classifierHitCount;
+	}
+
+	ModelEvaluator getModelEvaluator(int idx) const {
+		return cascade[idx].model;
 	}
 
 	void updateLastModelValueShift(double valueShift);

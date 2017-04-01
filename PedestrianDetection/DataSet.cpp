@@ -21,7 +21,7 @@ std::vector<std::vector<DataSetLabel>> DataSet::getLabelsPerNumber() const {
 }
 
 
-void DataSet::iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
+void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windowSizes, int baseWindowStride,
 	int refWidth, int refHeight,
 	std::function<bool(int number)> canSelectFunc,
 	std::function<void(int imageNumber)> onImageStarted,

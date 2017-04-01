@@ -19,9 +19,13 @@ IEvaluator::~IEvaluator()
 }
 
 
+float IEvaluator::getValueShift(int i, int nrOfEvaluations, float evaluationRange) const {
+	double valueShift = 1.0 * i / nrOfEvaluations * evaluationRange - evaluationRange / 2;
+	return valueShift;
+}
 
-std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int nrOfEvaluations, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) const {
-	std::vector<ClassifierEvaluation> evals(nrOfEvaluations, ClassifierEvaluation());
+std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) {
+	std::vector<ClassifierEvaluation> evals(settings.nrOfEvaluations, ClassifierEvaluation());
 
 	double sumTimes = 0;
 	int nrRegions = 0;
@@ -44,10 +48,10 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 			resultSum = evaluateFeatures(v);
 		});
 		nrRegions++;
-		for (int i = 0; i < nrOfEvaluations; i++)
+		for (int i = 0; i < settings.nrOfEvaluations; i++)
 		{
 			// get datapoints, ranging from -evaluationRange/2 to evaluationRange/2
-			double valueShift = 1.0 * i / nrOfEvaluations * evaluationRange - evaluationRange / 2;
+			double valueShift = getValueShift(i, settings.nrOfEvaluations, settings.evaluationRange);
 			evals[i].valueShift = valueShift;
 
 			int evaluationClass = resultSum + valueShift > 0 ? 1 : -1;
@@ -77,7 +81,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 		}
 	});
 
-	for (int i = 0; i < nrOfEvaluations; i++)
+	for (int i = 0; i < settings.nrOfEvaluations; i++)
 		evals[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes) / nrRegions;
 
 	ProgressWindow::getInstance()->finish(std::string(name));
@@ -86,13 +90,12 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 }
 
 
-EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<cv::Size> windowSizes,
-	const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, int trainingRound,
-	float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg,
-	std::function<bool(int number)> canSelectFunc) const {
+EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const EvaluationSettings& settings,
+	const DataSet* dataSet, const FeatureSet& set, int trainingRound,
+	std::function<bool(int number)> canSelectFunc) {
 
 	EvaluationSlidingWindowResult swresult;
-	swresult.evaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
+	swresult.evaluations = std::vector<ClassifierEvaluation>(settings.nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
 
 	double sumTimesRegions = 0;
 	int nrRegions = 0;
@@ -112,18 +115,18 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 
 	// want to obtain 4000 false positives, over 7500 images, which means about 0.5 false positive per image
 	// allow 20 times that size, or 10 worst false positives per image
-	int maxNrOfFPPerImage = dataSet->getNrOfImages() / maxNrOfFalsePosOrNeg * 20;
+	int maxNrOfFPPerImage = settings.maxNrOfFPPerImage;
 
 
 
 	typedef std::vector<std::set<SlidingWindowRegion>> FPPerValueShift;
 
 	std::vector<FPPerValueShift> worstFalsePositivesArrayPerImage(dataSet->getNrOfImages(),
-		FPPerValueShift(nrOfEvaluations, std::set<SlidingWindowRegion>()));
+		FPPerValueShift(settings.nrOfEvaluations, std::set<SlidingWindowRegion>()));
 
 
 	int nrOfImagesEvaluated = 0;
-	dataSet->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
+	dataSet->iterateDataSetWithSlidingWindow(settings.windowSizes, settings.baseWindowStride, settings.refWidth, settings.refHeight,
 		canSelectFunc,
 		[&](int imgNr) -> void {
 		// image has started
@@ -152,9 +155,9 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 
 		// now update everything that is shared across threads from the built vectors
 		lock([&]() -> void {
-			for (int i = 0; i < nrOfEvaluations; i++)
+			for (int i = 0; i < settings.nrOfEvaluations; i++)
 			{
-				double valueShift = 1.0 * i / nrOfEvaluations * evaluationRange - evaluationRange / 2;
+				double valueShift = getValueShift(i, settings.nrOfEvaluations, settings.evaluationRange);
 				swresult.evaluations[i].valueShift = valueShift;
 
 				double evaluationResult = baseEvaluationSum + valueShift;
@@ -238,18 +241,18 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 	}, [&](int imgNr, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
 		lock([&]() -> void {
-			for (int i = 0; i < nrOfEvaluations; i++)
+			for (int i = 0; i < settings.nrOfEvaluations; i++)
 				swresult.evaluations[i].nrOfImagesEvaluated++;
 			nrOfImagesEvaluated++;
 		});
-	}, parallelization);
+	}, settings.slidingWindowParallelization);
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
 
-	for (int i = 0; i < nrOfEvaluations; i++)
+	for (int i = 0; i < settings.nrOfEvaluations; i++)
 		swresult.evaluations[i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
 
-	swresult.worstFalsePositives.reserve(maxNrOfFalsePosOrNeg);
+	swresult.worstFalsePositives.reserve(settings.maxNrOfFalsePosOrNeg);
 	//swresult.worstFalseNegatives.reserve(worstFalseNegatives.size());
 
 	// determine value shift where TPR = tprToObtainWorstFalsePositives
@@ -260,7 +263,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 	std::cout << std::fixed;
 	for (int i = 0; i < swresult.evaluations.size(); i++)
 	{
-		if (swresult.evaluations[i].getTPR() > tprToObtainWorstFalsePositives) { // only consider evaluations above the min threshold TPR
+		if (swresult.evaluations[i].getTPR() > settings.requiredTPRRate) { // only consider evaluations above the min threshold TPR
 			if (swresult.evaluations[i].getTPR() < minTPRAboveTPRToObtainWorstFalsePositives) { // then take the smallest TPR above the threshold to reduce the FPR
 				minTPRAboveTPRToObtainWorstFalsePositives = swresult.evaluations[i].getTPR();
 				evaluationIndexForValueShift = i;
@@ -282,6 +285,13 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 			}
 		}
 	}
+	// still not enough, just take the largest value
+	if (evaluationIndexForValueShift == -1) {
+		evaluationIndexForValueShift = swresult.evaluations.size() - 1;
+		minTPRAboveTPRToObtainWorstFalsePositives = swresult.evaluations[evaluationIndexForValueShift].getTPR();
+		valueShiftRequired = swresult.evaluations[evaluationIndexForValueShift].valueShift;
+	}
+		
 	swresult.evaluationIndexWhenTPRThresholdIsReached = evaluationIndexForValueShift;
 
 	std::cout << "Chosen " << valueShiftRequired << " as decision boundary shift to attain TPR of " << swresult.evaluations[evaluationIndexForValueShift].getTPR() << std::endl;
@@ -302,7 +312,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 
 	int nrAdded = 0;
 	auto it = worstFalsePositives.rbegin();
-	while (it != worstFalsePositives.rend() && nrAdded < maxNrOfFalsePosOrNeg) {
+	while (it != worstFalsePositives.rend() && nrAdded < settings.maxNrOfFalsePosOrNeg) {
 		auto& wnd = *it;
 		//std::cout << "Worst FP region score= " << wnd.score << " image= " << wnd.imageNumber << " bbox=" << wnd.bbox.x << "," << wnd.bbox.y << " " << wnd.bbox.width << "x" << wnd.bbox.height << std::endl;
 		swresult.worstFalsePositives.push_back(wnd);
@@ -323,15 +333,15 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(std::vector<
 }
 
 
-FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(std::vector<cv::Size> windowSizes,
-	const DataSet* dataSet, const FeatureSet& set, int nrOfEvaluations, std::function<bool(int number)> canSelectFunc,
-	int refWidth, int refHeight, int paralellization) const {
+FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(const EvaluationSettings& settings,
+	const DataSet* dataSet, const FeatureSet& set, std::function<bool(int number)> canSelectFunc) {
 
 	FinalEvaluationSlidingWindowResult swresult;
 
 	for (auto& category : dataSet->getCategories())
-		swresult.evaluations[category] = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
-	swresult.combinedEvaluations = std::vector<ClassifierEvaluation>(nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
+		swresult.evaluations[category] = std::vector<ClassifierEvaluation>(settings.nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
+	swresult.combinedEvaluations = std::vector<ClassifierEvaluation>(settings.nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
+	
 	double sumTimesRegions = 0;
 	int nrRegions = 0;
 	double featureBuildTime = 0;
@@ -343,15 +353,17 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 		mutex.unlock();
 	};;
 
-	std::map<int, std::vector<SlidingWindowRegion>> map;
+	std::map<int, std::vector<SlidingWindowRegion>> evaluatedWindowsPerImage;
 
 	int nrOfImagesEvaluated = 0;
-	dataSet->iterateDataSetWithSlidingWindow(windowSizes, baseWindowStride, refWidth, refHeight,
+	dataSet->iterateDataSetWithSlidingWindow(settings.windowSizes, settings.baseWindowStride, settings.refWidth, settings.refHeight,
 		canSelectFunc,
 		[&](int imgNr) -> void {
 		// image has started
 		lock([&]() -> void {
-			map[imgNr] = std::vector<SlidingWindowRegion>();
+			swresult.missedPositivesPerImage[imgNr] = std::vector<std::vector<cv::Rect>>(settings.nrOfEvaluations);
+
+			evaluatedWindowsPerImage[imgNr] = std::vector<SlidingWindowRegion>();
 		});
 	},
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
@@ -375,15 +387,15 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 		long time = measure<std::chrono::milliseconds>::execution([&]() -> void {
 			baseEvaluationSum = evaluateFeatures(v);
 		});
-		map[imageNumber].push_back(SlidingWindowRegion(imageNumber, region, baseEvaluationSum));
+		evaluatedWindowsPerImage[imageNumber].push_back(SlidingWindowRegion(imageNumber, region, baseEvaluationSum));
 
 	}, [&](int imgNr, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
 
-		auto& windows = map[imgNr];
+		auto& windows = evaluatedWindowsPerImage[imgNr];
 
-		for (int i = 0; i < nrOfEvaluations; i++) {
-			double valueShift = 1.0 * i / nrOfEvaluations * evaluationRange - evaluationRange / 2;
+		for (int i = 0; i < settings.nrOfEvaluations; i++) {
+			double valueShift = getValueShift(i, settings.nrOfEvaluations, settings.evaluationRange);
 
 			// get the predicted positives
 			std::vector<SlidingWindowRegion> predictedPositives;
@@ -433,15 +445,17 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 						if (swresult.evaluations.find(truePositiveCategories[tp]) != swresult.evaluations.end())
 							swresult.evaluations[truePositiveCategories[tp]][i].nrOfFalseNegatives++;
 						swresult.combinedEvaluations[i].nrOfFalseNegatives++;
+
+						swresult.missedPositivesPerImage[imgNr][i].push_back(truePositiveRegions[tp]);
 					}
 				}
 			});
 		}
 		lock([&]() -> void {
 			// done with image
-			map.erase(imgNr);
+			evaluatedWindowsPerImage.erase(imgNr);
 
-			for (int i = 0; i < nrOfEvaluations; i++) {
+			for (int i = 0; i < settings.nrOfEvaluations; i++) {
 				for (auto& category : dataSet->getCategories())
 					swresult.evaluations[category][i].nrOfImagesEvaluated++;
 
@@ -449,11 +463,11 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(s
 			}
 			nrOfImagesEvaluated++;
 		});
-	}, paralellization);
+	}, settings.slidingWindowParallelization);
 
 	// iteration with multiple threads is done, update the evaluation timings and the worst false positive/negatives
 
-	for (int i = 0; i < nrOfEvaluations; i++) {
+	for (int i = 0; i < settings.nrOfEvaluations; i++) {
 
 		for (auto& category : dataSet->getCategories())
 			swresult.evaluations[category][i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;

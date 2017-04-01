@@ -15,7 +15,7 @@ ModelEvaluator::~ModelEvaluator()
 
 
 
-void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int maxWeakClassifiers,std::function<bool(int number)> canSelectFunc)
+void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int maxWeakClassifiers, std::function<bool(int number)> canSelectFunc)
 {
 
 	std::vector<FeatureVector> truePositiveFeatures;
@@ -28,7 +28,7 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Building feature vectors (") + std::to_string(imageNumber) + ")");
 
-		FeatureVector v = set.getFeatures(rgb, depth,thermal);
+		FeatureVector v = set.getFeatures(rgb, depth, thermal);
 		if (resultClass == 1)
 			truePositiveFeatures.push_back(v);
 		else
@@ -144,7 +144,7 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 }
 
 
-double ModelEvaluator::evaluateFeatures(FeatureVector& v) const {
+double ModelEvaluator::evaluateFeatures(FeatureVector& v) {
 
 	FeatureVector featureVector = v; // copy
 	featureVector.applyMeanAndVariance(model.meanVector, model.sigmaVector);
@@ -187,13 +187,15 @@ std::vector<cv::Mat> ModelEvaluator::explainModel(const std::unique_ptr<FeatureS
 	std::vector<float> occurrencePerFeature(set->getNumberOfFeatures(), 0);
 	for (auto& r : roots) {
 
-		int varIdx = splits[nodes[r].split].varIdx;
-		float quality = splits[nodes[r].split].quality;
-		weightPerFeature[varIdx] += quality;
-		occurrencePerFeature[varIdx]++;
+		if (nodes[r].split != -1) {
+			int varIdx = splits[nodes[r].split].varIdx;
+			float quality = splits[nodes[r].split].quality;
+			weightPerFeature[varIdx] += quality;
+			occurrencePerFeature[varIdx]++;
+		}
 	}
 
-	return set->explainFeatures(weightPerFeature, occurrencePerFeature,refWidth, refHeight);
+	return set->explainFeatures(weightPerFeature, occurrencePerFeature, refWidth, refHeight);
 }
 
 void ModelEvaluator::saveModel(std::string& path) {
@@ -214,7 +216,7 @@ void ModelEvaluator::saveModel(std::string& path) {
 void ModelEvaluator::loadModel(std::string& path) {
 
 	std::string filename = path;
-	
+
 	//model.boost = cv::Algorithm::load<cv::ml::Boost>(filename + ".boost.xml");
 	cv::FileStorage fsRead(filename, cv::FileStorage::READ);
 

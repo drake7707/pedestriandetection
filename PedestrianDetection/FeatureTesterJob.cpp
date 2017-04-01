@@ -64,7 +64,7 @@ void FeatureTesterJob::run() const {
 
 		ModelEvaluator evaluator(dataSet->getName() + "_" + featureSetName + " round " + std::to_string(cascade.trainingRound));
 
-		std::string modelFile = std::string("models") + PATH_SEPARATOR + dataSet->getName() + "_" + evaluator.getName() + ".xml";
+		std::string modelFile = std::string("models") + PATH_SEPARATOR + evaluator.getName() + ".xml";
 		// ---------------- Training -----------------------
 		if (FileExists(modelFile)) {
 			std::cout << "Skipped training of " << featureSetName << ", loading from existing model instead" << std::endl;
@@ -92,7 +92,7 @@ void FeatureTesterJob::run() const {
 		else {
 			std::cout << "Started evaluation of " << featureSetName << std::endl;
 			long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluations = cascade.evaluateDataSet(trainingDataSet, *featureSet, settings.nrOfEvaluations, false, settings.trainingCriteria);
+				evaluations = cascade.evaluateDataSet(trainingDataSet, *featureSet, settings, false, settings.trainingCriteria);
 			});
 			std::ofstream str(evaluationFile);
 			str << "Name" << ";";
@@ -128,15 +128,18 @@ void FeatureTesterJob::run() const {
 
 void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& cascadeFile, std::unique_ptr<FeatureSet>& featureSet, std::string& featureSetName) const {
 	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final.csv";
+
+
 	if (!FileExists(finalEvaluationSlidingFile)) {
 
 		// reset classifier hit count
 		cascade.resetClassifierHitCount();
+		cascade.setTrackClassifierHitCountEnabled(true); // enable hit count tracking so feature importance weight can be collected
 
 		std::cout << "Started final evaluation on test set with sliding window and NMS of " << featureSetName << std::endl;
 		FinalEvaluationSlidingWindowResult finalresult;
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings.windowSizes, dataSet, *featureSet, settings.nrOfEvaluations, settings.testCriteria);
+			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings, dataSet, *featureSet, settings.testCriteria);
 
 		});
 
@@ -150,23 +153,11 @@ void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& c
 		str << std::endl;
 
 		for (auto& category : dataSet->getCategories()) {
-			for (auto& result : finalresult.evaluations["easy"]) {
+			for (auto& result : finalresult.evaluations[category]) {
 				str << featureSetName << "[S][" + category + "]" << ";";
 				result.toCSVLine(str, false);
 				str << std::endl;
 			}
-		}
-
-		for (auto& result : finalresult.evaluations["moderate"]) {
-			str << featureSetName << "[S][M]" << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
-		}
-
-		for (auto& result : finalresult.evaluations["hard"]) {
-			str << featureSetName << "[S][H]" << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
 		}
 
 		for (auto& result : finalresult.combinedEvaluations) {
@@ -174,6 +165,25 @@ void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& c
 			result.toCSVLine(str, false);
 			str << std::endl;
 		}
+		str.close();
+
+		std::string finalEvaluationMissedPositivesFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_missedpositives.csv";
+
+		str = std::ofstream(finalEvaluationMissedPositivesFile);
+		for (auto& pair : finalresult.missedPositivesPerImage) {
+			int imgNr = pair.first;
+			auto& missedPositivesPerShift = pair.second;
+			for (int i = 0; i < missedPositivesPerShift.size(); i++) {
+
+				for (int tp = 0; tp < missedPositivesPerShift[i].size(); tp++)
+				{
+					auto& region = missedPositivesPerShift[i][tp];
+					str << imgNr << ";" << cascade.getValueShift(i, settings.nrOfEvaluations, settings.evaluationRange) << ";" <<
+						region.x << "," << region.y << "," << region.width << "," << region.height << std::endl;
+				}
+			}
+		}
+		str.close();
 	}
 }
 
@@ -191,9 +201,9 @@ void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& casca
 	else {
 		std::cout << "Started training evaluation with sliding window of " << featureSetName << std::endl;
 		EvaluationSlidingWindowResult result;
+		cascade.setTrackClassifierHitCountEnabled(false);
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			result = cascade.evaluateWithSlidingWindow(settings.windowSizes, trainingDataSet.getDataSet(), *featureSet, settings.nrOfEvaluations, cascade.trainingRound, settings.requiredTPRRate, settings.maxNrWorstPosNeg,
-				settings.trainingCriteria);
+			result = cascade.evaluateWithSlidingWindow(settings, trainingDataSet.getDataSet(), *featureSet, cascade.trainingRound, settings.trainingCriteria);
 		});
 		std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 
@@ -265,8 +275,7 @@ void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade,
 
 	for (int i = 0; i < rounds; i++)
 	{
-		ModelEvaluator model(featureSetName);
-		model.loadModel(std::string("models") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + " round " + std::to_string(i) + ".xml");
+		ModelEvaluator& model = cascade.getModelEvaluator(i);
 
 		auto cur = model.explainModel(fset, refWidth, refHeight);
 

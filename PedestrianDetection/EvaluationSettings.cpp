@@ -15,7 +15,9 @@ void EvaluationSettings::read(std::string& iniPath) {
 	refHeight = reader.GetInteger("general", "refHeight", refHeight);
 
 	nrOfEvaluations = reader.GetInteger("general", "nrOfEvaluations", nrOfEvaluations);
-	maxNrWorstPosNeg = reader.GetInteger("general", "maxNrWorstPosNeg", maxNrWorstPosNeg);
+	maxNrOfFalsePosOrNeg = reader.GetInteger("general", "maxNrOfFalsePosOrNeg", maxNrOfFalsePosOrNeg);
+	maxNrOfFPPerImage = reader.GetInteger("general", "maxNrOfFPPerImage", maxNrOfFPPerImage);
+	
 	requiredTPRRate = reader.GetReal("general", "requiredTPRRate", requiredTPRRate);
 
 	maxWeakClassifiers = reader.GetInteger("general", "maxWeakClassifiers", maxWeakClassifiers);
@@ -23,6 +25,14 @@ void EvaluationSettings::read(std::string& iniPath) {
 
 
 	int mod = reader.GetInteger("general", "sampleSetEvery", 2);
+
+
+	evaluationRange = reader.GetInteger("general", "evaluationRange", evaluationRange);
+	slidingWindowParallelization = reader.GetInteger("general", "slidingWindowParallelization", slidingWindowParallelization);
+	baseWindowStride = reader.GetInteger("general", "baseWindowStride", baseWindowStride);
+
+	kittiDataSetPath = reader.Get("general", "kittiDataSetPath", "");
+	kaistDataSetPath = reader.Get("general", "kaistDataSetPath", "");
 
 	trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % mod == 0; };
 	testCriteria = [=](int imageNumber) -> bool { return imageNumber % mod == 1; };

@@ -63,7 +63,7 @@ void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> fu
 }
 
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, std::vector<cv::Size>& windowSizes, int slidingWindowStep, int refWidth, int refHeight) {
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, const std::vector<cv::Size>& windowSizes, int slidingWindowStep, int refWidth, int refHeight) {
 	int slidingWindowWidth = 64;
 	int slidingWindowHeight = 128;
 	//	int slidingWindowStep = 8;

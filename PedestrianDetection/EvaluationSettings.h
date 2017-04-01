@@ -12,10 +12,23 @@ public:
 	int refHeight = 128;
 
 	int nrOfEvaluations = 300;
-	int maxNrWorstPosNeg = 4000;
+	
+	int maxNrOfFalsePosOrNeg = 4000;
+	int maxNrOfFPPerImage = 10;
+
 	float requiredTPRRate = 0.95;
 	int maxWeakClassifiers = 500;
 	int nrOfTrainingRounds = 4;
+	
+	int evaluationRange = 60;
+	int slidingWindowParallelization = 8;
+	int baseWindowStride = 16;
+
+	std::string kittiDataSetPath = "";
+	std::string kaistDataSetPath = "";
+
+	//int slidingWindowEveryXImage = 1;
+
 
 	std::vector<cv::Size> windowSizes = {
 		/*cv::Size(24,48),*/

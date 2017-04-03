@@ -61,10 +61,10 @@ std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFe
 	return explainImages;
 }
 
-void FeatureSet::prepare(TrainingDataSet& trainingDataSet) {
+void FeatureSet::prepare(TrainingDataSet& trainingDataSet, const EvaluationSettings& settings) {
 	for (auto&& c : creators) {
 		if (dynamic_cast<VariableNumberFeatureCreator*>(c.get()) != nullptr) {
-			(dynamic_cast<VariableNumberFeatureCreator*>(c.get()))->prepare(trainingDataSet);
+			(dynamic_cast<VariableNumberFeatureCreator*>(c.get()))->prepare(trainingDataSet, settings);
 		}
 	}
 }

@@ -867,7 +867,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, EvaluationSettings& 
 			trueNegativeFeatures.push_back(v);
 			trueNegativeRegions.push_back(SlidingWindowRegion(imageNumber, region, 0));
 		}
-	});
+	}, settings.addFlippedInTrainingSet, settings.refWidth, settings.refHeight);
 
 	int featureSize = truePositiveFeatures[0].size();
 

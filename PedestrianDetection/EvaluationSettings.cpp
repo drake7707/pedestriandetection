@@ -34,6 +34,9 @@ void EvaluationSettings::read(std::string& iniPath) {
 	kittiDataSetPath = reader.Get("general", "kittiDataSetPath", "");
 	kaistDataSetPath = reader.Get("general", "kaistDataSetPath", "");
 
+
+	addFlippedInTrainingSet = reader.GetBoolean("general", "addFlippedInTrainingSet", true);
+
 	trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % mod == 0; };
 	testCriteria = [=](int imageNumber) -> bool { return imageNumber % mod == 1; };
 

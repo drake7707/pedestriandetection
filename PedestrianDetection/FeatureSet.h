@@ -4,6 +4,7 @@
 #include "opencv2/opencv.hpp"
 #include "TrainingDataSet.h"
 #include <memory>
+#include "EvaluationSettings.h"
 
 class FeatureSet
 {
@@ -25,7 +26,7 @@ public:
 
 	int size() const;
 
-	void prepare(TrainingDataSet& trainingDataSet);
+	void FeatureSet::prepare(TrainingDataSet& trainingDataSet, const EvaluationSettings& settings);
 
 	int getNumberOfFeatures() const;
 	FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;

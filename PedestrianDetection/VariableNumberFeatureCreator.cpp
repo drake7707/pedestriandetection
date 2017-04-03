@@ -18,7 +18,7 @@ VariableNumberFeatureCreator::~VariableNumberFeatureCreator()
 {
 }
 
-void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
+void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, const EvaluationSettings& settings) {
 
 	std::string name = "Feature " + this->getName() + " preparation";
 	std::string featureCachePath = (std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml");
@@ -44,7 +44,7 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet) {
 		std::vector<FeatureVector> localSamples = getVariableNumberFeatures(rgb, depth, thermal);
 		for (auto& s : localSamples)
 			samples.push_back(s);
-	});
+	}, settings.addFlippedInTrainingSet, settings.refWidth, settings.refHeight);
 
 	if (samples.size() > 0) {
 		int featureSize = samples[0].size();

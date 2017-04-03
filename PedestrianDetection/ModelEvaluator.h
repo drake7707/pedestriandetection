@@ -9,6 +9,7 @@
 #include "TrainingDataSet.h"
 #include "ProgressWindow.h"
 #include "IEvaluator.h"
+#include "EvaluationSettings.h"
 
 
 struct Model {
@@ -35,7 +36,7 @@ public:
 
 
 
-	void train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, int maxWeakClassifiers, std::function<bool(int number)> canSelectFunc);
+	void train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, std::function<bool(int number)> canSelectFunc);
 
 	// std::vector<ClassifierEvaluation> evaluateDataSet(int nrOfEvaluations, bool includeRawResponses) const;
 	// double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;

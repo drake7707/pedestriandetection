@@ -57,7 +57,7 @@ void FeatureTesterJob::run() const {
 		return;
 	}
 
-	featureSet->prepare(trainingDataSet);
+	featureSet->prepare(trainingDataSet, settings);
 
 	while (cascade.trainingRound < settings.nrOfTrainingRounds) {
 		// ---------------- Build a feature set & prepare variable feature creators --------------------
@@ -73,7 +73,7 @@ void FeatureTesterJob::run() const {
 		else {
 			std::cout << "Started training of " << featureSetName << ", round " << cascade.trainingRound << std::endl;
 			long elapsedTrainingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluator.train(trainingDataSet, *featureSet, settings.maxWeakClassifiers, settings.trainingCriteria);
+				evaluator.train(trainingDataSet, *featureSet, settings, settings.trainingCriteria);
 			});
 			std::cout << "Training round " << cascade.trainingRound << " complete after " << elapsedTrainingTime << "ms for " << featureSetName << std::endl;
 
@@ -246,8 +246,6 @@ void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& casca
 }
 
 void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const {
-	int refWidth = 64;
-	int refHeight = 128;
 
 	auto classifierHits = cascade.getClassifierHitCount();
 
@@ -260,12 +258,12 @@ void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade,
 	// don't initialize directly or it will point to the same data
 	std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
 	for (int i = 0; i < set.size(); i++)
-		imgs.push_back(cv::Mat(cv::Size((refWidth + padding)*rounds + 4 * padding + refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
+		imgs.push_back(cv::Mat(cv::Size((settings.refWidth + padding)*rounds + 4 * padding + settings.refWidth, settings.refHeight), CV_32FC1, cv::Scalar(0)));
 
 
 	std::vector<cv::Mat> totalImgs;
 	for (int i = 0; i < cascade.size(); i++)
-		totalImgs.push_back(cv::Mat(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
+		totalImgs.push_back(cv::Mat(cv::Size(settings.refWidth, settings.refHeight), CV_32FC1, cv::Scalar(0)));
 
 	cv::Mat rgb(128, 64, CV_8UC3, cv::Scalar(0));
 	cv::Mat depth(128, 64, CV_32FC1, cv::Scalar(0));
@@ -277,7 +275,7 @@ void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade,
 	{
 		ModelEvaluator& model = cascade.getModelEvaluator(i);
 
-		auto cur = model.explainModel(fset, refWidth, refHeight);
+		auto cur = model.explainModel(fset, settings.refWidth, settings.refHeight);
 
 		for (int j = 0; j < cur.size(); j++) {
 			if (cur[j].rows > 0 && cur[j].cols > 0) {
@@ -285,7 +283,7 @@ void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade,
 
 				totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
 
-				cv::Mat& dst = imgs[j](cv::Rect(i*(refWidth + padding), 0, refWidth, refHeight));
+				cv::Mat& dst = imgs[j](cv::Rect(i*(settings.refWidth + padding), 0, settings.refWidth, settings.refHeight));
 				cur[j].copyTo(dst);
 			}
 		}
@@ -303,7 +301,7 @@ void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade,
 		cv::Mat totalimage = totalImgs[i];
 		cv::normalize(totalimage, totalimage, 0, 1, cv::NormTypes::NORM_MINMAX);
 		cv::Mat heatmapTotalImage = heatmap::toHeatMap(totalimage);
-		heatmapTotalImage.copyTo(img(cv::Rect(img.cols - refWidth, 0, refWidth, refHeight)));
+		heatmapTotalImage.copyTo(img(cv::Rect(img.cols - settings.refWidth, 0, settings.refWidth, settings.refHeight)));
 
 		std::string featureImportanceFilename = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_" + *it + "_featureimportance.png";
 		cv::imwrite(featureImportanceFilename, img);

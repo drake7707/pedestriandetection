@@ -2,6 +2,7 @@
 #include <string>
 #include "IFeatureCreator.h"
 #include "TrainingDataSet.h"
+#include "EvaluationSettings.h"
 
 class VariableNumberFeatureCreator : public IFeatureCreator
 {
@@ -12,7 +13,7 @@ private:
 
 public:
 
-	void prepare(TrainingDataSet& trainingDataSet);
+	void prepare(TrainingDataSet& trainingDataSet, const EvaluationSettings& settings);
 
 	virtual int getNumberOfFeatures() const;
 

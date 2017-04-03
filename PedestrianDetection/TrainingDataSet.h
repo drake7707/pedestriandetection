@@ -24,8 +24,8 @@ class TrainingDataSet
 	std::string baseDataSetPath;
 	std::map<int, TrainingImage> images;
 
-	int refWidth = 64;
-	int refHeight = 128;
+	//int refWidth = 64;
+	//int refHeight = 128;
 
 	DataSet* dataSet;
 
@@ -49,7 +49,7 @@ public:
 
 	void iterateDataSetImages(std::function<void(int imageNumber, cv::Mat&rgb, cv::Mat&depth, const std::vector<TrainingRegion>& regions)> func) const;
 
-	void iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal)> func) const;
+	void iterateDataSet(std::function<bool(int number)> canSelectFunc, std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal)> func, bool addFlipped, int refWidth, int refHeight) const;
 
 	/*void iterateDataSetWithSlidingWindow(std::vector<cv::Size>& windowSizes, int baseWindowStride,
 		std::function<bool(int number)> canSelectFunc,

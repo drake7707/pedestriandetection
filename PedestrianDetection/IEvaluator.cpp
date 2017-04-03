@@ -79,7 +79,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 
 
 		}
-	});
+	}, settings.addFlippedInTrainingSet, settings.refWidth, settings.refHeight);
 
 	for (int i = 0; i < settings.nrOfEvaluations; i++)
 		evals[i].evaluationSpeedPerRegionMS = (featureBuildTime + sumTimes) / nrRegions;
@@ -291,7 +291,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 		minTPRAboveTPRToObtainWorstFalsePositives = swresult.evaluations[evaluationIndexForValueShift].getTPR();
 		valueShiftRequired = swresult.evaluations[evaluationIndexForValueShift].valueShift;
 	}
-		
+
 	swresult.evaluationIndexWhenTPRThresholdIsReached = evaluationIndexForValueShift;
 
 	std::cout << "Chosen " << valueShiftRequired << " as decision boundary shift to attain TPR of " << swresult.evaluations[evaluationIndexForValueShift].getTPR() << std::endl;
@@ -341,7 +341,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 	for (auto& category : dataSet->getCategories())
 		swresult.evaluations[category] = std::vector<ClassifierEvaluation>(settings.nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
 	swresult.combinedEvaluations = std::vector<ClassifierEvaluation>(settings.nrOfEvaluations, ClassifierEvaluation(dataSet->getNrOfImages()));
-	
+
 	double sumTimesRegions = 0;
 	int nrRegions = 0;
 	double featureBuildTime = 0;

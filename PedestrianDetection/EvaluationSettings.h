@@ -12,17 +12,19 @@ public:
 	int refHeight = 128;
 
 	int nrOfEvaluations = 300;
-	
+
 	int maxNrOfFalsePosOrNeg = 4000;
 	int maxNrOfFPPerImage = 10;
 
 	float requiredTPRRate = 0.95;
 	int maxWeakClassifiers = 500;
 	int nrOfTrainingRounds = 4;
-	
+
 	int evaluationRange = 60;
 	int slidingWindowParallelization = 8;
 	int baseWindowStride = 16;
+
+	bool addFlippedInTrainingSet = true;
 
 	std::string kittiDataSetPath = "";
 	std::string kaistDataSetPath = "";

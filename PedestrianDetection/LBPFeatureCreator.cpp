@@ -4,8 +4,8 @@
 
 
 
-LBPFeatureCreator::LBPFeatureCreator(std::string& name, bool onDepth, int patchSize, int binSize, int refWidth, int refHeight)
-	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight), onDepth(onDepth)
+LBPFeatureCreator::LBPFeatureCreator(std::string& name, IFeatureCreator::Target target, int patchSize, int binSize, int refWidth, int refHeight)
+	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight), target(target)
 {
 }
 
@@ -22,10 +22,12 @@ int LBPFeatureCreator::getNumberOfFeatures() const {
 FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 	cv::Mat img;
-	if (onDepth)
+	if (target == IFeatureCreator::Target::Depth) {
 		cv::cvtColor(depth, img, CV_BGR2GRAY);
+	}
 	else
 		cv::cvtColor(rgb, img, CV_BGR2GRAY);
+
 
 	cv::Mat lbp = Algorithms::OLBP(img);
 	lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
@@ -48,5 +50,8 @@ cv::Mat LBPFeatureCreator::explainFeatures(int offset, std::vector<float>& weigh
 }
 
 std::vector<bool> LBPFeatureCreator::getRequirements() const {
-	return{ !onDepth, onDepth, false };
+	return{ target == IFeatureCreator::Target::RGB,
+		target == IFeatureCreator::Target::Depth,
+		target == IFeatureCreator::Target::Thermal
+	};
 }

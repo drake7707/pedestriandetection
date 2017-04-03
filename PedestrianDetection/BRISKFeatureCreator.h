@@ -5,9 +5,9 @@ class BRISKFeatureCreator :
 {
 
 private:
-	bool onDepth;
+	IFeatureCreator::Target target;
 public:
-	BRISKFeatureCreator(std::string& name, int clusterSize, bool onDepth);
+	BRISKFeatureCreator(std::string& name, int clusterSize, IFeatureCreator::Target target);
 	virtual ~BRISKFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;

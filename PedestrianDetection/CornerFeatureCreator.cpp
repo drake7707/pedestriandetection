@@ -3,8 +3,8 @@
 
 
 
-CornerFeatureCreator::CornerFeatureCreator(std::string& name, bool onDepth, int clusterSize)
-	: VariableNumberFeatureCreator(name, clusterSize), onDepth(onDepth) {
+CornerFeatureCreator::CornerFeatureCreator(std::string& name, IFeatureCreator::Target target, int clusterSize)
+	: VariableNumberFeatureCreator(name, clusterSize), target(target) {
 }
 
 
@@ -14,10 +14,10 @@ CornerFeatureCreator::~CornerFeatureCreator()
 
 std::vector<FeatureVector> CornerFeatureCreator::getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 	cv::Mat gray;
-	if (onDepth) {
+	if (target == IFeatureCreator::Target::Depth) {
 
 		cv::Mat d8U;
-		depth.convertTo(d8U, CV_8UC1,255.0, 0);
+		depth.convertTo(d8U, CV_8UC1, 255.0, 0);
 		gray = d8U;
 	}
 	else
@@ -45,5 +45,8 @@ std::vector<FeatureVector> CornerFeatureCreator::getVariableNumberFeatures(cv::M
 
 
 std::vector<bool> CornerFeatureCreator::getRequirements() const {
-	return{ !onDepth, onDepth, false };
+	return{ target == IFeatureCreator::Target::RGB,
+		target == IFeatureCreator::Target::Depth,
+		target == IFeatureCreator::Target::Thermal
+	};
 }

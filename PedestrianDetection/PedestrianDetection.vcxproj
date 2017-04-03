@@ -197,6 +197,7 @@
     <ClInclude Include="ORBFeatureCreator.h" />
     <ClInclude Include="ProgressWindow.h" />
     <ClInclude Include="RAWRGBFeatureCreator.h" />
+    <ClInclude Include="SDDGFeatureCreator.h" />
     <ClInclude Include="SIFTFeatureCreator.h" />
     <ClInclude Include="SURFFeatureCreator.h" />
     <ClInclude Include="TrainingDataSet.h" />
@@ -245,6 +246,7 @@
     <ClCompile Include="CornerFeatureCreator.cpp" />
     <ClCompile Include="ProgressWindow.cpp" />
     <ClCompile Include="RAWRGBFeatureCreator.cpp" />
+    <ClCompile Include="SDDGFeatureCreator.cpp" />
     <ClCompile Include="SIFTFeatureCreator.cpp" />
     <ClCompile Include="SURFFeatureCreator.cpp" />
     <ClCompile Include="TrainingDataSet.cpp" />

@@ -5,9 +5,9 @@ class MSDFeatureCreator :
 {
 
 private:
-	bool onDepth;
+	IFeatureCreator::Target target;
 public:
-	MSDFeatureCreator(std::string& name, int clusterSize, bool onDepth);
+	MSDFeatureCreator(std::string& name, int clusterSize, IFeatureCreator::Target target);
 	virtual ~MSDFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;

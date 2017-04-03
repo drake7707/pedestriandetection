@@ -5,9 +5,9 @@ class CenSurEFeatureCreator :
 {
 
 private:
-	bool onDepth;
+	IFeatureCreator::Target target;
 public:
-	CenSurEFeatureCreator(std::string& name, int clusterSize, bool onDepth);
+	CenSurEFeatureCreator(std::string& name, int clusterSize, IFeatureCreator::Target target);
 	virtual ~CenSurEFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;

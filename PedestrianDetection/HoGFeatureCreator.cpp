@@ -3,8 +3,8 @@
 
 
 
-HOGFeatureCreator::HOGFeatureCreator(std::string& name, bool onDepth, int patchSize, int binSize, int refWidth, int refHeight)
-	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight), onDepth(onDepth)
+HOGFeatureCreator::HOGFeatureCreator(std::string& name, IFeatureCreator::Target target, int patchSize, int binSize, int refWidth, int refHeight)
+	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight), target(target)
 {
 }
 
@@ -21,8 +21,10 @@ int HOGFeatureCreator::getNumberOfFeatures() const {
 FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
 	hog::HistogramResult result;
-	if (onDepth)
+	if (target == IFeatureCreator::Target::Depth)
 		result = hog::getHistogramsOfOrientedGradient(depth, patchSize, binSize, false, true);
+	else if (target == IFeatureCreator::Target::Thermal)
+		result = hog::getHistogramsOfOrientedGradient(thermal, patchSize, binSize, false, true);
 	else
 		result = hog::getHistogramsOfOrientedGradient(rgb, patchSize, binSize, false, true);
 
@@ -35,5 +37,8 @@ cv::Mat HOGFeatureCreator::explainFeatures(int offset, std::vector<float>& weigh
 
 
 std::vector<bool> HOGFeatureCreator::getRequirements() const {
-	return{ !onDepth, onDepth, false };
+	return{ target == IFeatureCreator::Target::RGB,
+		target == IFeatureCreator::Target::Depth,
+		target == IFeatureCreator::Target::Thermal
+	};
 }

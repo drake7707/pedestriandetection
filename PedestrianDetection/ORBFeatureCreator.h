@@ -5,9 +5,9 @@ class ORBFeatureCreator :
 {
 
 private:
-	bool onDepth;
+	IFeatureCreator::Target target;
 public:
-	ORBFeatureCreator(std::string& name, int clusterSize, bool onDepth);
+	ORBFeatureCreator(std::string& name, int clusterSize, IFeatureCreator::Target target);
 	virtual ~ORBFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;

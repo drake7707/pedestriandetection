@@ -8,10 +8,10 @@ private:
 	int binSize = 9;
 	int refWidth = 64;
 	int refHeight = 128;
-	bool onDepth;
+	IFeatureCreator::Target target;
 
 public:
-	LBPFeatureCreator(std::string& name, bool onDepth, int patchSize = 8, int binSize = 20, int refWidth = 64, int refHeight = 128);
+	LBPFeatureCreator(std::string& name, IFeatureCreator::Target target, int patchSize = 8, int binSize = 20, int refWidth = 64, int refHeight = 128);
 	virtual ~LBPFeatureCreator();
 
 	int getNumberOfFeatures() const;

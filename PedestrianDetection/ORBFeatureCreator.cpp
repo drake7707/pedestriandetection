@@ -4,8 +4,8 @@
 
 
 
-ORBFeatureCreator::ORBFeatureCreator(std::string& name, int clusterSize, bool onDepth)
-	: VariableNumberFeatureCreator(name, clusterSize), onDepth(onDepth) {
+ORBFeatureCreator::ORBFeatureCreator(std::string& name, int clusterSize, IFeatureCreator::Target target)
+	: VariableNumberFeatureCreator(name, clusterSize), target(target) {
 }
 
 
@@ -20,7 +20,7 @@ std::vector<FeatureVector> ORBFeatureCreator::getVariableNumberFeatures(cv::Mat&
 	std::vector<cv::KeyPoint> keypoints;
 
 	cv::Mat descriptors;
-	if (onDepth) {
+	if (target == IFeatureCreator::Target::Depth) {
 		cv::Mat d8U;
 		depth.convertTo(d8U, CV_8UC1, 255.0, 0);
 		detector->detectAndCompute(d8U, cv::noArray(), keypoints, descriptors);
@@ -65,5 +65,8 @@ std::vector<FeatureVector> ORBFeatureCreator::getVariableNumberFeatures(cv::Mat&
 
 
 std::vector<bool> ORBFeatureCreator::getRequirements() const {
-	return{ !onDepth, onDepth, false };
+	return{ target == IFeatureCreator::Target::RGB,
+		target == IFeatureCreator::Target::Depth,
+		target == IFeatureCreator::Target::Thermal
+	};
 }

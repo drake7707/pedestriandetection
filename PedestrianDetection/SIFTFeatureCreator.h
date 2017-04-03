@@ -5,9 +5,9 @@ class SIFTFeatureCreator :
 {
 
 private:
-	bool onDepth;
+	IFeatureCreator::Target target;
 public:
-	SIFTFeatureCreator(std::string& name, int clusterSize, bool onDepth);
+	SIFTFeatureCreator(std::string& name, int clusterSize, IFeatureCreator::Target target);
 	virtual ~SIFTFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;

@@ -4,8 +4,8 @@
 
 
 
-MSDFeatureCreator::MSDFeatureCreator(std::string& name, int clusterSize, bool onDepth)
-	: VariableNumberFeatureCreator(name, clusterSize), onDepth(onDepth) {
+MSDFeatureCreator::MSDFeatureCreator(std::string& name, int clusterSize, IFeatureCreator::Target target)
+	: VariableNumberFeatureCreator(name, clusterSize), target(target) {
 }
 
 
@@ -21,7 +21,7 @@ std::vector<FeatureVector> MSDFeatureCreator::getVariableNumberFeatures(cv::Mat&
 
 	std::vector<cv::KeyPoint> keypoints;
 
-	if (onDepth) {
+	if (target == IFeatureCreator::Target::Depth) {
 		cv::Mat d8U;
 		depth.convertTo(d8U, CV_8UC1, 255.0, 0);
 		detector->detect(d8U, keypoints);
@@ -47,5 +47,8 @@ std::vector<FeatureVector> MSDFeatureCreator::getVariableNumberFeatures(cv::Mat&
 
 
 std::vector<bool> MSDFeatureCreator::getRequirements() const {
-	return{ !onDepth, onDepth, false };
+	return{ target == IFeatureCreator::Target::RGB,
+		target == IFeatureCreator::Target::Depth,
+		target == IFeatureCreator::Target::Thermal
+	};
 }

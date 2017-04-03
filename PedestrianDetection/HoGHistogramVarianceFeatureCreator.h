@@ -8,9 +8,9 @@ private:
 	int binSize = 9;
 	int refWidth = 64;
 	int refHeight = 128;
-	bool onDepth;
+	IFeatureCreator::Target target;
 public:
-	HOGHistogramVarianceFeatureCreator(std::string& name, bool onDepth, int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
+	HOGHistogramVarianceFeatureCreator(std::string& name, IFeatureCreator::Target target, int patchSize = 8, int binSize = 9, int refWidth = 64, int refHeight = 128);
 	virtual ~HOGHistogramVarianceFeatureCreator();
 
 	int getNumberOfFeatures() const;

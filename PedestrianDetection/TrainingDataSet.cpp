@@ -139,7 +139,9 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 						cv::flip(regionDepth, depthFlipped, 1);
 
 					if (thermal.cols > 0 && thermal.rows > 0)
-						func(idx, r.regionClass, pair.first, r.region, rgbFlipped, depthFlipped, thermalFlipped);
+						cv::flip(regionThermal, thermalFlipped, 1);
+
+					func(idx, r.regionClass, pair.first, r.region, rgbFlipped, depthFlipped, thermalFlipped);
 					idx++;
 				}
 			}

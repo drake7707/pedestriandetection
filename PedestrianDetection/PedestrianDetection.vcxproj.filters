@@ -174,6 +174,9 @@
     <ClInclude Include="HOIFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
+    <ClInclude Include="SDDGFeatureCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -312,6 +315,9 @@
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HOIFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="SDDGFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>

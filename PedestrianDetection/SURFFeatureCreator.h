@@ -5,9 +5,9 @@ class SURFFeatureCreator :
 {
 
 private:
-	bool onDepth;
+	IFeatureCreator::Target target;
 public:
-	SURFFeatureCreator(std::string& name, int clusterSize, bool onDepth);
+	SURFFeatureCreator(std::string& name, int clusterSize, IFeatureCreator::Target target);
 	virtual ~SURFFeatureCreator();
 
 	std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;

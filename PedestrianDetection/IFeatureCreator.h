@@ -26,5 +26,12 @@ public:
 	virtual cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const = 0;
 
 	virtual std::vector<bool> getRequirements() const = 0;
+
+
+	enum Target {
+		RGB = 0,
+		Depth = 1,
+		Thermal = 2
+	};
 };
 

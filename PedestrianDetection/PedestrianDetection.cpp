@@ -40,6 +40,7 @@
 #include "HONVFeatureCreator.h"
 #include "CoOccurenceMatrixFeatureCreator.h"
 #include "RAWRGBFeatureCreator.h"
+#include "HOIFeatureCreator.h"
 
 #include "EvaluatorCascade.h"
 
@@ -1291,7 +1292,7 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 	for (int i = 0; i < rounds; i++)
 	{
 		ModelEvaluator model = cascade.getModelEvaluator(i);
-	//	model.loadModel(std::string("models\\" + featureSetName + " round " + std::to_string(i) + ".xml"));
+		//	model.loadModel(std::string("models\\" + featureSetName + " round " + std::to_string(i) + ".xml"));
 
 
 		auto cur = model.explainModel(fset, settings.refWidth, settings.refHeight);
@@ -1454,6 +1455,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HONV"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HONVFeatureCreator(name, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOI"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOIFeatureCreator(name, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
@@ -1465,6 +1467,62 @@ int main()
 
 
 	//explainModel(tester, settings);
+
+	KAISTDataSet dataSet(kaistDatasetPath);
+	auto labelsPerNumber = dataSet.getLabelsPerNumber();
+
+	for (int imgNr = 0; imgNr < labelsPerNumber.size(); imgNr++)
+	{
+		bool containsTP = false;
+		for (auto l : labelsPerNumber[imgNr]) {
+			if (!l.isDontCareArea()) {
+				containsTP = true;
+				break;
+			}
+		}
+		if (containsTP) {
+
+			auto imgs = dataSet.getImagesForNumber(imgNr);
+
+			auto thermal = imgs[2].clone();
+
+			double sum = 0;
+			for (int y = 0; y < thermal.rows; y++)
+			{
+				for (int x = 0; x < thermal.cols; x++)
+				{
+					sum += thermal.at<float>(y, x);
+				}
+			}
+			double avg = sum / (thermal.rows * thermal.cols);
+
+			sum = 0;
+			for (int y = 0; y < thermal.rows; y++)
+			{
+				for (int x = 0; x < thermal.cols; x++)
+				{
+					sum += (thermal.at<float>(y, x) - avg) * (thermal.at<float>(y, x) - avg);
+				}
+			}
+			double stddev = sqrt(sum);
+
+			double temperatureThreshold = 5.0 / 4 * (avg + stddev);
+			
+			normalize(thermal, thermal, 0, 1, cv::NormTypes::NORM_MINMAX);
+
+			auto hogResult = hog::getHistogramsOfX(cv::Mat(thermal.rows, thermal.cols, CV_32FC1, cv::Scalar(1)), thermal, patchSize, binSize, true, true);
+			auto result = hogResult.combineHOGImage(thermal);
+			for (auto l : labelsPerNumber[imgNr]) {
+				if (!l.isDontCareArea())
+					cv::rectangle(thermal, l.getBbox(), cv::Scalar(255, 255, 0));
+			}
+			cv::imshow("Thermal", result);
+			cv::waitKey(0);
+		}
+	}
+
+
+
 
 	if (settings.kittiDataSetPath != "") {
 		KITTIDataSet dataSet(settings.kittiDataSetPath);

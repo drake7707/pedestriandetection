@@ -180,6 +180,7 @@
     <ClInclude Include="HoGFeatureCreator.h" />
     <ClInclude Include="HoGHistogramVarianceFeatureCreator.h" />
     <ClInclude Include="HistogramResult.h" />
+    <ClInclude Include="HOIFeatureCreator.h" />
     <ClInclude Include="HONVFeatureCreator.h" />
     <ClInclude Include="IEvaluator.h" />
     <ClInclude Include="IFeatureCreator.h" />
@@ -226,6 +227,7 @@
     <ClCompile Include="HoGFeatureCreator.cpp" />
     <ClCompile Include="HoGHistogramVarianceFeatureCreator.cpp" />
     <ClCompile Include="HistogramResult.cpp" />
+    <ClCompile Include="HOIFeatureCreator.cpp" />
     <ClCompile Include="HONVFeatureCreator.cpp" />
     <ClCompile Include="IEvaluator.cpp" />
     <ClCompile Include="IFeatureCreator.cpp" />

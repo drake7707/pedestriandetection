@@ -77,6 +77,8 @@ std::vector<cv::Mat> KAISTDataSet::getImagesForNumber(int number) const {
 	cv::Mat depth;
 
 	cv::Mat thermal = cv::imread(thermalPath);
+	cv::cvtColor(thermal, thermal, CV_BGR2GRAY);
+	thermal.convertTo(thermal, CV_32FC1, 1 / 255.0);
 
 	if (rgb.rows == 0 || rgb.cols == 0) {
 		throw std::exception(std::string("RGB image " + rgbPath + " is corrupt").c_str());

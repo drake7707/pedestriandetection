@@ -171,6 +171,9 @@
     <ClInclude Include="KAISTDataSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HOIFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -307,6 +310,9 @@
     </ClCompile>
     <ClCompile Include="KAISTDataSet.cpp">
       <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HOIFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

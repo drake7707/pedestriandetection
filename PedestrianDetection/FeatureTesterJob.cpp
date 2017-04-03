@@ -259,7 +259,7 @@ void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade,
 
 	// don't initialize directly or it will point to the same data
 	std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
-	for (int i = 0; i < cascade.size(); i++)
+	for (int i = 0; i < set.size(); i++)
 		imgs.push_back(cv::Mat(cv::Size((refWidth + padding)*rounds + 4 * padding + refWidth, refHeight), CV_32FC1, cv::Scalar(0)));
 
 

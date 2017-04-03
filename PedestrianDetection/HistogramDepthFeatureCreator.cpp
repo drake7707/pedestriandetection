@@ -18,6 +18,7 @@ int HistogramDepthFeatureCreator::getNumberOfFeatures() const {
 
 FeatureVector HistogramDepthFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
 
+	cv::normalize(depth, depth, 0, 1, cv::NormTypes::NORM_MINMAX);
 
 	FeatureVector v(26, 0);
 	for (int j = 0; j < depth.rows; j++)

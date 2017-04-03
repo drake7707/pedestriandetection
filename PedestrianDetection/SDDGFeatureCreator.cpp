@@ -5,8 +5,8 @@
 
 
 
-SDDGFeatureCreator::SDDGFeatureCreator(std::string& name, int refWidth, int refHeight)
-	: IFeatureCreator(name), refWidth(refWidth), refHeight(refHeight)
+SDDGFeatureCreator::SDDGFeatureCreator(std::string& name, IFeatureCreator::Target target, int refWidth, int refHeight)
+	: IFeatureCreator(name), refWidth(refWidth), refHeight(refHeight), target(target)
 {
 }
 
@@ -27,18 +27,27 @@ FeatureVector SDDGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 	int nrOfCellsX = refWidth / cellSize;
 	int nrOfCellsY = refHeight / cellSize;
 
+	cv::Mat img;
+	if (target == IFeatureCreator::Target::RGB) {
+		cv::cvtColor(rgb, img, CV_BGR2GRAY);
+	}
+	else if (target == IFeatureCreator::Target::Depth)
+		img = depth;
+	else
+		img = thermal;
+
 	cv::Mat gx, gy;
-	cv::Sobel(thermal, gx, CV_32F, 1, 0, 1);
-	cv::Sobel(thermal, gy, CV_32F, 0, 1, 1);
-	cv::Mat magnitude(thermal.rows, thermal.cols, CV_32FC1, cv::Scalar(0));
+	cv::Sobel(img, gx, CV_32F, 1, 0, 1);
+	cv::Sobel(img, gy, CV_32F, 0, 1, 1);
+	cv::Mat magnitude(img.rows, img.cols, CV_32FC1, cv::Scalar(0));
 
 
 	FeatureVector fVector;
 	fVector.reserve(getNumberOfFeatures());
 
-	for (int j = 0; j < thermal.rows; j++)
+	for (int j = 0; j < img.rows; j++)
 	{
-		for (int i = 0; i < thermal.cols; i++)
+		for (int i = 0; i < img.cols; i++)
 		{
 			float gradX = gx.at<float>(j, i);
 			float gradY = gy.at<float>(j, i);
@@ -52,7 +61,7 @@ FeatureVector SDDGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 		for (int i = 0; i < nrOfCellsX; i++)
 		{
 			std::vector<float> SDDG = calculateSDDG(cellSize, cellSize, [&](int x, int y) -> float {
-				float mag =  magnitude.at<float>(y + cellSize * j, x + cellSize * i);
+				float mag = magnitude.at<float>(y + cellSize * j, x + cellSize * i);
 				return mag;
 			});
 
@@ -70,9 +79,11 @@ cv::Mat SDDGFeatureCreator::explainFeatures(int offset, std::vector<float>& weig
 }
 
 std::vector<bool> SDDGFeatureCreator::getRequirements() const {
-	return{ false, false, true };
+	return{ target == IFeatureCreator::Target::RGB,
+		target == IFeatureCreator::Target::Depth,
+		target == IFeatureCreator::Target::Thermal
+	};
 }
-
 
 
 

@@ -1502,12 +1502,14 @@ void runJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, EvaluationSet
 		std::string line;
 		while (std::getline(istr, line)) {
 
-			std::set<std::string> set;
-			auto parts = splitString(line, '+');
-			for (auto& p : parts)
-				set.emplace(p);
+			if (line.length() > 0 && line[0] != '#') {
+				std::set<std::string> set;
+				auto parts = splitString(line, '+');
+				for (auto& p : parts)
+					set.emplace(p);
 
-			tester.addJob(set, dataSet, settings);
+				tester.addJob(set, dataSet, settings);
+			}
 		}
 		istr.close();
 	}
@@ -1582,6 +1584,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, IFeatureCreator::Target::RGB, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("S2HOG(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGHistogramVarianceFeatureCreator(name, IFeatureCreator::Target::RGB, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, IFeatureCreator::Target::Depth, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(Thermal)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, IFeatureCreator::Target::Thermal, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, IFeatureCreator::Target::RGB))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("Corner(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CornerFeatureCreator(name, IFeatureCreator::Target::Depth))); }));
@@ -1605,7 +1608,8 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("CoOccurrence(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new CoOccurenceMatrixFeatureCreator(name, patchSize, 8))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWRGBFeatureCreator(name, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOI"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOIFeatureCreator(name, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
-	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SDDG"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SDDGFeatureCreator(name, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SDDG(Thermal)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SDDGFeatureCreator(name, IFeatureCreator::Target::Thermal, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SDDG(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SDDGFeatureCreator(name, IFeatureCreator::Target::Depth, settings.refWidth, settings.refHeight))); }));
 
 
 	// show progress window
@@ -1633,9 +1637,7 @@ int main()
 	KAISTDataSet dataSet(settings.kaistDataSetPath);
 	auto labelsPerNumber = dataSet.getLabelsPerNumber();
 
-	testClassifier(tester, settings);
-
-
+//	testClassifier(tester, settings);
 
 	if (settings.kittiDataSetPath != "") {
 		KITTIDataSet dataSet(settings.kittiDataSetPath);

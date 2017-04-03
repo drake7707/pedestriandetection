@@ -12,6 +12,8 @@ class SDDGFeatureCreator :
 
 	int cellSize = 9;
 
+	IFeatureCreator::Target target;
+
 	void bresenhamLine(int srcX, int srcY, int dstX, int dstY, std::function<void(int x, int y)> setPixelFunc) const;
 	std::vector<float> calculateSDDG(int nrOfCellsX, int nrOfCellsY, std::function<float(int x, int y)> gradientAt) const;
 
@@ -19,7 +21,7 @@ public:
 
 
 
-	SDDGFeatureCreator::SDDGFeatureCreator(std::string& name, int refWidth, int refHeight);
+	SDDGFeatureCreator::SDDGFeatureCreator(std::string& name, IFeatureCreator::Target target, int refWidth, int refHeight);
 
 	virtual SDDGFeatureCreator::~SDDGFeatureCreator();
 

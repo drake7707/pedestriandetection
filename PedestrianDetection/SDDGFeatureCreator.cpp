@@ -19,7 +19,6 @@ SDDGFeatureCreator::~SDDGFeatureCreator()
 int SDDGFeatureCreator::getNumberOfFeatures() const {
 	int nrOfCellsX = refWidth / cellSize;
 	int nrOfCellsY = refHeight / cellSize;
-	int SDDGLength = 56;
 	return nrOfCellsX * nrOfCellsY * SDDGLength;
 }
 
@@ -74,8 +73,30 @@ FeatureVector SDDGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 }
 
 cv::Mat SDDGFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
-	cv::Mat m;
-	return m;
+	cv::Mat explanation;
+
+	int nrOfCellsX = refWidth / cellSize;
+	int nrOfCellsY = refHeight / cellSize;
+
+	int idx = 0;
+	for (int j = 0; j < nrOfCellsY; j++)
+	{
+		for (int i = 0; i < nrOfCellsX; i++)
+		{
+
+			float weight = 0;
+			for (int k = 0; k < SDDGLength; k++)
+			{
+				weight += occurrencePerFeature[offset + idx];
+				idx++;
+			}
+			int offsetX = i * cellSize;
+			int offsetY = j * cellSize;
+			cv::rectangle(explanation, cv::Rect(offsetX, offsetY, cellSize, cellSize), cv::Scalar(weight), -1);
+		}
+	}
+
+	return explanation;
 }
 
 std::vector<bool> SDDGFeatureCreator::getRequirements() const {

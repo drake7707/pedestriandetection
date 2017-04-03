@@ -11,6 +11,7 @@ class SDDGFeatureCreator :
 
 
 	int cellSize = 9;
+	int SDDGLength = 56; // with cellSize = 9 the length is 56
 
 	IFeatureCreator::Target target;
 

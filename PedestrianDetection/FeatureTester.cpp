@@ -134,3 +134,7 @@ std::unique_ptr<FeatureSet> FeatureTester::getFeatureSet(const std::set<std::str
 	}
 	return std::unique_ptr<FeatureSet>(featureSet);
 }
+
+std::mutex* FeatureTester::getLock() {
+	return &singletonLock;
+}

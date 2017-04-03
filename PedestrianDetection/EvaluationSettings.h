@@ -48,7 +48,9 @@ public:
 	std::function<bool(int)> trainingCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 0; };
 	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 2 == 1; };
 
-
+	/// <summary>
+	/// Reads the settings.ini file from the given path
+	/// </summary>
 	void read(std::string& iniPath);
 };
 

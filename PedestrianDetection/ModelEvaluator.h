@@ -23,32 +23,41 @@ class ModelEvaluator : public IEvaluator
 {
 	Model model;
 
-	
-
-
 public:
 	ModelEvaluator(std::string& name);
 	virtual ~ModelEvaluator();
 
-	
-	
-	double evaluateFeatures(FeatureVector& v);
+	/// <summary>
+	/// Returns the name of the model
+	/// </summary>
+	std::string getName() const;
 
-
-
+	/// <summary>
+	/// Returns the model on the given training set, feature set and settings. Only the images numbers that can be selected will be used as samples for training
+	/// </summary>
 	void train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, std::function<bool(int number)> canSelectFunc);
 
-	// std::vector<ClassifierEvaluation> evaluateDataSet(int nrOfEvaluations, bool includeRawResponses) const;
-	// double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
+	/// <summary>
+	/// Evaluates the model based on the feature vector and returns the score and predicted class (sign)
+	/// </summary>
+	double evaluateFeatures(FeatureVector& v);
 
-   //EvaluationSlidingWindowResult evaluateWithSlidingWindow(int nrOfEvaluations, int trainingRound, float tprToObtainWorstFalsePositives, int maxNrOfFalsePosOrNeg) const;
+	/// <summary>
+	/// Explains the features used as weak classifier decision tree stumps
+	/// </summary>
 	std::vector<cv::Mat> ModelEvaluator::explainModel(const std::unique_ptr<FeatureSet>& set, int refWidth, int refHeight) const;
-	
+
+	/// <summary>
+	/// Saves the boost model and necessary data to the given file
+	/// </summary>
 	void saveModel(std::string& path);
+
+	/// <summary>
+	/// Loads a boost model and necessary data from the given path
+	/// </summary>
 	void loadModel(std::string& path);
 
 
-	std::string getName() const;
 
 };
 

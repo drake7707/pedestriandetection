@@ -206,7 +206,7 @@ void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int i
 	}
 }
 
-bool FileExists(const std::string &Filename)
+bool fileExists(const std::string &Filename)
 {
 	return access(Filename.c_str(), 0) == 0;
 }

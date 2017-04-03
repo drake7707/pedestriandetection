@@ -325,19 +325,44 @@ public:
 	KITTIDataSet(const std::string& folderPath) : DataSet(), folderPath(folderPath) { }
 	~KITTIDataSet() {}
 
+	/// <summary>
+	/// Returns the name of the data set
+	/// </summary>
 	virtual std::string getName() const;
 
+	/// <summary>
+	/// Returns the labels of the data set
+	/// </summary>
 	virtual std::vector<DataSetLabel> getLabels() const;
+
+	/// <summary>
+	/// Returns the images (RGB/Depth/Thermal) for the given image number. Thermal is not available in KITTI
+	/// </summary>
 	virtual std::vector<cv::Mat> getImagesForNumber(int number) const;
 
+	/// <summary>
+	/// Returns the number of images in the data set 
+	/// </summary>
 	virtual int getNrOfImages() const;
 
+	/// <summary>
+	/// Checks whether the height of a window and the depth average in the middle of the window can be a true positive
+	/// </summary>
 	virtual bool isWithinValidDepthRange(int height, float depthAverage) const;
 
+	/// <summary>
+	/// Returns the various categories possible, in KITTI this is easy, moderate and hard
+	/// </summary>
 	virtual std::vector<std::string> getCategories() const;
 
+	/// <summary>
+	/// Returns the category of the data set label
+	/// </summary>
 	virtual std::string getCategory(DataSetLabel* label) const;
 
+	/// <summary>
+	/// Returns which requirements the data set fullfills: RGB,Depth,Thermal. KITTI has only RGB and Depth
+	/// </summary>
 	virtual std::vector<bool> getFullfillsRequirements() const;
 };
 

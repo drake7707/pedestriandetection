@@ -26,7 +26,7 @@ int randBetween(int min, int max);
 
 int ceilTo(double val, double target);
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, const std::vector<cv::Size>& windowSizes, int slidingWindowStep, int refWidth = 64, int refHeight = 128);
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, const std::vector<cv::Size>& windowSizes, int slidingWindowStep, int refWidth, int refHeight);
 
 
 struct SlidingWindowRegion {
@@ -41,30 +41,47 @@ struct SlidingWindowRegion {
 	}
 };
 
-std::vector < SlidingWindowRegion> applyNonMaximumSuppression(std::vector< SlidingWindowRegion>& windows, float iouTreshold = 0.5);
+/// <summary>
+/// Applies non maximum suppression on the given windows
+/// </summary>
+std::vector <SlidingWindowRegion> applyNonMaximumSuppression(std::vector< SlidingWindowRegion>& windows, float iouTreshold = 0.5);
 
-
+/// <summary>
+/// Checks if the given rect r overlaps with any of the given regions with the PASCAL criteria (IoU > 0.5) 
+/// </summary>
 bool overlaps(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
+
+/// <summary>
+/// Returns the given index of the region if the rectangle overlaps with any of them
+/// </summary>
 int getOverlapIndex(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
 
+/// <summary>
+/// Checks whether the rect intersects at all with the given regions
+/// </summary>
 bool intersectsWith(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
+
+/// <summary>
+/// Calculates the intersection over union between 2 rectangles
+/// </summary>
+double getIntersectionOverUnion(const cv::Rect& r1, const cv::Rect& r2);
+
+
 
 
 void iterateDataSet(const std::string& baseDatasetPath, std::function<bool(int idx)> canSelectFunc, std::function<void(int idx, int resultClass, cv::Mat&rgb, cv::Mat&depth)> func);
 
 void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> func);
 
-double getIntersectionOverUnion(const cv::Rect& r1, const cv::Rect& r2);
 
 
-bool FileExists(const std::string &Filename);
+
+
+
+bool fileExists(const std::string &Filename);
 
 
 std::vector<std::string>  splitString(const std::string &s, char delim);
-
-template <typename T, typename T2>
-void parallel_foreach(const std::map<T, T2>& map, int nrOfThreads, std::function<void(std::pair<T, T2>&)> func);
-
 
 template <typename T, typename T2>
 void parallel_foreach(const std::map<T, T2>& map, int nrOfThreads, std::function<void(std::pair<T, T2>&)> func) {
@@ -131,43 +148,3 @@ struct measure
 	}
 };
 
-
-
-template <class T, class S, class C>
-S& Container(std::priority_queue<T, S, C>& q) {
-	struct EnumerablePriorityQueue : private std::priority_queue<T, S, C> {
-		static S& Container(std::priority_queue<T, S, C>& q) {
-			return q.*&EnumerablePriorityQueue::c;
-		}
-	};
-	return EnumerablePriorityQueue::Container(q);
-}
-
-
-class Semaphore {
-public:
-	Semaphore(int count_ = 0)
-		: count(count_) {}
-
-	inline void notify()
-	{
-		std::unique_lock<std::mutex> lock(mtx);
-		count++;
-		cv.notify_one();
-	}
-
-	inline void wait()
-	{
-		std::unique_lock<std::mutex> lock(mtx);
-
-		while (count == 0) {
-			cv.wait(lock);
-		}
-		count--;
-	}
-
-private:
-	std::mutex mtx;
-	std::condition_variable cv;
-	int count;
-};

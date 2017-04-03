@@ -9,18 +9,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Base">
-      <UniqueIdentifier>{4c83e018-8799-41af-a75d-032148d77f62}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\FeatureCreators">
       <UniqueIdentifier>{c463a5eb-0cf4-4770-b918-ff4a59834ed4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files\Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Resource Files\Source Files\Base">
-      <UniqueIdentifier>{d077a2a7-4181-4645-87c4-6726509122c4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files\Source Files\FeatureCreators">
       <UniqueIdentifier>{fee1e5d6-46f9-4f70-ac6c-957428ae29b7}</UniqueIdentifier>
@@ -37,27 +31,36 @@
     <Filter Include="Header Files\FeatureCreators\Sparse">
       <UniqueIdentifier>{44652a9f-81bb-4992-9e78-8b6d91cea99e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\DataSet">
+      <UniqueIdentifier>{0b7864a6-6b86-48f0-801f-0444f0dcbd93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Source Files\DataSet">
+      <UniqueIdentifier>{8fdaf068-4050-42f6-bb44-9bf3f8c85e76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Algorithms">
+      <UniqueIdentifier>{22e5fd99-551a-43c6-9239-8b9b7135b47b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Other">
+      <UniqueIdentifier>{4c83e018-8799-41af-a75d-032148d77f62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Source Files\Other">
+      <UniqueIdentifier>{d077a2a7-4181-4645-87c4-6726509122c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Source Files\Algorithms">
+      <UniqueIdentifier>{d7a26049-0513-48bc-a031-fef010dae7e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FeatureVector.h">
-      <Filter>Header Files\Base</Filter>
+      <Filter>Header Files\Other</Filter>
     </ClInclude>
     <ClInclude Include="Helper.h">
-      <Filter>Header Files\Base</Filter>
+      <Filter>Header Files\Other</Filter>
     </ClInclude>
     <ClInclude Include="ModelEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IFeatureCreator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DataSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DataSetLabel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KITTIDataSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ClassifierEvaluation.h">
@@ -78,16 +81,10 @@
     <ClInclude Include="HoGHistogramVarianceFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
-    <ClInclude Include="LocalBinaryPatterns.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LBPFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
     <ClInclude Include="HistogramResult.h">
-      <Filter>Header Files\Histogram</Filter>
-    </ClInclude>
-    <ClInclude Include="HistogramOfOrientedGradients.h">
       <Filter>Header Files\Histogram</Filter>
     </ClInclude>
     <ClInclude Include="Histogram2DResult.h">
@@ -102,16 +99,10 @@
     <ClInclude Include="TrainingDataSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProgressWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EvaluatorCascade.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IEvaluator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CoOccurenceMatrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CoOccurenceMatrixFeatureCreator.h">
@@ -123,16 +114,7 @@
     <ClInclude Include="RAWRGBFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
-    <ClInclude Include="JetHeatMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EvaluationSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ini.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="INIReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BRISKFeatureCreator.h">
@@ -168,14 +150,47 @@
     <ClInclude Include="VariableNumberFeatureCreator.h">
       <Filter>Header Files\FeatureCreators\Sparse</Filter>
     </ClInclude>
-    <ClInclude Include="KAISTDataSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HOIFeatureCreator.h">
       <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
+    <ClInclude Include="ini.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="INIReader.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSet.h">
+      <Filter>Header Files\DataSet</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSetLabel.h">
+      <Filter>Header Files\DataSet</Filter>
+    </ClInclude>
+    <ClInclude Include="KAISTDataSet.h">
+      <Filter>Header Files\DataSet</Filter>
+    </ClInclude>
+    <ClInclude Include="KITTIDataSet.h">
+      <Filter>Header Files\DataSet</Filter>
+    </ClInclude>
+    <ClInclude Include="Semaphore.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="CoOccurenceMatrix.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="HistogramOfOrientedGradients.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalBinaryPatterns.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
     <ClInclude Include="SDDGFeatureCreator.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
+    <ClInclude Include="JetHeatMap.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgressWindow.h">
+      <Filter>Header Files\Other</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -183,24 +198,15 @@
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FeatureVector.cpp">
-      <Filter>Resource Files\Source Files\Base</Filter>
+      <Filter>Resource Files\Source Files\Other</Filter>
     </ClCompile>
     <ClCompile Include="Helper.cpp">
-      <Filter>Resource Files\Source Files\Base</Filter>
+      <Filter>Resource Files\Source Files\Other</Filter>
     </ClCompile>
     <ClCompile Include="ModelEvaluator.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IFeatureCreator.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DataSet.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DataSetLabel.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="KITTIDataSet.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClassifierEvaluation.cpp">
@@ -221,14 +227,8 @@
     <ClCompile Include="HoGHistogramVarianceFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
-    <ClCompile Include="LocalBinaryPatterns.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LBPFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="HistogramOfOrientedGradients.cpp">
-      <Filter>Resource Files\Source Files\Histogram</Filter>
     </ClCompile>
     <ClCompile Include="HistogramResult.cpp">
       <Filter>Resource Files\Source Files\Histogram</Filter>
@@ -248,16 +248,10 @@
     <ClCompile Include="TrainingDataSet.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProgressWindow.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EvaluatorCascade.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IEvaluator.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CoOccurenceMatrix.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CoOccurenceMatrixFeatureCreator.cpp">
@@ -268,9 +262,6 @@
     </ClCompile>
     <ClCompile Include="RAWRGBFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="JetHeatMap.cpp">
-      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BRISKFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators\Sparse</Filter>
@@ -302,23 +293,50 @@
     <ClCompile Include="EvaluationSettings.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ini.c">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="INIReader.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HDDFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
-    </ClCompile>
-    <ClCompile Include="KAISTDataSet.cpp">
-      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HOIFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
     <ClCompile Include="SDDGFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="ini.c">
+      <Filter>Resource Files\Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="INIReader.cpp">
+      <Filter>Resource Files\Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="DataSet.cpp">
+      <Filter>Resource Files\Source Files\DataSet</Filter>
+    </ClCompile>
+    <ClCompile Include="DataSetLabel.cpp">
+      <Filter>Resource Files\Source Files\DataSet</Filter>
+    </ClCompile>
+    <ClCompile Include="KAISTDataSet.cpp">
+      <Filter>Resource Files\Source Files\DataSet</Filter>
+    </ClCompile>
+    <ClCompile Include="KITTIDataSet.cpp">
+      <Filter>Resource Files\Source Files\DataSet</Filter>
+    </ClCompile>
+    <ClCompile Include="Semaphore.cpp">
+      <Filter>Resource Files\Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="JetHeatMap.cpp">
+      <Filter>Resource Files\Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="HistogramOfOrientedGradients.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="LocalBinaryPatterns.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="CoOccurenceMatrix.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressWindow.cpp">
+      <Filter>Resource Files\Source Files\Other</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

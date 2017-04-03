@@ -405,7 +405,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 
 				nrOfWindowsEvaluated++;
-			}, settings.windowSizes, 16);
+			}, settings.windowSizes, 16, settings.refWidth, settings.refHeight);
 
 		});
 
@@ -1497,7 +1497,7 @@ void runJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, EvaluationSet
 
 
 	tester.nrOfConcurrentJobs = 1;
-	if (FileExists("inputsets.txt")) {
+	if (fileExists("inputsets.txt")) {
 		std::ifstream istr("inputsets.txt");
 		std::string line;
 		while (std::getline(istr, line)) {
@@ -1520,7 +1520,7 @@ void runJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, EvaluationSet
 
 	// --------- Build initial training set file if it does not exist ----------
 	std::string initialTrain0File = std::string("trainingsets") + PATH_SEPARATOR + dataSet->getName() + "_" + "train0.txt";
-	if (!FileExists(initialTrain0File)) {
+	if (!fileExists(initialTrain0File)) {
 		std::cout << "The initial train0 file does not exist, building training set";
 		TrainingDataSet initialSet = buildInitialTrainingSet(settings, dataSet);
 		initialSet.save(initialTrain0File);

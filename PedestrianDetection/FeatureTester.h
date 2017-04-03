@@ -11,6 +11,7 @@
 #include <memory>
 #include "FeatureTesterJob.h"
 #include "EvaluationSettings.h"
+#include "Semaphore.h"
 
 class FeatureTesterJob;
 
@@ -28,16 +29,19 @@ private:
 	std::unordered_map<std::string, FactoryCreator> creators;
 
 	std::queue<FeatureTesterJob*> jobs;
-
-	std::set<std::string> processedFeatureSets;
-	void loadProcessedFeatureSets();
-	void FeatureTester::markFeatureSetProcessed(DataSet* dataSet, std::string& featureSetName);
-
-
-
 	std::mutex singletonLock;
 
+	std::set<std::string> processedFeatureSets;
 
+	/// <summary>
+	/// Loads the already processed  feature sets from the processedsets.txt file
+	/// </summary>
+	void loadProcessedFeatureSets();
+
+	/// <summary>
+	/// Marks a feature set as processed
+	/// </summary>
+	void FeatureTester::markFeatureSetProcessed(DataSet* dataSet, std::string& featureSetName);
 
 
 public:
@@ -46,19 +50,39 @@ public:
 
 	int nrOfConcurrentJobs = 4;
 
+	/// <summary>
+	/// Add a feature descriptor factory to use in building feature sets
+	/// </summary>
 	void addFeatureCreatorFactory(FactoryCreator& creator);
+
+	/// <summary>
+	/// Returns the the given factory creator with given name
+	/// </summary>
 	FactoryCreator getAvailableCreator(std::string& name) const;
 
+	/// <summary>
+	/// Returns all the available feature creator factories
+	/// </summary>
 	std::vector<std::string> getFeatureCreatorFactories() const;
 
+	/// <summary>
+	/// Queues a job to run with the given feature set and settings on given the data set
+	/// </summary>
 	void FeatureTester::addJob(std::set<std::string>& set, DataSet* dataSet, EvaluationSettings& settings);
 
+	/// <summary>
+	/// Run all the queued jobs
+	/// </summary>
 	void runJobs();
 
+	/// <summary>
+	/// Returns the feature set of the given feature names
+	/// </summary>
 	std::unique_ptr<FeatureSet> getFeatureSet(const std::set<std::string>& set);
 
-	std::mutex* getLock() {
-		return &singletonLock;
-	}
+	/// <summary>
+	/// Returns a lock to synchronize between multiple jobs
+	/// </summary>
+	std::mutex* getLock();
 };
 

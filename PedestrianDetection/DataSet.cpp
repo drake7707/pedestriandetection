@@ -29,19 +29,15 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 	std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 	int parallization) const {
 
-
-
-	auto labels = getLabels();
-	std::vector<std::vector<DataSetLabel>> labelsPerNumber(getNrOfImages(), std::vector<DataSetLabel>());
-	for (auto& l : labels)
-		labelsPerNumber[atoi(l.getNumber().c_str())].push_back(l);
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber = getLabelsPerNumber();
 
 	parallel_for(0, labelsPerNumber.size(), parallization, [&](int imgNumber) -> void {
 		//for (auto& pair : images) {
 
-
+		// check if the image number has to be processed
 		if (canSelectFunc(imgNumber)) {
 
+			// notify start of image
 			onImageStarted(imgNumber);
 
 			auto imgs = getImagesForNumber(imgNumber);
@@ -50,7 +46,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 			cv::Mat mThermal = imgs[2];
 
 
-
+			// determine the true positive and their categories and the don't care regions
 			std::vector<cv::Rect2d> truePositiveRegions;
 			std::vector<std::string> truePositiveCategories;
 			std::vector<cv::Rect2d> dontCareRegions;
@@ -63,24 +59,30 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 					dontCareRegions.push_back(r.getBbox());
 			}
 
+			// slide window over the image
 			int idx = 0;
 			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
 
-				if (!intersectsWith(bbox, dontCareRegions)) { // skip all windows that intersect with the don't care regions
+				// skip all windows that intersect with the don't care regions
+				if (!intersectsWith(bbox, dontCareRegions)) { 
+
+					// resize the window to the reference size
 					cv::Mat regionRGB;
-					cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+					if (mRGB.cols > 0 && mRGB.rows > 0)
+						cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
 
 					cv::Mat regionDepth;
 					if (mDepth.cols > 0 && mDepth.rows > 0)
 						cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
 
-
 					cv::Mat regionThermal;
 					if (mThermal.cols > 0 && mThermal.rows > 0)
 						cv::resize(mThermal(bbox), regionThermal, cv::Size2d(refWidth, refHeight));
 
-					bool hasDepth = mDepth.rows > 0 && mDepth.cols > 0;
 
+
+					// calculate the average depth IF depth is available
+					bool hasDepth = mDepth.rows > 0 && mDepth.cols > 0;
 					double depthAvg = 0;
 					if (hasDepth) {
 						double depthSum = 0;
@@ -115,7 +117,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 						}
 					}
 				}
-			}, windowSizes, baseWindowStride);
+			}, windowSizes, baseWindowStride, refWidth, refHeight);
 
 			onImageProcessed(imgNumber, truePositiveCategories, truePositiveRegions);
 			//cv::imshow("Temp", tmp);
@@ -125,4 +127,9 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 		}
 		//}
 	});
+}
+
+
+bool DataSet::isWithinValidDepthRange(int height, float depthAverage) const {
+	return true;
 }

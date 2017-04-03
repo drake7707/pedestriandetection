@@ -9,7 +9,7 @@ VariableNumberFeatureCreator::VariableNumberFeatureCreator(std::string& creatorN
 
 	// try and load first
 	std::string featureCachePath = (std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml");
-	if (FileExists(featureCachePath))
+	if (fileExists(featureCachePath))
 		loadCentroids(featureCachePath);
 }
 
@@ -23,7 +23,7 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, con
 	std::string name = "Feature " + this->getName() + " preparation";
 	std::string featureCachePath = (std::string("featurecache") + PATH_SEPARATOR + getName() + ".xml");
 
-	if (FileExists(featureCachePath))
+	if (fileExists(featureCachePath))
 		return;
 
 	int k = clusterSize;

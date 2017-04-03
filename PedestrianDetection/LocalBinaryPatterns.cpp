@@ -2,10 +2,12 @@
 
 using namespace cv;
 
+// From https://github.com/bytefish/opencv/blob/master/lbp/lbp.cpp
+
+
 namespace Algorithms {
 
-	// From https://github.com/bytefish/opencv/blob/master/lbp/lbp.cpp
-
+	
 	template <typename _Tp>
 	void OLBP_(const Mat& src, Mat& dst, _Tp minDiff) {
 		dst = Mat::zeros(src.rows - 2, src.cols - 2, CV_8UC1);

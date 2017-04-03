@@ -33,7 +33,7 @@ void FeatureTesterJob::run() const {
 	std::string cascadeFile = std::string("models") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_cascade.xml";
 
 	// load and continue if it already exists
-	if (FileExists(cascadeFile))
+	if (fileExists(cascadeFile))
 		cascade.load(cascadeFile, std::string("models"));
 
 	// ---------------- Load the initial training set -----------------------
@@ -66,7 +66,7 @@ void FeatureTesterJob::run() const {
 
 		std::string modelFile = std::string("models") + PATH_SEPARATOR + evaluator.getName() + ".xml";
 		// ---------------- Training -----------------------
-		if (FileExists(modelFile)) {
+		if (fileExists(modelFile)) {
 			std::cout << "Skipped training of " << featureSetName << ", loading from existing model instead" << std::endl;
 			evaluator.loadModel(modelFile);
 		}
@@ -86,13 +86,13 @@ void FeatureTesterJob::run() const {
 		// --------------- Evaluation --------------------
 		std::vector<ClassifierEvaluation> evaluations;
 		std::string evaluationFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_round" + std::to_string(cascade.trainingRound) + ".csv";
-		if (FileExists(evaluationFile)) {
+		if (fileExists(evaluationFile)) {
 			std::cout << "Skipped evaluation of " << featureSetName << ", evaluation was already done." << std::endl;
 		}
 		else {
 			std::cout << "Started evaluation of " << featureSetName << std::endl;
 			long elapsedEvaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-				evaluations = cascade.evaluateDataSet(trainingDataSet, *featureSet, settings, false, settings.trainingCriteria);
+				evaluations = cascade.evaluateDataSet(trainingDataSet, *featureSet, settings, settings.trainingCriteria);
 			});
 			std::ofstream str(evaluationFile);
 			str << "Name" << ";";
@@ -130,7 +130,7 @@ void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& c
 	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final.csv";
 
 
-	if (!FileExists(finalEvaluationSlidingFile)) {
+	if (!fileExists(finalEvaluationSlidingFile)) {
 
 		// reset classifier hit count
 		cascade.resetClassifierHitCount();
@@ -193,7 +193,7 @@ void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& casca
 
 	std::string evaluationSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_round" + std::to_string(cascade.trainingRound) + ".csv";
 	std::string nextRoundTrainingFile = std::string("trainingsets") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_" + "train" + std::to_string(cascade.trainingRound + 1) + ".txt";
-	if (FileExists(evaluationSlidingFile) && FileExists(nextRoundTrainingFile)) {
+	if (fileExists(evaluationSlidingFile) && fileExists(nextRoundTrainingFile)) {
 		std::cout << "Skipped evaluation with sliding window of " << featureSetName << ", evaluation was already done and next training set was already present." << std::endl;
 		// load the training set for next round
 		trainingDataSet.load(nextRoundTrainingFile);
@@ -203,7 +203,7 @@ void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& casca
 		EvaluationSlidingWindowResult result;
 		cascade.setTrackClassifierHitCountEnabled(false);
 		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			result = cascade.evaluateWithSlidingWindow(settings, trainingDataSet.getDataSet(), *featureSet, cascade.trainingRound, settings.trainingCriteria);
+			result = cascade.evaluateWithSlidingWindow(settings, trainingDataSet.getDataSet(), *featureSet, settings.trainingCriteria);
 		});
 		std::cout << "Evaluation with sliding window complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
 

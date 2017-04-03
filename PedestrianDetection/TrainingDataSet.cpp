@@ -56,7 +56,6 @@ void TrainingDataSet::load(std::string & path)
 		throw std::exception("Unable to open file");
 
 	images.clear();
-	nrOfSamples = 0;
 	while (!str.eof()) {
 		int number;
 		int count;
@@ -79,7 +78,6 @@ void TrainingDataSet::load(std::string & path)
 			region.region = cv::Rect(x, y, w, h);
 			region.regionClass = regionClass;
 			img.regions.push_back(region);
-			nrOfSamples++;
 		}
 
 		images.emplace(img.number, img);
@@ -149,11 +147,6 @@ void TrainingDataSet::iterateDataSet(std::function<bool(int number)> canSelectFu
 			}
 		}
 	}
-}
-
-std::string TrainingDataSet::getBaseDataSetPath() const
-{
-	return baseDataSetPath;
 }
 
 bool TrainingDataSet::isWithinValidDepthRange(int height, float depthAverage) const {

@@ -41,31 +41,36 @@ protected:
 
 	std::string name;
 
-	//int refWidth = 64;
-	//int refHeight = 128;
-	//int parallelization = 8;
-	//int baseWindowStride = 16;
-	//int slidingWindowEveryXImage = 1;
-
-
 public:
 	IEvaluator(std::string& name);
 	virtual ~IEvaluator();
 
-
+	/// <summary>
+	/// Calculates the decisioun boundary shift for the given index i
+	/// </summary>
 	float getValueShift(int i, int nrOfEvaluations, float evaluationRange) const;
 
-	std::vector<ClassifierEvaluation> evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc);
+	/// <summary>
+	/// Evaluates the given training set with the given settings
+	/// </summary>
+	std::vector<ClassifierEvaluation> evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, 
+		const EvaluationSettings& settings, std::function<bool(int imageNumber)> canSelectFunc);
 
+	/// <summary>
+	/// Evaluates the data set with a sliding window with the given settings
+	/// </summary>
 	EvaluationSlidingWindowResult evaluateWithSlidingWindow(const EvaluationSettings& settings,
-		const DataSet* dataSet, const FeatureSet& set, int trainingRound,
-		std::function<bool(int number)> canSelectFunc);
+		const DataSet* dataSet, const FeatureSet& set, std::function<bool(int number)> canSelectFunc);
 
+	/// <summary>
+	/// Evaluate the data set with a sliding window and apply non maximum suppression with the given settings and feature set
+	/// </summary>
 	FinalEvaluationSlidingWindowResult evaluateWithSlidingWindowAndNMS(const EvaluationSettings& settings,
 		const DataSet* dataSet, const FeatureSet& set, std::function<bool(int number)> canSelectFunc);
 
-	//double evaluateWindow(cv::Mat& rgb, cv::Mat& depth) const;
-
+	/// <summary>
+	/// Evaluates the given feature vector and returns the score and class (sign)
+	/// </summary>
 	virtual double evaluateFeatures(FeatureVector& v) = 0;
 };
 

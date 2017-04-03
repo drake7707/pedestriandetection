@@ -17,9 +17,9 @@
 
 class FeatureTester;
 
+
+
 class FeatureTesterJob {
-
-
 
 	std::set<std::string> set;
 	DataSet* dataSet;
@@ -29,18 +29,39 @@ class FeatureTesterJob {
 	FeatureTester* tester;
 
 private:
+
+	/// <summary>
+	/// Evaluates the cascade with sliding window on the training set
+	/// </summary>
 	void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& cascade, std::string& featureSetName, TrainingDataSet& trainingDataSet, std::unique_ptr<FeatureSet>& fset) const;
+
+	/// <summary>
+	/// Evaluates the cascade with sliding window and NMS on the test set 
+	/// </summary>
 	void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& cascadeFile, std::unique_ptr<FeatureSet>& featureSet, std::string& featureSetName) const;
 
+	/// <summary>
+	/// Generates the feature explanation images of all the models in the cascade and save it to a file 
+	/// </summary>
+	void generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const;
 
 public:
 	FeatureTesterJob(FeatureTester* tester, std::set<std::string> set, DataSet* dataSet, EvaluationSettings settings);
 
+	/// <summary>
+	/// Returns the concatenated feature name from the feature set
+	/// </summary>
 	std::string FeatureTesterJob::getFeatureName() const;
+
+	/// <summary>
+	/// Runs the job 
+	/// </summary>
 	void run() const;
 
+	/// <summary>
+	/// Returns the data set that is used for the job
+	/// </summary>
 	DataSet* FeatureTesterJob::getDataSet() const;
 
-	void generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const;
-
+	
 };

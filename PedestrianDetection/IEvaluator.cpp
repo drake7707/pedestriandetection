@@ -24,7 +24,7 @@ float IEvaluator::getValueShift(int i, int nrOfEvaluations, float evaluationRang
 	return valueShift;
 }
 
-std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, bool includeRawResponses, std::function<bool(int imageNumber)> canSelectFunc) {
+std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, std::function<bool(int imageNumber)> canSelectFunc) {
 	std::vector<ClassifierEvaluation> evals(settings.nrOfEvaluations, ClassifierEvaluation());
 
 	double sumTimes = 0;
@@ -73,11 +73,6 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 
 				correct = false;
 			}
-
-			if (includeRawResponses)
-				evals[i].rawValues.push_back(RawEvaluationEntry(imageNumber, region, resultSum + valueShift, correct));
-
-
 		}
 	}, settings.addFlippedInTrainingSet, settings.refWidth, settings.refHeight);
 
@@ -91,7 +86,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 
 
 EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const EvaluationSettings& settings,
-	const DataSet* dataSet, const FeatureSet& set, int trainingRound,
+	const DataSet* dataSet, const FeatureSet& set,
 	std::function<bool(int number)> canSelectFunc) {
 
 	EvaluationSlidingWindowResult swresult;
@@ -111,13 +106,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 		mutex.unlock();
 	};;
 
-
-
-	// want to obtain 4000 false positives, over 7500 images, which means about 0.5 false positive per image
-	// allow 20 times that size, or 10 worst false positives per image
 	int maxNrOfFPPerImage = settings.maxNrOfFPPerImage;
-
-
 
 	typedef std::vector<std::set<SlidingWindowRegion>> FPPerValueShift;
 

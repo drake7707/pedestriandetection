@@ -3,18 +3,6 @@
 #include <iomanip>
 #include "opencv2/opencv.hpp"
 
-struct RawEvaluationEntry {
-	int imageNumber;
-	cv::Rect region;
-	double response;
-	bool correct;
-	RawEvaluationEntry(int imageNumber, cv::Rect& region, double response, bool correct) : imageNumber(imageNumber), region(region), response(response), correct(correct) { }
-
-	bool operator<(RawEvaluationEntry& other) const {
-		return this->response < other.response;
-	}
-};
-
 struct ClassifierEvaluation {
 	int nrOfTruePositives = 0;
 	int nrOfTrueNegatives = 0;
@@ -27,8 +15,6 @@ struct ClassifierEvaluation {
 	double evaluationSpeedPerRegionMS = 0;
 
 	std::vector<int> falsePositivesPerImage;
-
-	std::vector<RawEvaluationEntry> rawValues;
 
 	ClassifierEvaluation(int nrOfImages = 0) {
 		falsePositivesPerImage = std::vector<int>(nrOfImages, 0);

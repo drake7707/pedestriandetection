@@ -1,6 +1,7 @@
 #include "JetHeatMap.h"
 
 
+// Code from http://stackoverflow.com/a/7706668/694640
 namespace heatmap {
 
 	double interpolate(double val, double y0, double x0, double y1, double x1) {

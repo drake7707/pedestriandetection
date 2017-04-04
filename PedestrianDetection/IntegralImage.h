@@ -7,11 +7,14 @@
 class IntegralHistogram {
 
 private:
-	std::vector<std::vector<Histogram>> ihist;
+	std::vector<cv::Mat> ihist;
 	int binSize;
 public:
-	void create(int width, int height, int binSize, std::function<void(int x, int y, Histogram& hist)> setBinValues) {
-		ihist = std::vector<std::vector<Histogram>>(height, std::vector<Histogram>(width, Histogram(binSize, 0)));
+	void create(int width, int height, int binSize, std::function<void(int x, int y, std::vector<cv::Mat>& ihist)> setBinValues) {
+		ihist = std::vector<cv::Mat>();
+		for (int bin = 0; bin < binSize; bin++)
+			ihist.push_back(cv::Mat(height, width, CV_32FC1, cv::Scalar(0)));
+
 		this->binSize = binSize;
 
 		for (int j = 0; j < height; j++)
@@ -21,14 +24,14 @@ public:
 
 				// copy over
 				for (int bin = 0; bin < binSize; bin++) {
-					ihist[j][i][bin] =
-						(i - 1 < 0 ? 0 : ihist[j][i - 1][bin])
-						+ (j - 1 < 0 ? 0 : ihist[j - 1][i][bin])
-						- ((i - 1 < 0 || j - 1 < 0) ? 0 : ihist[j - 1][i - 1][bin]);
+					ihist[bin].at<float>(j,i) =
+						(i - 1 < 0 ? 0 : ihist[bin].at<float>(j,i - 1))
+						+ (j - 1 < 0 ? 0 : ihist[bin].at<float>(j - 1,i))
+						- ((i - 1 < 0 || j - 1 < 0) ? 0 : ihist[bin].at<float>(j - 1,i - 1));
 				}
 
 				// set specific bin values for pixel i,j
-				setBinValues(i, j, ihist[j][i]);
+				setBinValues(i, j, ihist);
 			}
 		}
 	}
@@ -46,10 +49,10 @@ public:
 			//   A + D - B - C
 			// determine integral histogram values of bin at [i][j]
 
-			float A = (minx > 0 && miny > 0) ? ihist[miny][minx][bin] : 0;
-			float B = (miny > 0) ? ihist[miny][maxx][bin] : 0;
-			float C = (minx > 0) ? ihist[maxy][minx][bin] : 0;
-			float D = ihist[maxy][maxx][bin];
+			float A = (minx > 0 && miny > 0) ? ihist[bin].at<float>(miny,minx) : 0;
+			float B = (miny > 0) ? ihist[bin].at<float>(miny,maxx) : 0;
+			float C = (minx > 0) ? ihist[bin].at<float>(maxy,minx) : 0;
+			float D = ihist[bin].at<float>(maxy, maxx);
 
 			float value = A + D - C - B;
 			hist[bin] = value;

@@ -274,7 +274,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 	ClassifierEvaluation eval(dataSet.getNrOfImages());
 
-	parallel_for(0, 1000, 1, [&](int i) -> void {
+	parallel_for(0, 1000, 6, [&](int i) -> void {
 		ProgressWindow::getInstance()->updateStatus(std::string("Testing classifier"), 1.0 * i / 1000, std::to_string(i));
 
 		auto imgs = dataSet.getImagesForNumber(i);

@@ -180,7 +180,7 @@ namespace hog {
 		double max = 1.0;
 
 
-		hist.create(weights.cols, weights.rows, binSize, [&](int x, int y, Histogram& histogram) -> void {
+		hist.create(weights.cols, weights.rows, binSize, [&](int x, int y, std::vector<cv::Mat>& ihist) -> void {
 
 			float anglePixel = normalizedBinningValues.at<float>(y, x);
 			double weight = weights.at<float>(y, x);
@@ -197,8 +197,11 @@ namespace hog {
 			float tEnd = bin2 == 0 ? max : bin2 * max / binSize;
 
 			float u = (tEnd - anglePixel) / (tEnd - tBegin);
-			histogram[bin1] += weight * u;
-			histogram[bin2] += weight * (1 - u);
+
+			ihist[bin1].at<float>(y, x) += weight * u;
+			ihist[bin2].at<float>(y, x) += weight * (1-u);
+			/*histogram[bin1] += weight * u;
+			histogram[bin2] += weight * (1 - u);*/
 		});
 
 		return hist;

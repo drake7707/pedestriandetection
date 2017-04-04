@@ -24,12 +24,12 @@ std::vector<std::vector<DataSetLabel>> DataSet::getLabelsPerNumber() const {
 void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windowSizes, int baseWindowStride,
 	int refWidth, int refHeight,
 	std::function<bool(int number)> canSelectFunc,
-	
+
 	std::function<void(int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales)> onImageStarted,
-	std::function<void(int idx, int resultClass, int imageNumber, int scale, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive)> func,
+	std::function<void(int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive)> func,
 	std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 	int parallization) const {
-	
+
 	std::vector<std::vector<DataSetLabel>> labelsPerNumber = getLabelsPerNumber();
 
 	parallel_for(0, labelsPerNumber.size(), parallization, [&](int imgNumber) -> void {
@@ -82,67 +82,69 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 					dontCareRegions.push_back(r.getBbox());
 			}
 
-			// slide window over the image
-			int idx = 0;
-			slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
+			for (int s = 0; s < windowSizes.size(); s++) {
 
-				// skip all windows that intersect with the don't care regions
-				if (!intersectsWith(bbox, dontCareRegions)) { 
+				// slide window over the image
+				int idx = 0;
+				slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
+					double scale = 1.0  *  windowSizes[s].width / refWidth;
+					cv::Rect scaledBBox = cv::Rect(bbox.x * scale, bbox.y * scale, windowSizes[s].width, windowSizes[s].height);
 
-					// resize the window to the reference size
-					cv::Mat regionRGB;
-					if (mRGB.cols > 0 && mRGB.rows > 0)
-						cv::resize(mRGB(bbox), regionRGB, cv::Size2d(refWidth, refHeight));
+					// skip all windows that intersect with the don't care regions
+					if (!intersectsWith(scaledBBox, dontCareRegions)) {
 
-					cv::Mat regionDepth;
-					if (mDepth.cols > 0 && mDepth.rows > 0)
-						cv::resize(mDepth(bbox), regionDepth, cv::Size2d(refWidth, refHeight));
+						cv::Mat regionRGB;
+						if (rgbScales.size() > 0)
+							regionRGB = rgbScales[s](bbox);
 
-					cv::Mat regionThermal;
-					if (mThermal.cols > 0 && mThermal.rows > 0)
-						cv::resize(mThermal(bbox), regionThermal, cv::Size2d(refWidth, refHeight));
+						cv::Mat regionDepth;
+						if (depthScales.size() > 0)
+							regionDepth = depthScales[s](bbox);
+
+						cv::Mat regionThermal;
+						if (thermalScales.size() > 0)
+							regionThermal = thermalScales[s](bbox);
 
 
-
-					// calculate the average depth IF depth is available
-					bool hasDepth = mDepth.rows > 0 && mDepth.cols > 0;
-					double depthAvg = 0;
-					if (hasDepth) {
-						double depthSum = 0;
-						int depthCount = 0;
-						int xOffset = bbox.x + bbox.width / 2;
-						for (int y = bbox.y; y < bbox.y + bbox.height; y++)
-						{
-							for (int i = xOffset - 1; i <= xOffset + 1; i++)
+						// calculate the average depth IF depth is available
+						bool hasDepth = mDepth.rows > 0 && mDepth.cols > 0;
+						double depthAvg = 0;
+						if (hasDepth) {
+							double depthSum = 0;
+							int depthCount = 0;
+							int xOffset = bbox.x + bbox.width / 2;
+							for (int y = bbox.y; y < bbox.y + bbox.height; y++)
 							{
-								depthSum += mDepth.at<float>(y, i);
-								depthCount++;
+								for (int i = xOffset - 1; i <= xOffset + 1; i++)
+								{
+									depthSum += mDepth.at<float>(y, i);
+									depthCount++;
+								}
+							}
+							depthAvg = (depthSum / depthCount);
+						}
+
+						//	 only evaluate windows that fall within the depth range to speed up the evaluation
+						if (!hasDepth || isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
+
+							bool overlapsWithTruePositive = false;
+							int resultClass;
+							if (overlaps(bbox, truePositiveRegions)) {
+								resultClass = 1;
+								overlapsWithTruePositive = true;
+							}
+							else
+								resultClass = -1;
+
+							if (resultClass != 0) { // don't evaluate don't care regions
+								func(idx, resultClass, imgNumber, s, scaledBBox, bbox, regionRGB, regionDepth, regionThermal, overlapsWithTruePositive);
+								idx++;
 							}
 						}
-						depthAvg = (depthSum / depthCount);
 					}
+				}, baseWindowStride, refWidth, refHeight);
+			}
 
-					//	 only evaluate windows that fall within the depth range to speed up the evaluation
-					if (!hasDepth || isWithinValidDepthRange(bbox.height, depthAvg)) {
-
-						bool overlapsWithTruePositive = false;
-						int resultClass;
-						if (overlaps(bbox, truePositiveRegions)) {
-							resultClass = 1;
-							overlapsWithTruePositive = true;
-						}
-						else
-							resultClass = -1;
-
-						if (resultClass != 0) { // don't evaluate don't care regions
-
-							// TODO scale!
-							func(idx, resultClass, imgNumber, 0, bbox, regionRGB, regionDepth, regionThermal, overlapsWithTruePositive);
-							idx++;
-						}
-					}
-				}
-			}, windowSizes, baseWindowStride, refWidth, refHeight);
 
 			onImageProcessed(imgNumber, truePositiveCategories, truePositiveRegions);
 			//cv::imshow("Temp", tmp);

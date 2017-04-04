@@ -131,14 +131,14 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
-		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * nrOfImagesEvaluated / dataSet->getNrOfImages(), std::string("Evaluating with sliding window (") + std::to_string(nrOfImagesEvaluated) + "/" + std::to_string(dataSet->getNrOfImages()) + ")");
 
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			v = set.getFeatures(rgb, depth, thermal, region, preparedDataPerImage[imageNumber][scale]);
+			v = set.getFeatures(rgb, depth, thermal, unscaledROI, preparedDataPerImage[imageNumber][scale]);
 		});
 
 		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
@@ -198,13 +198,13 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 								bool overlapsWithElement = false;
 								auto it = worstFalsePositivesOfImageAndEvaluationShift.rbegin();
 								while (it != worstFalsePositivesOfImageAndEvaluationShift.rend()) {
-									if (getIntersectionOverUnion(it->bbox, region) > 0.5) {
+									if (getIntersectionOverUnion(it->bbox, scaledRegion) > 0.5) {
 										overlapsWithElement = true;
 
 										if (abs(evaluationResult) > abs(it->score)) {
 											// swap in this element
 											worstFalsePositivesOfImageAndEvaluationShift.erase(std::next(it).base()); //(http://stackoverflow.com/questions/1830158/how-to-call-erase-with-a-reverse-iterator)
-											worstFalsePositivesOfImageAndEvaluationShift.insert(SlidingWindowRegion(imageNumber, region, abs(evaluationResult)));
+											worstFalsePositivesOfImageAndEvaluationShift.insert(SlidingWindowRegion(imageNumber, scaledRegion, abs(evaluationResult)));
 										}
 										else {
 											// smaller result, the worst element is already in the queue
@@ -219,7 +219,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 								// prevent false positive with a big result and overlap from completely filling the priority queue so disallow elements that overlap enough (IoU > 0.5)
 								if (!overlapsWithElement) {
 									// add it 
-									worstFalsePositivesOfImageAndEvaluationShift.emplace(SlidingWindowRegion(imageNumber, region, abs(evaluationResult)));
+									worstFalsePositivesOfImageAndEvaluationShift.emplace(SlidingWindowRegion(imageNumber, scaledRegion, abs(evaluationResult)));
 
 									// smallest results will be removed to ensure not exceeding the maximum capacity
 									if (worstFalsePositivesOfImageAndEvaluationShift.size() > maxNrOfFPPerImage) // keep the top worst performing regions
@@ -369,15 +369,15 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
-		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * nrOfImagesEvaluated / dataSet->getNrOfImages(), std::string("Evaluating with sliding window and NMS (") + std::to_string(nrOfImagesEvaluated) + ")");
 
-		
+
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			v = set.getFeatures(rgb, depth, thermal, region, preparedDataPerImage[imageNumber][scale]);
+			v = set.getFeatures(rgb, depth, thermal, unscaledROI, preparedDataPerImage[imageNumber][scale]);
 		});
 
 		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
@@ -390,7 +390,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 		long time = measure<std::chrono::milliseconds>::execution([&]() -> void {
 			baseEvaluationSum = evaluateFeatures(v);
 		});
-		evaluatedWindowsPerImage[imageNumber].push_back(SlidingWindowRegion(imageNumber, region, baseEvaluationSum));
+		evaluatedWindowsPerImage[imageNumber].push_back(SlidingWindowRegion(imageNumber, scaledRegion, baseEvaluationSum));
 
 	}, [&](int imgNr, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed

@@ -318,12 +318,17 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 			}
 
 			auto preparedData = fset->buildPreparedDataForFeatures(rgbScales, depthScales, thermalScales);
-			
+
 			//std::vector<std::vector<IPreparedData*>> preparedData;
 
 			for (int s = 0; s < settings.windowSizes.size(); s++) {
 
+				double scale = 1.0  *  settings.windowSizes[s].width / settings.refWidth;
+				
 				slideWindow(rgbScales[s].cols, rgbScales[s].rows, [&](cv::Rect bbox) -> void {
+
+					cv::Rect scaledBBox = cv::Rect(bbox.x * scale, bbox.y * scale, settings.windowSizes[s].width, settings.windowSizes[s].height);
+
 					cv::Mat regionRGB;
 					if (rgbScales.size() > 0)
 						regionRGB = rgbScales[s](bbox);
@@ -352,7 +357,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 					}
 					double depthAvg = (depthSum / depthCount);
 
-					if (dataSet.isWithinValidDepthRange(settings.windowSizes[s].height, depthAvg)) {
+					if (dataSet.isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
 						// falls within range where TP can lie, continue
 					}
 					else {
@@ -370,15 +375,20 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 							nrOfWindowsPositive++;
 							predictedPositive = true;
 
-							double scale = 1.0  *  settings.windowSizes[s].width / settings.refWidth;
-							cv::Rect scaledBBox = cv::Rect(bbox.x * scale, bbox.y * scale, settings.windowSizes[s].width, settings.windowSizes[s].height);
-
 							predictedPositiveRegions.push_back(SlidingWindowRegion(i, scaledBBox, abs(result)));
 						}
 					}
 
 					nrOfWindowsEvaluated++;
 				}, 16, settings.refWidth, settings.refHeight);
+			}
+
+			// clean up of prepared data
+			for (auto& v : preparedData) {
+				for (int i = 0; i < v.size(); i++) {
+					if (v[i] != nullptr)
+						delete v[i];
+				}
 			}
 		});
 
@@ -767,7 +777,7 @@ void testSlidingWindow(EvaluationSettings& settings) {
 		[&](int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) -> void {
 		// start of image
 	},
-		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion,cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (imageNumber != oldNumber) {
 			if (tmp.rows > 0) {
@@ -780,10 +790,10 @@ void testSlidingWindow(EvaluationSettings& settings) {
 
 
 		if (resultClass == 1)
-			cv::rectangle(tmp, region, cv::Scalar(0, 255, 0), 3);
+			cv::rectangle(tmp, scaledRegion, cv::Scalar(0, 255, 0), 3);
 		else {
 			if (!overlapsWithTruePositive)
-				cv::rectangle(tmp, region, cv::Scalar(0, 0, 255), 1);
+				cv::rectangle(tmp, scaledRegion, cv::Scalar(0, 0, 255), 1);
 		}
 	}, [&](int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositives) -> void {
 		// end of image

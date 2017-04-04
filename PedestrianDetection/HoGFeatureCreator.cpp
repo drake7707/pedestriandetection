@@ -57,8 +57,11 @@ hog::HistogramResult HOGFeatureCreator::getHistogramsOfOrientedGradient(cv::Mat&
 	
 	cv::Mat magnitude;
 	cv::Mat angle;
-	buildMagnitudeAndAngle(img, magnitude, angle);
-	const HOG1DPreparedData* hogData = static_cast<const HOG1DPreparedData*>(preparedData);
+	
+	const HOG1DPreparedData* hogData = dynamic_cast<const HOG1DPreparedData*>(preparedData);
+	if (hogData == nullptr) {
+		buildMagnitudeAndAngle(img, magnitude, angle);
+	}
 
 	return hog::getHistogramsOfX(magnitude, angle, patchSize, binSize, createImage, l2normalize, roi, hogData == nullptr ? nullptr : &(hogData->integralHistogram), refWidth, refHeight);
 }
@@ -70,7 +73,7 @@ std::vector<IPreparedData*> HOGFeatureCreator::buildPreparedDataForFeatures(std:
 	
 	std::vector<IPreparedData*> dataPerScale;
 
-	HOG1DPreparedData* data = new HOG1DPreparedData();
+	
 	if (target == IFeatureCreator::Target::Depth) {
 		for (auto& depth : depthScales) {
 			cv::Mat magnitude;
@@ -78,6 +81,7 @@ std::vector<IPreparedData*> HOGFeatureCreator::buildPreparedDataForFeatures(std:
 
 			buildMagnitudeAndAngle(depth, magnitude, angle);
 			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
+			HOG1DPreparedData* data = new HOG1DPreparedData();
 			data->integralHistogram = hist;
 			dataPerScale.push_back(data);
 		}
@@ -89,6 +93,7 @@ std::vector<IPreparedData*> HOGFeatureCreator::buildPreparedDataForFeatures(std:
 
 			buildMagnitudeAndAngle(thermal, magnitude, angle);
 			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
+			HOG1DPreparedData* data = new HOG1DPreparedData();
 			data->integralHistogram = hist;
 			dataPerScale.push_back(data);
 		}
@@ -100,6 +105,7 @@ std::vector<IPreparedData*> HOGFeatureCreator::buildPreparedDataForFeatures(std:
 
 			buildMagnitudeAndAngle(rgb, magnitude, angle);
 			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
+			HOG1DPreparedData* data = new HOG1DPreparedData();
 			data->integralHistogram = hist;
 			dataPerScale.push_back(data);
 		}

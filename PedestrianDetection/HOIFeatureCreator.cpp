@@ -16,10 +16,11 @@ int HOIFeatureCreator::getNumberOfFeatures() const {
 	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, false);
 }
 
-FeatureVector HOIFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
+FeatureVector HOIFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 	cv::normalize(thermal, thermal, 0, 1, cv::NormTypes::NORM_MINMAX);
 
-	auto hogResult = hog::getHistogramsOfX(cv::Mat(thermal.rows, thermal.cols, CV_32FC1, cv::Scalar(1)), thermal, patchSize, binSize, false, true);
+	const HOG1DPreparedData* hogData = static_cast<const HOG1DPreparedData*>(preparedData);
+	auto hogResult = hog::getHistogramsOfX(cv::Mat(thermal.rows, thermal.cols, CV_32FC1, cv::Scalar(1)), thermal, patchSize, binSize, false, true, roi, hogData == nullptr ? nullptr : &(hogData->integralHistogram), refWidth, refHeight);
 
 	return hogResult.getFeatureArray();
 }

@@ -22,18 +22,18 @@ public:
 
 
 
-	SDDGFeatureCreator::SDDGFeatureCreator(std::string& name, IFeatureCreator::Target target, int refWidth, int refHeight);
+	SDDGFeatureCreator(std::string& name, IFeatureCreator::Target target, int refWidth, int refHeight);
 
-	virtual SDDGFeatureCreator::~SDDGFeatureCreator();
+	virtual ~SDDGFeatureCreator();
 
 
-	int SDDGFeatureCreator::getNumberOfFeatures() const;
+	int getNumberOfFeatures() const;
 
-	FeatureVector SDDGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;
+	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const;
+	
+	cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 
-	cv::Mat SDDGFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
-
-	std::vector<bool> SDDGFeatureCreator::getRequirements() const;
+	std::vector<bool> getRequirements() const;
 
 };
 

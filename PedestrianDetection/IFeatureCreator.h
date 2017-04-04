@@ -1,6 +1,8 @@
 #pragma once
 #include "FeatureVector.h"
 #include "opencv2/opencv.hpp"
+#include "IPreparedData.h"
+#include <memory>
 
 class IFeatureCreator
 {
@@ -22,10 +24,12 @@ public:
 	/// </summary>
 	virtual int getNumberOfFeatures() const = 0;
 
+	virtual std::vector<IPreparedData*> buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const;
+
 	/// <summary>
 	/// Builds a feature vector from the given window input data, which are all at reference size if available
 	/// </summary>
-	virtual FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const = 0;
+	virtual FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const = 0;
 
 	/// <summary>
 	/// Explains the various features from the trained models, usually in the form of a heat map

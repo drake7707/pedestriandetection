@@ -3,6 +3,7 @@
 #include "IFeatureCreator.h"
 #include "TrainingDataSet.h"
 #include "EvaluationSettings.h"
+#include "IPreparedData.h"
 
 class VariableNumberFeatureCreator : public IFeatureCreator
 {
@@ -19,7 +20,8 @@ public:
 
 	virtual std::vector<FeatureVector> getVariableNumberFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const = 0;
 
-	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;
+	
+	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const;
 
 	virtual cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;	
 

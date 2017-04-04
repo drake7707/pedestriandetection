@@ -192,6 +192,15 @@
     <ClInclude Include="ProgressWindow.h">
       <Filter>Header Files\Other</Filter>
     </ClInclude>
+    <ClInclude Include="IPreparedData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HOG1DPreparedData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntegralImage.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -337,6 +346,15 @@
     </ClCompile>
     <ClCompile Include="ProgressWindow.cpp">
       <Filter>Resource Files\Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="IPreparedData.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HOG1DPreparedData.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IntegralImage.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

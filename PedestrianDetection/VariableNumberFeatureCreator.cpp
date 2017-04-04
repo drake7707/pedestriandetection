@@ -113,7 +113,8 @@ void VariableNumberFeatureCreator::prepare(TrainingDataSet& trainingDataSet, con
 	saveCentroids(featureCachePath);
 }
 
-FeatureVector VariableNumberFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
+
+FeatureVector VariableNumberFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 	std::vector<FeatureVector> localSamples = getVariableNumberFeatures(rgb, depth, thermal);
 
 

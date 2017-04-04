@@ -16,8 +16,7 @@ int RAWRGBFeatureCreator::getNumberOfFeatures() const {
 	return refWidth*refHeight * 3;
 }
 
-FeatureVector RAWRGBFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
-
+FeatureVector RAWRGBFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 	FeatureVector v;
 	v.reserve(rgb.cols * rgb.rows * 3);
 

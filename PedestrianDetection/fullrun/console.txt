@@ -29449,3 +29449,16 @@ Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
 Job HOG(RGB)+HONV is already processed and will be skipped
 Started training of HOG(RGB)+RAW(RGB), round 0
 Training boost classifier on 13750 samples (4214 TP, 9536 TN), feature size 28356
+Image: 750 Number of windows evaluated: 13959 (skipped 5498) and 5 positive (0.0590947%) 18946ms (value shift: -6)
+Image: 500 Number of windows evaluated: 13959 (skipped 4840) and 1 positive (0.0109661%) 20480ms (value shift: -6)
+Image: 250 Number of windows evaluated: 13959 (skipped 1765) and 1 positive (0.00820075%) 27130ms (value shift: -6)
+Image: 0 Number of windows evaluated: 13625 (skipped 1480) and 6 positive (0.049403%) 28400ms (value shift: -6)
+Image: 751 Number of windows evaluated: 13959 (skipped 4173) and 4 positive (0.0408747%) 23134ms (value shift: -6)
+Image: 501 Number of windows evaluated: 13959 (skipped 4341) and 1 positive (0.0103972%) 21700ms (value shift: -6)
+Image: 0 Number of windows evaluated: 13590 (skipped 1453) and 2 positive (0.0164785%) 22280ms (value shift: -6)
+Image: 1 Number of windows evaluated: 13924 (skipped 4092) and 0 positive ( 0%) 17695ms (value shift: -6)
+Image: 0 Number of windows evaluated: 13590 (skipped 1453) and 0 positive ( 0%) 19106ms (value shift: -6)
+Image: 1 Number of windows evaluated: 13924 (skipped 4092) and 0 positive ( 0%) 16331ms (value shift: -6)
+Image: 2 Number of windows evaluated: 13924 (skipped 4301) and 0 positive ( 0%) 15997ms (value shift: -6)
+Image: 0 Number of windows evaluated: 13590 (skipped 1453) and 2 positive (0.0164785%) 22281ms (value shift: -6)
+Image: 1 Number of windows evaluated: 13924 (skipped 4092) and 0 positive ( 0%) 17451ms (value shift: -6)

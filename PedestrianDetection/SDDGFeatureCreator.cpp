@@ -22,7 +22,7 @@ int SDDGFeatureCreator::getNumberOfFeatures() const {
 	return nrOfCellsX * nrOfCellsY * SDDGLength;
 }
 
-FeatureVector SDDGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
+FeatureVector SDDGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 	int nrOfCellsX = refWidth / cellSize;
 	int nrOfCellsY = refHeight / cellSize;
 

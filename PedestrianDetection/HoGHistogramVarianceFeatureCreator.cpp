@@ -4,7 +4,7 @@
 
 
 HOGHistogramVarianceFeatureCreator::HOGHistogramVarianceFeatureCreator(std::string& name, IFeatureCreator::Target target, int patchSize, int binSize, int refWidth, int refHeight)
-	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight), target(target) {
+	: HOGFeatureCreator(name, target, patchSize, binSize, refWidth, refHeight) {
 }
 
 
@@ -18,14 +18,14 @@ int HOGHistogramVarianceFeatureCreator::getNumberOfFeatures() const {
 	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, true) / (binSize * 4);
 }
 
-FeatureVector HOGHistogramVarianceFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
+FeatureVector HOGHistogramVarianceFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 	hog::HistogramResult result;
 	if (target == IFeatureCreator::Target::Depth)
-		result = hog::getHistogramsOfOrientedGradient(depth, patchSize, binSize, false, true);
-	else if(target == IFeatureCreator::Target::Thermal)
-		result = hog::getHistogramsOfOrientedGradient(thermal, patchSize, binSize, false, true);
+		result = getHistogramsOfOrientedGradient(depth, patchSize, binSize, roi, preparedData, false, true);
+	else if (target == IFeatureCreator::Target::Thermal)
+		result = getHistogramsOfOrientedGradient(thermal, patchSize, binSize, roi, preparedData, false, true);
 	else
-		result = hog::getHistogramsOfOrientedGradient(rgb, patchSize, binSize, false, true);
+		result = getHistogramsOfOrientedGradient(rgb, patchSize, binSize, roi, preparedData, false, true);
 
 	return result.getHistogramVarianceFeatures();
 }

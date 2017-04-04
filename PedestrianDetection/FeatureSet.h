@@ -5,6 +5,7 @@
 #include "TrainingDataSet.h"
 #include <memory>
 #include "EvaluationSettings.h"
+#include "IPreparedData.h"
 
 class FeatureSet
 {
@@ -43,19 +44,22 @@ public:
 	/// </summary>
 	int getNumberOfFeatures() const;
 
+
+	std::vector<std::vector<IPreparedData*>> FeatureSet::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const;
+
 	/// <summary>
-	/// Builds feature vectors from the given window input data from all the separarate feature descriptor
+	/// Builds feature vectors from the given window input data from all the separarate feature descriptors, at ref size
 	/// </summary>
-	FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const;
+	FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const std::vector<IPreparedData*>& preparedDataOfScale) const;
 
 	/// <summary>
 	/// Explains the various features from the trained models, usually in the form of a heat map
 	/// </summary>
-	std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
+	std::vector<cv::Mat> explainFeatures(std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 
 	/// <summary>
 	/// Returns the combination of requirements for all the feature descriptors to match against the data set RGB/Depth/Thermal
 	/// </summary>
-	std::vector<bool> FeatureSet::getRequirements() const;
+	std::vector<bool> getRequirements() const;
 };
 

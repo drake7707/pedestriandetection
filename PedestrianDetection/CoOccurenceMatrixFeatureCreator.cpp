@@ -20,7 +20,7 @@ int CoOccurenceMatrixFeatureCreator::getNumberOfFeatures() const {
 	return nrOfCellsWidth * nrOfCellsHeight * binSize*binSize;
 }
 
-FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
+FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 	int nrOfCellsWidth = rgb.cols / patchSize;
 	int nrOfCellsHeight = rgb.rows / patchSize;
 

@@ -21,6 +21,8 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 	std::vector<FeatureVector> truePositiveFeatures;
 	std::vector<FeatureVector> trueNegativeFeatures;
 
+	// don't use prepared data for training
+	 std::vector<IPreparedData*> preparedData;
 
 	trainingDataSet.iterateDataSet(canSelectFunc,
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal) -> void {
@@ -28,7 +30,7 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(name, 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Building feature vectors (") + std::to_string(imageNumber) + ")");
 
-		FeatureVector v = set.getFeatures(rgb, depth, thermal);
+		FeatureVector v = set.getFeatures(rgb, depth, thermal, region, preparedData);
 		if (resultClass == 1)
 			truePositiveFeatures.push_back(v);
 		else

@@ -24,11 +24,12 @@ std::vector<std::vector<DataSetLabel>> DataSet::getLabelsPerNumber() const {
 void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windowSizes, int baseWindowStride,
 	int refWidth, int refHeight,
 	std::function<bool(int number)> canSelectFunc,
-	std::function<void(int imageNumber)> onImageStarted,
-	std::function<void(int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTP)> func,
+	
+	std::function<void(int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales)> onImageStarted,
+	std::function<void(int idx, int resultClass, int imageNumber, int scale, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive)> func,
 	std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 	int parallization) const {
-
+	
 	std::vector<std::vector<DataSetLabel>> labelsPerNumber = getLabelsPerNumber();
 
 	parallel_for(0, labelsPerNumber.size(), parallization, [&](int imgNumber) -> void {
@@ -37,14 +38,36 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 		// check if the image number has to be processed
 		if (canSelectFunc(imgNumber)) {
 
-			// notify start of image
-			onImageStarted(imgNumber);
-
 			auto imgs = getImagesForNumber(imgNumber);
 			cv::Mat mRGB = imgs[0];
 			cv::Mat mDepth = imgs[1];
 			cv::Mat mThermal = imgs[2];
 
+			// notify start of image
+			std::vector<cv::Mat> rgbScales;
+			std::vector<cv::Mat> depthScales;
+			std::vector<cv::Mat> thermalScales;
+			for (auto& s : windowSizes) {
+				double scale = 1.0  * refWidth / s.width;
+				if (mRGB.cols > 0 && mRGB.rows > 0) {
+					cv::Mat rgbScale;
+					cv::resize(mRGB, rgbScale, cv::Size2d(mRGB.cols * scale, mRGB.rows * scale));
+					rgbScales.push_back(rgbScale);
+				}
+				if (mDepth.cols > 0 && mDepth.rows > 0) {
+					cv::Mat depthScale;
+					cv::resize(mDepth, depthScale, cv::Size2d(mDepth.cols * scale, mDepth.rows * scale));
+					depthScales.push_back(depthScale);
+				}
+				if (mThermal.cols > 0 && mThermal.rows > 0) {
+					cv::Mat thermalScale;
+					cv::resize(mThermal, thermalScale, cv::Size2d(mThermal.cols * scale, mThermal.rows * scale));
+					thermalScales.push_back(thermalScale);
+				}
+			}
+
+
+			onImageStarted(imgNumber, rgbScales, depthScales, thermalScales);
 
 			// determine the true positive and their categories and the don't care regions
 			std::vector<cv::Rect2d> truePositiveRegions;
@@ -112,7 +135,9 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 							resultClass = -1;
 
 						if (resultClass != 0) { // don't evaluate don't care regions
-							func(idx, resultClass, imgNumber, bbox, regionRGB, regionDepth, regionThermal, overlapsWithTruePositive);
+
+							// TODO scale!
+							func(idx, resultClass, imgNumber, 0, bbox, regionRGB, regionDepth, regionThermal, overlapsWithTruePositive);
 							idx++;
 						}
 					}

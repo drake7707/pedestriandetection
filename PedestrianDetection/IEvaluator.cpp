@@ -37,9 +37,13 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating training set regions (") + std::to_string(imageNumber) + ")");
 
+		// don't use prepared data and roi for training set
+		std::vector<IPreparedData*> preparedData;
+		cv::Rect roi;
+
 		FeatureVector v;
 		featureBuildTime += measure<std::chrono::milliseconds>::execution([&]() -> void {
-			v = set.getFeatures(rgb, depth, thermal);
+			v = set.getFeatures(rgb, depth, thermal, roi, preparedData);
 		});
 
 
@@ -114,21 +118,27 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 		FPPerValueShift(settings.nrOfEvaluations, std::set<SlidingWindowRegion>()));
 
 
+	std::map<int, std::vector<std::vector<IPreparedData*>>> preparedDataPerImage;
+
 	int nrOfImagesEvaluated = 0;
 	dataSet->iterateDataSetWithSlidingWindow(settings.windowSizes, settings.baseWindowStride, settings.refWidth, settings.refHeight,
 		canSelectFunc,
-		[&](int imgNr) -> void {
+		[&](int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) -> void {
 		// image has started
+
+		std::vector<std::vector<IPreparedData*>> preparedData = set.buildPreparedDataForFeatures(rgbScales, depthScales, thermalScales);
+		lock([&]() -> void {
+			preparedDataPerImage[imgNr] = std::move(preparedData);
+		});
 	},
-		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * nrOfImagesEvaluated / dataSet->getNrOfImages(), std::string("Evaluating with sliding window (") + std::to_string(nrOfImagesEvaluated) + "/" + std::to_string(dataSet->getNrOfImages()) + ")");
 
-
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			v = set.getFeatures(rgb, depth, thermal);
+			v = set.getFeatures(rgb, depth, thermal, region, preparedDataPerImage[imageNumber][scale]);
 		});
 
 		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
@@ -230,6 +240,8 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 	}, [&](int imgNr, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
 		lock([&]() -> void {
+			preparedDataPerImage.erase(imgNr);
+
 			for (int i = 0; i < settings.nrOfEvaluations; i++)
 				swresult.evaluations[i].nrOfImagesEvaluated++;
 			nrOfImagesEvaluated++;
@@ -343,27 +355,29 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 	};;
 
 	std::map<int, std::vector<SlidingWindowRegion>> evaluatedWindowsPerImage;
-
+	std::map<int, std::vector<std::vector<IPreparedData*>>> preparedDataPerImage;
 	int nrOfImagesEvaluated = 0;
 	dataSet->iterateDataSetWithSlidingWindow(settings.windowSizes, settings.baseWindowStride, settings.refWidth, settings.refHeight,
 		canSelectFunc,
-		[&](int imgNr) -> void {
+		[&](int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) -> void {
 		// image has started
+
+		std::vector<std::vector<IPreparedData*>> preparedData = set.buildPreparedDataForFeatures(rgbScales, depthScales, thermalScales);
 		lock([&]() -> void {
 			swresult.missedPositivesPerImage[imgNr] = std::vector<std::vector<cv::Rect>>(settings.nrOfEvaluations);
-
 			evaluatedWindowsPerImage[imgNr] = std::vector<SlidingWindowRegion>();
+			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
-		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * nrOfImagesEvaluated / dataSet->getNrOfImages(), std::string("Evaluating with sliding window and NMS (") + std::to_string(nrOfImagesEvaluated) + ")");
 
-
+		
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			v = set.getFeatures(rgb, depth, thermal);
+			v = set.getFeatures(rgb, depth, thermal, region, preparedDataPerImage[imageNumber][scale]);
 		});
 
 		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
@@ -443,6 +457,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 		lock([&]() -> void {
 			// done with image
 			evaluatedWindowsPerImage.erase(imgNr);
+			preparedDataPerImage.erase(imgNr);
 
 			for (int i = 0; i < settings.nrOfEvaluations; i++) {
 				for (auto& category : dataSet->getCategories())

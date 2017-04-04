@@ -1,7 +1,4 @@
 #include "HDDFeatureCreator.h"
-#include "HistogramOfOrientedGradients.h"
-
-
 
 HDDFeatureCreator::HDDFeatureCreator(std::string& name, int patchSize, int binSize, int refWidth, int refHeight)
 	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight)
@@ -18,10 +15,73 @@ int HDDFeatureCreator::getNumberOfFeatures() const {
 	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, true);
 }
 
-FeatureVector HDDFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
+
+
+void HDDFeatureCreator::buildMagnitudeAndAngle(cv::Mat& img, cv::Mat& magnitude, cv::Mat& angle) const {
+	cv::Mat depth = img; // depth is already in CV_32FC1
+						 //cvtColor(img, depth, CV_BGR2GRAY);
+						 //depth.convertTo(depth, CV_32FC1, 1 / 255.0, 0);
+
+	magnitude = cv::Mat(img.size(), CV_32FC1, cv::Scalar(0));
+	angle = cv::Mat(img.size(), CV_32FC1, cv::Scalar(0));
+
+
+	for (int j = 0; j < depth.rows; j++)
+	{
+		for (int i = 0; i < depth.cols; i++)
+		{
+
+			float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
+			float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
+
+			float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
+			float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
+
+			float dx = (r - l) / 2;
+			float dy = (b - t) / 2;
+
+			double anglePixel = atan2(dy, dx);
+			// don't limit to 0-pi, but instead use 0-2pi range
+			anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
+			if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
+
+			double magPixel = sqrt((dx*dx) + (dy*dy));
+			magnitude.at<float>(j, i) = magPixel;
+			angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
+		}
+	}
+}
+
+hog::HistogramResult HDDFeatureCreator::getHistogramsOfDepthDifferences(cv::Mat& img, int patchSize, int binSize, cv::Rect& roi, const IPreparedData* preparedData, bool createImage, bool l2normalize) const {
+	cv::Mat magnitude;
+	cv::Mat angle;
+	buildMagnitudeAndAngle(img, magnitude, angle);
+	const HOG1DPreparedData* hogData = static_cast<const HOG1DPreparedData*>(preparedData);
+	return hog::getHistogramsOfX(magnitude, angle, patchSize, binSize, createImage, l2normalize, roi, hogData == nullptr ? nullptr : &(hogData->integralHistogram), refWidth, refHeight);
+}
+
+std::vector<IPreparedData*> HDDFeatureCreator::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const {
+
+	std::vector<IPreparedData*> dataPerScale;
+
+	HOG1DPreparedData* data = new HOG1DPreparedData();
+	for (auto& depth : depthScales) {
+		cv::Mat magnitude;
+		cv::Mat angle;
+
+		buildMagnitudeAndAngle(depth, magnitude, angle);
+		IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
+		data->integralHistogram = hist;
+		dataPerScale.push_back(data);
+	}
+	return dataPerScale;
+}
+
+FeatureVector HDDFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 
 	hog::HistogramResult result;
-	result = hog::getHistogramsOfDepthDifferences(depth, patchSize, binSize, false, true);
+	result = getHistogramsOfDepthDifferences(depth, patchSize, binSize, roi, preparedData, false, true);
+
 	return result.getFeatureArray();
 }
 

@@ -177,6 +177,7 @@
     <ClInclude Include="Histogram2DResult.h" />
     <ClInclude Include="HistogramDepthFeatureCreator.h" />
     <ClInclude Include="HistogramOfOrientedGradients.h" />
+    <ClInclude Include="HOG1DPreparedData.h" />
     <ClInclude Include="HoGFeatureCreator.h" />
     <ClInclude Include="HoGHistogramVarianceFeatureCreator.h" />
     <ClInclude Include="HistogramResult.h" />
@@ -186,6 +187,8 @@
     <ClInclude Include="IFeatureCreator.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
+    <ClInclude Include="IntegralImage.h" />
+    <ClInclude Include="IPreparedData.h" />
     <ClInclude Include="JetHeatMap.h" />
     <ClInclude Include="KAISTDataSet.h" />
     <ClInclude Include="KITTIDataSet.h" />
@@ -226,6 +229,7 @@
     <ClCompile Include="Histogram2DResult.cpp" />
     <ClCompile Include="HistogramDepthFeatureCreator.cpp" />
     <ClCompile Include="HistogramOfOrientedGradients.cpp" />
+    <ClCompile Include="HOG1DPreparedData.cpp" />
     <ClCompile Include="HoGFeatureCreator.cpp" />
     <ClCompile Include="HoGHistogramVarianceFeatureCreator.cpp" />
     <ClCompile Include="HistogramResult.cpp" />
@@ -235,6 +239,8 @@
     <ClCompile Include="IFeatureCreator.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
+    <ClCompile Include="IntegralImage.cpp" />
+    <ClCompile Include="IPreparedData.cpp" />
     <ClCompile Include="JetHeatMap.cpp" />
     <ClCompile Include="KAISTDataSet.cpp" />
     <ClCompile Include="KITTIDataSet.cpp" />

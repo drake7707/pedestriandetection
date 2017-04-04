@@ -16,7 +16,7 @@ int HistogramDepthFeatureCreator::getNumberOfFeatures() const {
 	return 26;
 }
 
-FeatureVector HistogramDepthFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
+FeatureVector HistogramDepthFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 
 	//	cv::normalize(depth, img, 0, 1, cv::NormTypes::NORM_MINMAX);
 

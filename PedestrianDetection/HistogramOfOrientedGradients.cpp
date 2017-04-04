@@ -1,6 +1,8 @@
 #include "HistogramOfOrientedGradients.h"
 #include <vector>
 #include <iostream>
+#include "HOG1DPreparedData.h"
+#include "IntegralImage.h"
 
 namespace hog {
 	std::vector<std::vector<Histogram>> getL2NormalizationOverLargerPatch(const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, bool l2normalize) {
@@ -128,129 +130,10 @@ namespace hog {
 		return explanation;
 	}
 
-
-	HistogramResult getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
-
-		cv::Mat mat = img.clone();
-
-		if (mat.type() != CV_32FC1)
-			cv::cvtColor(img, mat, cv::COLOR_RGB2GRAY);
-
-		cv::Mat gx, gy;
-		cv::Sobel(mat, gx, CV_32F, 1, 0, 1);
-		cv::Sobel(mat, gy, CV_32F, 0, 1, 1);
-
-
-		int nrOfCellsWidth = mat.cols / patchSize;
-		int nrOfCellsHeight = mat.rows / patchSize;
-
-		std::vector<std::vector<Histogram>> cells(nrOfCellsHeight, std::vector<Histogram>(nrOfCellsWidth, Histogram(binSize, 0)));
-
-		for (int y = 0; y < nrOfCellsHeight; y++) {
-
-			for (int x = 0; x < nrOfCellsWidth; x++) {
-
-				Histogram& histogram = cells[y][x];
-
-				for (int l = 0; l < patchSize; l++) {
-					for (int k = 0; k < patchSize; k++) {
-						float sx = gx.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
-						float sy = gy.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
-
-						// calculate the correct unoriented angle: e.g. PI/4 and 3* PI / 4 are the same
-						// this will map the angles on a [0-PI] range
-
-						double anglePixel = atan2(sy, sx);
-						anglePixel = anglePixel > 0 ? abs(anglePixel) : abs(CV_PI - abs(anglePixel)); // CV_PI is not that accurate, must abs!
-
-						double magPixel = sqrt((sx*sx) + (sy*sy));
-
-						// distribute based on angle
-						// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
-						double valBins = anglePixel / CV_PI * binSize;
-						if (valBins >= binSize) valBins = binSize - 1;
-
-						int bin1 = floor(valBins);
-						int bin2 = (bin1 + 1) % binSize;
-
-						// (t - t_begin) / (t_end - t_begin)
-						// 15 - 0 / (20-0) = 0.75
-						// (t_end - t) / (t_end - t_begin)
-						// 20 - 15 / (20-0) = 0.25
-						// yay for computergraphics triangular scheme
-
-						float tBegin = bin1 == 0 ? 0 : bin1 * CV_PI / binSize;
-						float tEnd = bin2 == 0 ? CV_PI : bin2 * CV_PI / binSize;
-						/*	if (tBegin == tEnd) {
-								tEnd += CV_PI / binSize;
-							}*/
-
-							// linear interpolation [ u ][ 1-u ]
-						float u = (tEnd - anglePixel) / (tEnd - tBegin);
-						histogram[bin1] += magPixel * u;
-						histogram[bin2] += magPixel * (1 - u);
-
-
-					}
-				}
-
-				//// rescaling to [0-1]
-				//double max = *std::max_element(histogram.begin(), histogram.end());
-				//if (max > 0) {
-				//	for (int i = 0; i < histogram.size(); i++)
-				//		histogram[i] /= max;
-				//}
-
-
-				// cell x,y -> pixel range [x * cellSize-x * cellSize + cellSize], ...
-			}
-		}
-
-
-
-		std::vector<std::vector<Histogram>> newcells;
-		if (l2normalize)
-			newcells = getL2NormalizationOverLargerPatch(cells, nrOfCellsWidth, nrOfCellsHeight, binSize, l2normalize);
-
-
-
-		cv::Mat hog;
-		if (createImage) {
-
-			// L2 normalization
-			for (int y = 0; y < nrOfCellsHeight; y++) {
-
-				for (int x = 0; x < nrOfCellsWidth; x++) {
-					Histogram& histogram = cells[y][x];
-
-					double sum = 0;
-					for (int i = 0; i < histogram.size(); i++)
-						sum += histogram[i] * histogram[i];
-					double norm = sqrt(sum);
-					if (norm > 0) {
-						for (int i = 0; i < histogram.size(); i++)
-							histogram[i] /= norm;
-					}
-				}
-			}
-
-			hog = createHoGImage(mat, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
-		}
-
-		HistogramResult result;
-		result.width = nrOfCellsWidth - 1;
-		result.height = nrOfCellsHeight - 1;
-		result.data = l2normalize ? newcells : cells;
-		result.hogImage = hog;
-		return result;
-	}
-
-
-
 	cv::Mat createHoGImage(cv::Mat& mat, const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, int patchSize) {
 		cv::Mat hog;
 
-		bool drawHistograms = true;
+		bool drawHistograms = false;
 		hog = cv::Mat(mat.rows, mat.cols, CV_8UC3, cv::Scalar(0));
 
 		for (int y = 0; y < nrOfCellsHeight; y++) {
@@ -291,50 +174,42 @@ namespace hog {
 	}
 
 
-	HistogramResult getHistogramsOfDepthDifferences(cv::Mat& img, int patchSize, int binSize, bool createImage, bool l2normalize) {
+	IntegralHistogram prepareDataForHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int binSize) {
 
-		cv::Mat depth = img; // depth is already in CV_32FC1
-		//cvtColor(img, depth, CV_BGR2GRAY);
-		//depth.convertTo(depth, CV_32FC1, 1 / 255.0, 0);
-
-		cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
-		cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
+		IntegralHistogram hist;
+		double max = 1.0;
 
 
-		for (int j = 1; j < depth.rows - 1; j++)
-		{
-			for (int i = 1; i < depth.cols - 1; i++)
-			{
+		hist.create(weights.cols, weights.rows, binSize, [&](int x, int y, Histogram& histogram) -> void {
 
-				float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
-				float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
+			float anglePixel = normalizedBinningValues.at<float>(y, x);
+			double weight = weights.at<float>(y, x);
 
-				float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
-				float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
+			// distribute based on angle
+			// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
+			double valBins = anglePixel / max * binSize;
+			if (valBins >= binSize) valBins = binSize - 1;
 
-				float dx = (r - l) / 2;
-				float dy = (b - t) / 2;
+			int bin1 = floor(valBins);
+			int bin2 = (bin1 + 1) % binSize;
 
-				double anglePixel = atan2(dy, dx);
-				// don't limit to 0-pi, but instead use 0-2pi range
-				anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
-				if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
+			float tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
+			float tEnd = bin2 == 0 ? max : bin2 * max / binSize;
 
-				double magPixel = sqrt((dx*dx) + (dy*dy));
-				magnitude.at<float>(j, i) = magPixel;
-				angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
-			}
-		}
-		return getHistogramsOfX(magnitude, angle, patchSize, binSize, createImage, l2normalize);
+			float u = (tEnd - anglePixel) / (tEnd - tBegin);
+			histogram[bin1] += weight * u;
+			histogram[bin2] += weight * (1 - u);
+		});
+
+		return hist;
 	}
 
-	HistogramResult getHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize) {
+	HistogramResult getHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize, 
+		cv::Rect& iHistRoi, const IntegralHistogram* preparedData, int refWidth, int refHeight) {
+		double max = 1.0;
 
-
-		double max = 1;
-
-		int nrOfCellsWidth = weights.cols / patchSize;
-		int nrOfCellsHeight = weights.rows / patchSize;
+		int nrOfCellsWidth = refWidth / patchSize;
+		int nrOfCellsHeight = refHeight / patchSize;
 
 		std::vector<std::vector<Histogram>> cells(nrOfCellsHeight, std::vector<Histogram>(nrOfCellsWidth, Histogram(binSize, 0)));
 
@@ -343,35 +218,40 @@ namespace hog {
 			for (int x = 0; x < nrOfCellsWidth; x++) {
 
 				Histogram& histogram = cells[y][x];
+				if (preparedData == nullptr) {
 
-				for (int l = 0; l < patchSize; l++) {
-					for (int k = 0; k < patchSize; k++) {
+					for (int l = 0; l < patchSize; l++) {
+						for (int k = 0; k < patchSize; k++) {
 
-						float anglePixel = normalizedBinningValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
-						double weight = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+							float anglePixel = normalizedBinningValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+							double weight = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
 
-						// distribute based on angle
-						// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
-						double valBins = anglePixel / max * binSize;
-						if (valBins >= binSize) valBins = binSize - 1;
+							// distribute based on angle
+							// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
+							double valBins = anglePixel / max * binSize;
+							if (valBins >= binSize) valBins = binSize - 1;
 
-						int bin1 = floor(valBins);
-						int bin2 = (bin1 + 1) % binSize;
+							int bin1 = floor(valBins);
+							int bin2 = (bin1 + 1) % binSize;
 
-						// (t - t_begin) / (t_end - t_begin)
-						// 15 - 0 / (20-0) = 0.75
-						// (t_end - t) / (t_end - t_begin)
-						// 20 - 15 / (20-0) = 0.25
-						// yay for computergraphics triangular scheme
+							// (t - t_begin) / (t_end - t_begin)
+							// 15 - 0 / (20-0) = 0.75
+							// (t_end - t) / (t_end - t_begin)
+							// 20 - 15 / (20-0) = 0.25
+							// yay for computergraphics triangular scheme
 
-						float tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
-						float tEnd = bin2 == 0 ? max : bin2 * max / binSize;
+							float tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
+							float tEnd = bin2 == 0 ? max : bin2 * max / binSize;
 
-						float u = (tEnd - anglePixel) / (tEnd - tBegin);
-						histogram[bin1] += weight * u;
-						histogram[bin2] += weight * (1 - u);
+							float u = (tEnd - anglePixel) / (tEnd - tBegin);
+							histogram[bin1] += weight * u;
+							histogram[bin2] += weight * (1 - u);
+						}
 					}
 				}
+				else
+					histogram = preparedData->calculateHistogramIntegral(iHistRoi.x + x * patchSize, iHistRoi.y + y * patchSize, patchSize, patchSize);
+
 			}
 		}
 
@@ -381,7 +261,7 @@ namespace hog {
 
 		cv::Mat hog;
 		if (createImage) {
-			cv::Mat m(weights.rows, weights.cols, CV_32FC1);
+			cv::Mat m(refHeight, refWidth, CV_32FC1);
 			hog = createHoGImage(m, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
 		}
 		HistogramResult result;

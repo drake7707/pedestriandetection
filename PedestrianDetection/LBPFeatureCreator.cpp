@@ -19,8 +19,7 @@ int LBPFeatureCreator::getNumberOfFeatures() const {
 	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, false);
 }
 
-FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal) const {
-
+FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 	cv::Mat img;
 	if (target == IFeatureCreator::Target::Depth) {
 		cv::cvtColor(depth, img, CV_BGR2GRAY);
@@ -38,8 +37,8 @@ FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::M
 	padded.setTo(cv::Scalar::all(0));
 	lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
 
-
-	auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, binSize, false, false);
+	const HOG1DPreparedData* hogData = static_cast<const HOG1DPreparedData*>(preparedData);
+	auto& result = hog::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, binSize, false, false, roi, hogData == nullptr ? nullptr : &(hogData->integralHistogram), refWidth,refHeight);
 
 
 	return result.getFeatureArray();

@@ -63,6 +63,27 @@ void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> fu
 }
 
 
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, int slidingWindowStep, int refWidth, int refHeight) {
+	int slidingWindowWidth = 64;
+	int slidingWindowHeight = 128;
+	//	int slidingWindowStep = 8;
+
+	double topOffset = 0.3 * imgHeight;
+
+	for (double j = topOffset; j < imgHeight - refHeight; j += slidingWindowStep) {
+		for (double i = 0; i < imgWidth - refWidth; i += slidingWindowStep) {
+			cv::Rect windowRect(i, j, refWidth, refHeight);
+
+			if (windowRect.x + windowRect.width < imgWidth  &&
+				windowRect.y + windowRect.height < imgHeight)
+				func(windowRect);
+		}
+	}
+
+}
+
+
+
 void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, const std::vector<cv::Size>& windowSizes, int slidingWindowStep, int refWidth, int refHeight) {
 	int slidingWindowWidth = 64;
 	int slidingWindowHeight = 128;
@@ -161,7 +182,7 @@ int getOverlapIndex(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions) {
 bool intersectsWith(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions) {
 	for (auto& region : selectedRegions) {
 		double intersectionRect = (r & region).area();
-		if(intersectionRect > 0)
+		if (intersectionRect > 0)
 			return true;
 	}
 

@@ -240,6 +240,13 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 	}, [&](int imgNr, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
 		lock([&]() -> void {
+			// clean up of prepared data
+			for (auto& v : preparedDataPerImage[imgNr]) {
+				for (int i = 0; i < v.size(); i++) {
+					if (v[i] != nullptr)
+						delete v[i];
+				}
+			}
 			preparedDataPerImage.erase(imgNr);
 
 			for (int i = 0; i < settings.nrOfEvaluations; i++)
@@ -457,6 +464,14 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 		lock([&]() -> void {
 			// done with image
 			evaluatedWindowsPerImage.erase(imgNr);
+
+			// clean up of prepared data
+			for (auto& v : preparedDataPerImage[imgNr]) {
+				for (int i = 0; i < v.size(); i++) {
+					if (v[i] != nullptr)
+						delete v[i];
+				}
+			}
 			preparedDataPerImage.erase(imgNr);
 
 			for (int i = 0; i < settings.nrOfEvaluations; i++) {

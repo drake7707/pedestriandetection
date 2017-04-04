@@ -86,7 +86,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 
 				// slide window over the image
 				int idx = 0;
-				slideWindow(mRGB.cols, mRGB.rows, [&](cv::Rect bbox) -> void {
+				slideWindow(rgbScales[s].cols, rgbScales[s].rows, [&](cv::Rect bbox) -> void {
 					double scale = 1.0  *  windowSizes[s].width / refWidth;
 					cv::Rect scaledBBox = cv::Rect(bbox.x * scale, bbox.y * scale, windowSizes[s].width, windowSizes[s].height);
 
@@ -107,7 +107,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 
 
 						// calculate the average depth IF depth is available
-						bool hasDepth = mDepth.rows > 0 && mDepth.cols > 0;
+						bool hasDepth = depthScales[s].rows > 0 && depthScales[s].cols > 0;
 						double depthAvg = 0;
 						if (hasDepth) {
 							double depthSum = 0;
@@ -117,7 +117,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 							{
 								for (int i = xOffset - 1; i <= xOffset + 1; i++)
 								{
-									depthSum += mDepth.at<float>(y, i);
+									depthSum += depthScales[s].at<float>(y, i);
 									depthCount++;
 								}
 							}
@@ -129,7 +129,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 
 							bool overlapsWithTruePositive = false;
 							int resultClass;
-							if (overlaps(bbox, truePositiveRegions)) {
+							if (overlaps(scaledBBox, truePositiveRegions)) {
 								resultClass = 1;
 								overlapsWithTruePositive = true;
 							}

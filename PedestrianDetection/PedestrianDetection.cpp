@@ -1641,16 +1641,18 @@ int main()
 
 
 
-	testClassifier(tester, settings);
+	//testClassifier(tester, settings);
+
+	if (settings.kittiDataSetPath != "") {
+		KITTIDataSet dataSet(settings.kittiDataSetPath);
+		runJobsFromInputSets(tester, &dataSet, settings);
+	}
 
 	if (settings.kaistDataSetPath != "") {
 		KAISTDataSet dataSet(settings.kaistDataSetPath);
 		runJobsFromInputSets(tester, &dataSet, settings);
 	}
-	if (settings.kittiDataSetPath != "") {
-		KITTIDataSet dataSet(settings.kittiDataSetPath);
-		runJobsFromInputSets(tester, &dataSet, settings);
-	}
+	
 
 
 

@@ -32,34 +32,21 @@ public:
 	EvaluatorCascade(std::string& name);
 	virtual ~EvaluatorCascade();
 
-	void addModelEvaluator(ModelEvaluator& model, double valueShift) {
-		cascade.push_back(EvaluationCascadeEntry(model, valueShift));
-		resetClassifierHitCount();
-	}
+	void addModelEvaluator(ModelEvaluator& model, double valueShift);
 
-	std::vector<EvaluationCascadeEntry> getEntries() const {
-		return cascade;
-	}
+	std::vector<EvaluationCascadeEntry> getEntries() const;
 
-	void setTrackClassifierHitCountEnabled(bool enabled) {
-		trackClassifierHitCount = enabled;
-	}
+	void setTrackClassifierHitCountEnabled(bool enabled);
 
 	virtual double evaluateFeatures(FeatureVector& v);
 	double evaluateCascadeFeatures(FeatureVector& v, int* classifierIndex);
 
 
-	void resetClassifierHitCount() {
-		classifierHitCount = std::vector<int>(cascade.size(), 0);
-	}
+	void resetClassifierHitCount();
 
-	std::vector<int> getClassifierHitCount() const {
-		return classifierHitCount;
-	}
+	std::vector<int> getClassifierHitCount() const;
 
-	ModelEvaluator getModelEvaluator(int idx) const {
-		return cascade[idx].model;
-	}
+	ModelEvaluator getModelEvaluator(int idx) const;
 
 	void updateLastModelValueShift(double valueShift);
 
@@ -67,8 +54,6 @@ public:
 	void load(std::string& path, std::string& modelsDirectory);
 
 
-	int size() const {
-		return cascade.size();
-	}
+	int size() const;
 };
 

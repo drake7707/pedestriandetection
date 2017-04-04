@@ -1091,7 +1091,6 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 	float gravity = 9.81; // m/s²
 
 	float max_pedestrian_speed = 0 * 1000 / 3600.0; // m/s
-	std::vector<float> vehicle_speed = { 10 / 3.6f, 20 / 3.6f, 30 / 3.6f, 50 / 3.6f }; // m/s
 	float vehicleSpeedForRating = 50 / 3.6f; // m/s
 	float t = 1;
 	float max_seconds_remaining = 10;
@@ -1107,7 +1106,7 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 
 			float depthOffset = 0;
 			while (true) {
-				depthOffset -= 0.25f;
+				//depthOffset -= 0.25f;
 				if (depthOffset < 0)
 					depthOffset += 80;
 
@@ -1126,11 +1125,14 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 						// no pixel -> x in meters
 						double remainingTime = getRemainingTimeToHitPedestrian(depth, x, vehicleSpeedForRating);
 
+
 						if (remainingTime <= 0)
+							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(64, 0, 128);
+						else if (remainingTime <= 0.5)
 							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 0, 255);
-						else if (remainingTime >= 0 && remainingTime < 1)
+						else if (remainingTime >= 0.5 && remainingTime < 1.5)
 							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 127, 255);
-						else if (remainingTime >= 1 && remainingTime < 2)
+						else if (remainingTime >= 1.5 && remainingTime < 2.5)
 							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 255, 0);
 					}
 				}
@@ -1142,15 +1144,14 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 				cv::line(topdown, carPoint, cv::Point(carPoint.x + imgWidth * cos(-CV_PI / 4), carPoint.y + imgWidth * sin(-CV_PI / 4)), cv::Scalar(255, 128, 128));
 				cv::line(topdown, carPoint, cv::Point(carPoint.x + imgWidth * cos(-3 * CV_PI / 4), carPoint.y + imgWidth * sin(-3 * CV_PI / 4)), cv::Scalar(255, 128, 128));
 
-				for (float vehicleSpeed : vehicle_speed) {
-					float t1secRadius = (vehicleSpeed*t / max_depth * imgHeight);
 
-					double stoppingDistance = vehicleSpeed * vehicleSpeed / (2 * tireroadFriction * gravity);
-					double stoppingDistanceRadius = stoppingDistance / max_depth * imgHeight;
+				float t1secRadius = (vehicleSpeedForRating*t / max_depth * imgHeight);
+				double stoppingDistance = vehicleSpeedForRating * vehicleSpeedForRating / (2 * tireroadFriction * gravity);
+				double stoppingDistanceRadius = stoppingDistance / max_depth * imgHeight;
 
-					//cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), t1secRadius, cv::Scalar(255, 128, 128), 1);
-					cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), stoppingDistanceRadius, cv::Scalar(255, 255, 255), 2);
-				}
+				//cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), t1secRadius, cv::Scalar(255, 128, 128), 1);
+				cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), stoppingDistanceRadius, cv::Scalar(255, 255, 255), 2);
+
 
 				for (int i = 0; i <= max_depth; i += 10)
 				{
@@ -1195,12 +1196,14 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 						double remainingTime = getRemainingTimeToHitPedestrian(depth, x, vehicleSpeedForRating);
 
 						if (remainingTime <= 0)
+							overlay.at<Vec3b>(j, i) = cv::Vec3b(64, 0, 128);
+						else if (remainingTime <= 0.5)
 							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 0, 255);
-						else if (remainingTime >= 0 && remainingTime < 1)
+						else if (remainingTime >= 0.5 && remainingTime < 1.5)
 							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 127, 255);
-						else if (remainingTime >= 1 && remainingTime < 2)
+						else if (remainingTime >= 1.5 && remainingTime < 2.5)
 							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 255, 0);
-						else if (remainingTime >= 1 && remainingTime < max_seconds_remaining)
+						else if (remainingTime >= 2.5 && remainingTime < max_seconds_remaining)
 							overlay.at<Vec3b>(j, i) = cv::Vec3b(192, 0, 0);
 
 					}
@@ -1617,7 +1620,7 @@ int main()
 	wnd->run();
 
 	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
-	//drawRiskOnDepthDataSet(&kittiDataSet);
+	drawRiskOnDepthDataSet(&kittiDataSet);
 
 
 	//std::set<std::string> set = { "SDDG" };
@@ -1637,7 +1640,7 @@ int main()
 	KAISTDataSet dataSet(settings.kaistDataSetPath);
 	auto labelsPerNumber = dataSet.getLabelsPerNumber();
 
-//	testClassifier(tester, settings);
+	//	testClassifier(tester, settings);
 
 	if (settings.kaistDataSetPath != "") {
 		KAISTDataSet dataSet(settings.kaistDataSetPath);

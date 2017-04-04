@@ -12,6 +12,35 @@ EvaluatorCascade::~EvaluatorCascade()
 {
 }
 
+void EvaluatorCascade::addModelEvaluator(ModelEvaluator& model, double valueShift) {
+	cascade.push_back(EvaluationCascadeEntry(model, valueShift));
+	resetClassifierHitCount();
+}
+
+std::vector<EvaluationCascadeEntry> EvaluatorCascade::getEntries() const {
+	return cascade;
+}
+
+void EvaluatorCascade::setTrackClassifierHitCountEnabled(bool enabled) {
+	trackClassifierHitCount = enabled;
+}
+
+void EvaluatorCascade::resetClassifierHitCount() {
+	classifierHitCount = std::vector<int>(cascade.size(), 0);
+}
+
+std::vector<int> EvaluatorCascade::getClassifierHitCount() const {
+	return classifierHitCount;
+}
+
+ModelEvaluator EvaluatorCascade::getModelEvaluator(int idx) const {
+	return cascade[idx].model;
+}
+
+
+int EvaluatorCascade::size() const {
+	return cascade.size();
+}
 
 double EvaluatorCascade::evaluateFeatures(FeatureVector& v) {
 	int classifierIndex;

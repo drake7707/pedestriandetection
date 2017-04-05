@@ -107,7 +107,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 
 
 						// calculate the average depth IF depth is available
-						bool hasDepth = depthScales[s].rows > 0 && depthScales[s].cols > 0;
+						bool hasDepth = depthScales.size() > 0 && depthScales[s].rows > 0 && depthScales[s].cols > 0;
 						double depthAvg = 0;
 						if (hasDepth) {
 							double depthSum = 0;

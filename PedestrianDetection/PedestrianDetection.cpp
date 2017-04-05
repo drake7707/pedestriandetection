@@ -1098,9 +1098,9 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 					depthOffset += 80;
 
 
-				cv::Mat topdown(imgHeight, imgWidth, CV_8UC3, cv::Scalar(0, 0, 0));
+				cv::Mat topdown(imgHeight, imgWidth, CV_8UC3, cv::Scalar(255, 255, 255));
 
-				cv::Mat topdownOverlay(imgHeight, imgWidth, CV_8UC3, cv::Scalar(0, 0, 0));
+				cv::Mat& topdownOverlay = topdown;// (imgHeight, imgWidth, CV_8UC3, cv::Scalar(0, 0, 0));
 
 				for (int j = 0; j < topdownOverlay.rows; j++)
 				{
@@ -1117,13 +1117,13 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(64, 0, 128);
 						else if (remainingTime <= 0.5)
 							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 0, 255);
-						else if (remainingTime >= 0.5 && remainingTime < 1.5)
+						else if (remainingTime >= 0.5 && remainingTime < 1)
 							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 127, 255);
-						else if (remainingTime >= 1.5 && remainingTime < 2.5)
+						else if (remainingTime >= 1 && remainingTime < 1.5)
 							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 255, 0);
 					}
 				}
-				topdown = topdown + 0.5 * topdownOverlay;
+			//	topdown = topdown + 0.5 * topdownOverlay;
 
 
 				cv::Point2f carPoint = cv::Point2f(imgWidth / 2, imgHeight);
@@ -1137,7 +1137,7 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 				double stoppingDistanceRadius = stoppingDistance / max_depth * imgHeight;
 
 				//cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), t1secRadius, cv::Scalar(255, 128, 128), 1);
-				cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), stoppingDistanceRadius, cv::Scalar(255, 255, 255), 2);
+				cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), stoppingDistanceRadius, cv::Scalar(0, 0, 0), 2, CV_AA);
 
 
 				for (int i = 0; i <= max_depth; i += 10)
@@ -1153,9 +1153,9 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 
 					//cv::line(topdown, cv::Point2f(0, y), cv::Point2f(imgWidth, y), cv::Scalar(192, 192, 192));
 
-					cv::circle(topdown, cv::Point(imgWidth / 2, imgHeight), d * imgHeight, cv::Scalar(192, 192, 192));
+					cv::circle(topdown, cv::Point(imgWidth / 2, imgHeight), d * imgHeight, cv::Scalar(128, 128, 128));
 
-					cv::putText(topdown, std::to_string(i) + "m", cv::Point2f(0, y + 12), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(192, 192, 192));
+					cv::putText(topdown, std::to_string(i) + "m", cv::Point2f(0, y + 12), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(128, 128, 128));
 				}
 
 				cv::Mat img = imgs[0].clone();
@@ -1186,13 +1186,10 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 							overlay.at<Vec3b>(j, i) = cv::Vec3b(64, 0, 128);
 						else if (remainingTime <= 0.5)
 							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 0, 255);
-						else if (remainingTime >= 0.5 && remainingTime < 1.5)
+						else if (remainingTime >= 0.5 && remainingTime < 1)
 							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 127, 255);
-						else if (remainingTime >= 1.5 && remainingTime < 2.5)
+						else if (remainingTime >= 1 && remainingTime < 1.5)
 							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 255, 0);
-						else if (remainingTime >= 2.5 && remainingTime < max_seconds_remaining)
-							overlay.at<Vec3b>(j, i) = cv::Vec3b(192, 0, 0);
-
 					}
 				}
 
@@ -1229,7 +1226,7 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 						double remainingTime = remainingDistanceToAct / vehicleSpeedForRating;
 
 
-						cv::putText(topdown, std::to_string(remainingTime), cv::Point2f(x, y), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 255));
+						cv::putText(topdown, std::to_string(remainingTime), cv::Point2f(x, y), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 0, 0));
 
 						cv::rectangle(img, l.getBbox(), cv::Scalar(255, 255, 0), 2);
 						cv::putText(img, std::to_string(remainingTime), l.getBbox().tl(), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 0));
@@ -1242,7 +1239,9 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 						// from 0,0,255 -> 0,255,0
 						float alpha = remainingTime / max_seconds_remaining;
 
+
 						cv::circle(topdown, cv::Point2f(x, y), 2, cv::Scalar(0, alpha * 255, (1 - alpha) * 255), -1, CV_AA);
+						cv::circle(topdown, cv::Point2f(x, y), 3, cv::Scalar(0, alpha * 128, (1 - alpha) * 128), 1, CV_AA);
 						float t1secRadiusPx = (max_pedestrian_speed*t / max_depth * imgHeight);
 						cv::circle(topdown, cv::Point2f(x, y), t1secRadiusPx, cv::Scalar(0, alpha * 255, (1 - alpha) * 255), 1, CV_AA);
 					}
@@ -1606,11 +1605,11 @@ int main()
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
-	cv::Mat testImage;
+	/*cv::Mat testImage;
 	testImage = cv::imread("D:\\test.jpg");
 
-	/*HOGFeatureCreator hogcreator(std::string("HOG"), IFeatureCreator::Target::RGB);
-	auto result = hogcreator.getHistogramsOfOrientedGradient(testImage, patchSize, binSize, nullptr, true, false);
+	LBPFeatureCreator hogcreator(std::string("HOG"), IFeatureCreator::Target::RGB);
+	auto result = hogcreator.getFeatures((testImage, patchSize, binSize, nullptr, true, false);
 	cv::Mat imgResult = result.combineHOGImage(testImage);
 	cv::imshow("HOG", imgResult);
 
@@ -1618,11 +1617,11 @@ int main()
 	auto result2 = hogcreator.getHistogramsOfOrientedGradient(testImage, patchSize, binSize, preparedData, true, false);
 	cv::Mat imgResult2 = result2.combineHOGImage(testImage);
 	cv::imshow("HOG2", imgResult2);
-	cv::waitKey(0);
-	*/
+	cv::waitKey(0);*/
+	
 
-	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
-	//drawRiskOnDepthDataSet(&kittiDataSet);
+	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
+	drawRiskOnDepthDataSet(&kittiDataSet);
 
 
 	//std::set<std::string> set = { "SDDG" };
@@ -1643,16 +1642,16 @@ int main()
 
 	//testClassifier(tester, settings);
 
-	if (settings.kittiDataSetPath != "") {
-		KITTIDataSet dataSet(settings.kittiDataSetPath);
-		runJobsFromInputSets(tester, &dataSet, settings);
-	}
-
 	if (settings.kaistDataSetPath != "") {
 		KAISTDataSet dataSet(settings.kaistDataSetPath);
 		runJobsFromInputSets(tester, &dataSet, settings);
 	}
 	
+
+	if (settings.kittiDataSetPath != "") {
+		KITTIDataSet dataSet(settings.kittiDataSetPath);
+		runJobsFromInputSets(tester, &dataSet, settings);
+	}
 
 
 

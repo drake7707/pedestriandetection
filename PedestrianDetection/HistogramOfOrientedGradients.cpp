@@ -183,6 +183,8 @@ namespace hog {
 		hist.create(weights.cols, weights.rows, binSize, [&](int x, int y, std::vector<cv::Mat>& ihist) -> void {
 
 			float anglePixel = normalizedBinningValues.at<float>(y, x);
+			if (anglePixel < 0) anglePixel = 0; // this can only happen when either no normalization was done, or a rounding error in float
+
 			double weight = weights.at<float>(y, x);
 
 			// distribute based on angle
@@ -227,6 +229,8 @@ namespace hog {
 						for (int k = 0; k < patchSize; k++) {
 
 							float anglePixel = normalizedBinningValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+							if (anglePixel < 0) anglePixel = 0; // this can only happen when either no normalization was done, or a rounding error in float
+
 							double weight = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
 
 							// distribute based on angle
@@ -339,6 +343,7 @@ namespace hog {
 					for (int k = 0; k < patchSize; k++) {
 
 						cv::Vec2f anglePixel = normalizedBinningValues.at<cv::Vec2f>(cv::Point(x * patchSize + k, y * patchSize + l));
+					
 						double weight = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
 
 

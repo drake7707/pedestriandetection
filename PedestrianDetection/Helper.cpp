@@ -110,14 +110,19 @@ void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)>
 
 double getIntersectionOverUnion(const cv::Rect& r1, const cv::Rect& r2) {
 	double intersectionRect = (r1 & r2).area();
-	double unionRect = (r1 | r2).area();
-
-
-	return unionRect == 0 ? 0 : intersectionRect / unionRect;
+	if (intersectionRect > 0) {
+		double unionRect = (r1 | r2).area();
+		return unionRect == 0 ? 0 : intersectionRect / unionRect;
+	}
+	else
+		return 0;
 }
 
 
 std::vector < SlidingWindowRegion> applyNonMaximumSuppression(std::vector< SlidingWindowRegion>& windows, float iouTreshold) {
+	if (windows.size() == 0)
+		return windows;
+
 	std::vector<SlidingWindowRegion> wnds = windows;
 	std::vector< SlidingWindowRegion> newwindows;
 
@@ -127,19 +132,22 @@ std::vector < SlidingWindowRegion> applyNonMaximumSuppression(std::vector< Slidi
 		std::vector<bool> flaggedToRemove(wnds.size(), false);
 		for (int j = 0; j < wnds.size(); j++)
 		{
-			for (int i = j + 1; i < wnds.size(); i++)
-			{
-				if (!flaggedToRemove[i] && !flaggedToRemove[j]) {
-					if (getIntersectionOverUnion(wnds[i].bbox, wnds[j].bbox) > iouTreshold) {
-						hasMerged = true;
-						// overlap, only keep 1 of the 2
-						if (wnds[i].score > wnds[j].score) {
-							// remove j
-							flaggedToRemove[j] = true;
-						}
-						else {
-							//remove i
-							flaggedToRemove[i] = true;
+			if (!flaggedToRemove[j]) {
+				for (int i = j + 1; i < wnds.size(); i++)
+				{
+					if (!flaggedToRemove[i]) {
+						if (getIntersectionOverUnion(wnds[i].bbox, wnds[j].bbox) > iouTreshold) {
+							hasMerged = true;
+							// overlap, only keep 1 of the 2
+							if (wnds[i].score > wnds[j].score) {
+								// remove j
+								flaggedToRemove[j] = true;
+								break; // no use in comparing j any further, it will be removed anyway
+							}
+							else {
+								//remove i
+								flaggedToRemove[i] = true;
+							}
 						}
 					}
 				}

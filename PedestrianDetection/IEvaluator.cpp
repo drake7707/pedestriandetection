@@ -415,6 +415,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 					predictedPositives.push_back(SlidingWindowRegion(w.imageNumber, w.bbox, abs(w.score + valueShift)));
 			}
 			predictedPositives = applyNonMaximumSuppression(predictedPositives);
+			//predictedPositives = nms::nms(predictedPositives,0.5);
 
 			lock([&]() -> void {
 				for (auto& category : dataSet->getCategories())

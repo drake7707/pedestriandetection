@@ -1620,9 +1620,9 @@ int main()
 	cv::waitKey(0);*/
 	
 
-	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
+	/*KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
 	drawRiskOnDepthDataSet(&kittiDataSet);
-
+*/
 
 	//std::set<std::string> set = { "SDDG" };
 	//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };

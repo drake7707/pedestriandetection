@@ -13,7 +13,7 @@ HOIFeatureCreator::~HOIFeatureCreator()
 
 
 int HOIFeatureCreator::getNumberOfFeatures() const {
-	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, false);
+	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, true);
 }
 
 

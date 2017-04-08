@@ -126,67 +126,6 @@ void FeatureTesterJob::run() const {
 	generateFeatureImportanceImage(cascade, featureSet);
 }
 
-void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& cascadeFile, std::unique_ptr<FeatureSet>& featureSet, std::string& featureSetName) const {
-	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final.csv";
-
-
-	if (!fileExists(finalEvaluationSlidingFile)) {
-
-		// reset classifier hit count
-		cascade.resetClassifierHitCount();
-		cascade.setTrackClassifierHitCountEnabled(true); // enable hit count tracking so feature importance weight can be collected
-
-		std::cout << "Started final evaluation on test set with sliding window and NMS of " << featureSetName << std::endl;
-		FinalEvaluationSlidingWindowResult finalresult;
-		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings, dataSet, *featureSet, settings.testCriteria);
-
-		});
-
-		// save the hit count on the cascade
-		cascade.save(cascadeFile);
-		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
-
-		std::ofstream str = std::ofstream(finalEvaluationSlidingFile);
-		str << "Name" << ";";
-		ClassifierEvaluation().toCSVLine(str, true);
-		str << std::endl;
-
-		for (auto& category : dataSet->getCategories()) {
-			for (auto& result : finalresult.evaluations[category]) {
-				str << featureSetName << "[S][" + category + "]" << ";";
-				result.toCSVLine(str, false);
-				str << std::endl;
-			}
-		}
-
-		for (auto& result : finalresult.combinedEvaluations) {
-			str << featureSetName << "[S]" << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
-		}
-		str.close();
-
-		std::string finalEvaluationMissedPositivesFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_missedpositives.csv";
-
-		str = std::ofstream(finalEvaluationMissedPositivesFile);
-		for (auto& pair : finalresult.missedPositivesPerImage) {
-			int imgNr = pair.first;
-			auto& missedPositivesPerShift = pair.second;
-			for (int i = 0; i < missedPositivesPerShift.size(); i++) {
-
-				for (int tp = 0; tp < missedPositivesPerShift[i].size(); tp++)
-				{
-					auto& region = missedPositivesPerShift[i][tp];
-					str << imgNr << ";" << cascade.getValueShift(i, settings.nrOfEvaluations, settings.evaluationRange) << ";" <<
-						region.x << "," << region.y << "," << region.width << "," << region.height << std::endl;
-				}
-			}
-		}
-		str.close();
-	}
-}
-
 void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& cascade, std::string& featureSetName, TrainingDataSet& trainingDataSet, std::unique_ptr<FeatureSet>& featureSet) const {
 	// do not try and evaluate multiple jobs together with sliding window. The sliding window evaluation is already parallelized will just interfere with each other then
 	tester->getLock()->lock();
@@ -243,6 +182,158 @@ void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& casca
 	}
 
 	tester->getLock()->unlock();
+}
+
+void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& cascadeFile, std::unique_ptr<FeatureSet>& featureSet, std::string& featureSetName) const {
+	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final.csv";
+	std::string finalEvaluationRiskAnalysisSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final_risk.csv";
+
+	if (!fileExists(finalEvaluationSlidingFile)) {
+
+		// reset classifier hit count
+		cascade.resetClassifierHitCount();
+		cascade.setTrackClassifierHitCountEnabled(true); // enable hit count tracking so feature importance weight can be collected
+
+		std::cout << "Started final evaluation on test set with sliding window and NMS of " << featureSetName << std::endl;
+		FinalEvaluationSlidingWindowResult finalresult;
+		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings, dataSet, *featureSet, settings.testCriteria);
+
+		});
+
+		// save the hit count on the cascade
+		cascade.save(cascadeFile);
+		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms for " << featureSetName << std::endl;
+
+		std::ofstream str = std::ofstream(finalEvaluationSlidingFile);
+		str << "Name" << ";";
+		ClassifierEvaluation().toCSVLine(str, true);
+		str << std::endl;
+
+		for (auto& category : dataSet->getCategories()) {
+			for (auto& result : finalresult.evaluations[category]) {
+				str << featureSetName << "[S][" + category + "]" << ";";
+				result.toCSVLine(str, false);
+				str << std::endl;
+			}
+		}
+
+		for (auto& result : finalresult.combinedEvaluations) {
+			str << featureSetName << "[S]" << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+		str.close();
+
+		std::string finalEvaluationMissedPositivesFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_missedpositives.csv";
+
+		str = std::ofstream(finalEvaluationMissedPositivesFile);
+		for (auto& pair : finalresult.missedPositivesPerImage) {
+			int imgNr = pair.first;
+			auto& missedPositivesPerShift = pair.second;
+			for (int i = 0; i < missedPositivesPerShift.size(); i++) {
+
+				for (int tp = 0; tp < missedPositivesPerShift[i].size(); tp++)
+				{
+					auto& region = missedPositivesPerShift[i][tp];
+					str << imgNr << ";" << cascade.getValueShift(i, settings.nrOfEvaluations, settings.evaluationRange) << ";" <<
+						region.x << "," << region.y << "," << region.width << "," << region.height << std::endl;
+				}
+			}
+		}
+		str.close();
+
+
+
+		// do risk analysis if depth is available
+		if (dataSet->getFullfillsRequirements()[1]) {
+			std::map<std::string, std::vector<ClassifierEvaluation>> evaluationPerRiskCategory;
+			for (auto& cat : RiskAnalysis::getRiskCategories()) {
+				evaluationPerRiskCategory[cat] = std::vector<ClassifierEvaluation>(finalresult.combinedEvaluations.size());
+				for (int i = 0; i < finalresult.combinedEvaluations.size(); i++)
+				{
+					ClassifierEvaluation eval(finalresult.combinedEvaluations[i]);
+					eval.nrOfTruePositives = 0;
+					eval.nrOfFalseNegatives = 0;
+					evaluationPerRiskCategory[cat][i] = eval;
+				}
+			}
+
+			auto labelsPerNumber = dataSet->getLabelsPerNumber();
+			for (int imgNr = 0; imgNr < dataSet->getNrOfImages(); imgNr++)
+			{
+				if (settings.testCriteria(imgNr)) {
+
+					auto& labels = labelsPerNumber[imgNr];
+					std::vector<DataSetLabel> truePositives;
+					for (auto& l : labels) {
+						if (!l.isDontCareArea())
+							truePositives.push_back(l);
+					}
+
+					for (int i = 0; i < finalresult.combinedEvaluations.size(); i++)
+					{
+
+						// assume none were missed, flag all true positives that correspond to this category as true positives
+						for (auto& tp : truePositives) {
+							std::string labelCategory = RiskAnalysis::getRiskCategory(tp.z_3d, tp.x_3d, settings.vehicleSpeedKMh, settings.tireRoadFriction);
+							if (labelCategory != "") {
+								evaluationPerRiskCategory[labelCategory][i].nrOfTruePositives++;
+							}
+						}
+
+						// now check the missed positives and shift to false negatives for each missed true positive
+						if (finalresult.missedPositivesPerImage.find(imgNr) != finalresult.missedPositivesPerImage.end()) {
+							auto& missedPositivesOfValueShift = finalresult.missedPositivesPerImage[imgNr][i];
+
+							for (auto& missedPositive : missedPositivesOfValueShift) {
+
+								// determine risk category and if it matches with the current category
+								for (auto& tp : truePositives) {
+									if (missedPositive.x == round(tp.getBbox().x) && missedPositive.y == round(tp.getBbox().y) &&
+										missedPositive.width == round(tp.getBbox().width) && missedPositive.height == round(tp.getBbox().height)) {
+										// found corresponding label
+										std::string labelCategory = RiskAnalysis::getRiskCategory(tp.z_3d, tp.x_3d, settings.vehicleSpeedKMh, settings.tireRoadFriction);
+										if (labelCategory != "") {
+											auto& eval = evaluationPerRiskCategory[labelCategory][i];
+											eval.nrOfTruePositives--;
+											eval.nrOfFalseNegatives++;
+										}
+
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// now write the results in the same way
+
+			str = std::ofstream(finalEvaluationRiskAnalysisSlidingFile);
+			str << "Name" << ";";
+			ClassifierEvaluation().toCSVLine(str, true);
+			str << std::endl;
+
+			for (auto& category : RiskAnalysis::getRiskCategories()) {
+				if (evaluationPerRiskCategory.find(category) != evaluationPerRiskCategory.end()) {
+					for (auto& result : evaluationPerRiskCategory[category]) {
+						str << featureSetName << "[S][" + category + "]" << ";";
+						result.toCSVLine(str, false);
+						str << std::endl;
+					}
+				}
+			}
+
+			for (auto& result : finalresult.combinedEvaluations) {
+				str << featureSetName << "[S]" << ";";
+				result.toCSVLine(str, false);
+				str << std::endl;
+			}
+			str.close();
+		}
+	}
 }
 
 void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const {

@@ -26,6 +26,9 @@ public:
 
 	bool addFlippedInTrainingSet = true;
 
+	float vehicleSpeedKMh = 50;
+	float tireRoadFriction = 0.7;
+
 	std::string kittiDataSetPath = "";
 	std::string kaistDataSetPath = "";
 

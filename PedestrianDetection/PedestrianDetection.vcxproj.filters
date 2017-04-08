@@ -201,6 +201,12 @@
     <ClInclude Include="IntegralImage.h">
       <Filter>Header Files\Algorithms</Filter>
     </ClInclude>
+    <ClInclude Include="MarchingSquares.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="RiskAnalysis.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -355,6 +361,12 @@
     </ClCompile>
     <ClCompile Include="IntegralImage.cpp">
       <Filter>Resource Files\Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="MarchingSquares.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="RiskAnalysis.cpp">
+      <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

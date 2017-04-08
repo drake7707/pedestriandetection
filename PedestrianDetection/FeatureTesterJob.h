@@ -14,6 +14,8 @@
 #include "EvaluatorCascade.h"
 #include "JetHeatMap.h"
 #include "EvaluationSettings.h"
+#include "RiskAnalysis.h"
+
 
 class FeatureTester;
 

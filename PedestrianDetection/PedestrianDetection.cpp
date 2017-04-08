@@ -61,6 +61,8 @@
 
 #include "JetHeatMap.h"
 #include "EvaluationSettings.h"
+#include "RiskAnalysis.h"
+
 
 
 //std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
@@ -324,7 +326,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 			for (int s = 0; s < settings.windowSizes.size(); s++) {
 
 				double scale = 1.0  *  settings.windowSizes[s].width / settings.refWidth;
-				
+
 				slideWindow(rgbScales[s].cols, rgbScales[s].rows, [&](cv::Rect bbox) -> void {
 
 					cv::Rect scaledBBox = cv::Rect(bbox.x * scale, bbox.y * scale, settings.windowSizes[s].width, settings.windowSizes[s].height);
@@ -777,7 +779,7 @@ void testSlidingWindow(EvaluationSettings& settings) {
 		[&](int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) -> void {
 		// start of image
 	},
-		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion,cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (imageNumber != oldNumber) {
 			if (tmp.rows > 0) {
@@ -962,300 +964,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, EvaluationSettings& 
 	}
 }
 
-std::vector<cv::Point> getUV(int nr, float threshold, float vLT, float vLB, float vRT, float vRB) {
 
-	// (1 - min) / (max-min)
-	float lInterpol = (threshold - vLT) / (vLB - vLT);
-	float rInterpol = (threshold - vRT) / (vRB - vRT);
-
-	float tInterpol = (threshold - vLT) / (vRT - vLT);
-	float bInterpol = (threshold - vLB) / (vRB - vLB);
-
-	cv::Point l = Point(0, lInterpol);
-	cv::Point t = Point(tInterpol, 0);
-	cv::Point r = Point(1, rInterpol);
-	cv::Point b = Point(bInterpol, 1);
-
-	std::vector<cv::Point> pts;
-	switch (nr) {
-	case 0:
-		break;
-	case 1: pts = { l, t };		break;
-	case 2: pts = { t, r };		break;
-	case 3: pts = { l, r };		break;
-
-	case 4: pts = { r, b };		break;
-	case 5: pts = { b, l };		break;
-	case 6: pts = { b, t };		break;
-	case 7: pts = { b, l };		break;
-
-	case 8: pts = { b, l };		break;
-	case 9: pts = { b, t };		break;
-	case 10: pts = { b, r };	break;
-	case 11: pts = { b, r };	break;
-
-	case 12: pts = { l, r };	break;
-	case 13: pts = { t, r };	break;
-	case 14: pts = { t, l };	break;
-	case 15:
-		break;
-
-	}
-	return pts;
-}
-
-void marchingSquares(std::function<float(int, int)> func, std::function<void(int x1, int y1, int x2, int y2)> lineFunc, float targetValue, int imgWidth, int imgHeight, int nrCellsX = 300, int nrCellsY = 100) {
-	std::vector<bool> mask;
-
-	float cellSizeWidth = 1.0 * imgWidth / nrCellsX;
-	float cellSizeHeight = 1.0 * imgHeight / nrCellsY;
-
-	for (int j = 0; j < nrCellsY; j++) {
-		for (int i = 0; i < nrCellsX; i++) {
-
-
-			mask = {
-				(j + 1) * cellSizeHeight + cellSizeHeight / 2 >= imgHeight ? false : func((j + 1) * cellSizeHeight + cellSizeHeight / 2,i * cellSizeWidth + cellSizeWidth / 2) > targetValue,
-				(i + 1) * cellSizeWidth + cellSizeWidth / 2 >= imgWidth || (j + 1) * cellSizeHeight + cellSizeHeight / 2 >= imgHeight ? false : func((j + 1) * cellSizeHeight + cellSizeHeight / 2,(i + 1) * cellSizeWidth + cellSizeWidth / 2) > targetValue,
-				(i + 1) * cellSizeWidth + cellSizeWidth / 2 >= imgWidth ? false : func(j * cellSizeHeight + cellSizeHeight / 2,(i + 1) * cellSizeWidth + cellSizeWidth / 2) > targetValue,
-				func(j * cellSizeHeight + cellSizeHeight / 2,i * cellSizeWidth + cellSizeWidth / 2) > targetValue,
-			};
-			int nr = ((mask[0] ? 1 : 0) << 3) +
-				((mask[1] ? 1 : 0) << 2) +
-				((mask[2] ? 1 : 0) << 1) +
-				((mask[3] ? 1 : 0) << 0);
-
-			if (nr != 0 && nr != 15) {
-				std::vector<cv::Point> uv = getUV(nr, targetValue,
-					func(j * cellSizeHeight + cellSizeHeight / 2, i * cellSizeWidth + cellSizeWidth / 2),
-					(j + 1) * cellSizeHeight + cellSizeHeight / 2 >= imgHeight ? targetValue : func((j + 1) * cellSizeHeight + cellSizeHeight / 2, i * cellSizeWidth + cellSizeWidth / 2),
-					(i + 1) * cellSizeWidth + cellSizeWidth / 2 >= imgWidth ? targetValue : func(j * cellSizeHeight + cellSizeHeight / 2, (i + 1) * cellSizeWidth + cellSizeWidth / 2),
-					(i + 1) * cellSizeWidth + cellSizeWidth / 2 >= imgWidth || (j + 1) * cellSizeHeight + cellSizeHeight / 2 >= imgHeight ? targetValue : func((j + 1) * cellSizeHeight + cellSizeHeight / 2, (i + 1) * cellSizeWidth + cellSizeWidth / 2)
-				);
-
-				if (uv.size() > 0) {
-					float x = i * imgWidth / nrCellsX;
-					float y = j * imgHeight / nrCellsY;
-
-
-					float x1 = x + 1.0 * cellSizeWidth * uv[0].x + cellSizeWidth / 2;
-					float y1 = y + 1.0 * cellSizeHeight *uv[0].y + cellSizeHeight / 2;
-					float x2 = x + 1.0 * cellSizeWidth * uv[1].x + cellSizeWidth / 2;
-					float y2 = y + 1.0 * cellSizeHeight *uv[1].y + cellSizeHeight / 2;
-					lineFunc(x1, y1, x2, y2);
-				}
-			}
-		}
-	}
-}
-
-
-double getRemainingTimeToHitPedestrian(double pedestrianDepth, double pedestrianX, double vehicleSpeedForRating, double tireroadFriction = 0.7, int t = 1) {
-
-	float gravity = 9.81;
-	float max_pedestrian_speed = 0; // assume standing still
-
-	float t1secVehicleRadius = vehicleSpeedForRating * t;
-	double stoppingDistance = vehicleSpeedForRating * vehicleSpeedForRating / (2 * tireroadFriction * gravity);
-	// vehicle on origin point, so - 0
-	double distanceToPedestrian = sqrt(pedestrianX * pedestrianX + pedestrianDepth * pedestrianDepth); // m
-	double remainingDistanceToAct = distanceToPedestrian - (max_pedestrian_speed*t) - (stoppingDistance); // m
-																										  // remainingTime * vehicleSpeedForRating = remainingDistanceToAct;
-	double remainingTime = remainingDistanceToAct / vehicleSpeedForRating;
-
-	return remainingTime;
-}
-
-void drawRiskOnDepthDataSet(DataSet* set) {
-
-	if (!set->getFullfillsRequirements()[1])
-		throw new std::exception("The dataset does not have the required depth information");
-
-	float imgHeight = 400; // px
-	float imgWidth = 800; //px
-	float max_depth = 80.0; // m
-	float tireroadFriction = 0.7;
-	float gravity = 9.81; // m/s²
-
-	float max_pedestrian_speed = 0 * 1000 / 3600.0; // m/s
-	float vehicleSpeedForRating = 50 / 3.6f; // m/s
-	float t = 1;
-	float max_seconds_remaining = 10;
-
-
-	std::vector<std::vector<DataSetLabel>> labelsPerNumber = set->getLabelsPerNumber();
-
-	for (int imgNr = 0; imgNr < set->getNrOfImages(); imgNr++)
-	{
-		auto& labels = labelsPerNumber[imgNr];
-		if (labels.size() > 0) {
-			auto imgs = set->getImagesForNumber(imgNr);
-
-			float depthOffset = 0;
-			while (true) {
-				//depthOffset -= 0.25f;
-				if (depthOffset < 0)
-					depthOffset += 80;
-
-
-				cv::Mat topdown(imgHeight, imgWidth, CV_8UC3, cv::Scalar(255, 255, 255));
-
-				cv::Mat& topdownOverlay = topdown;// (imgHeight, imgWidth, CV_8UC3, cv::Scalar(0, 0, 0));
-
-				for (int j = 0; j < topdownOverlay.rows; j++)
-				{
-					for (int i = 0; i < topdownOverlay.cols; i++)
-					{
-						float depth = (1 - 1.0 * j / topdownOverlay.rows) * max_depth;
-						float x = ((1.0 * i / topdownOverlay.cols) * 2 - 1) * max_depth;
-
-						// no pixel -> x in meters
-						double remainingTime = getRemainingTimeToHitPedestrian(depth, x, vehicleSpeedForRating);
-
-
-						if (remainingTime <= 0)
-							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(64, 0, 128);
-						else if (remainingTime <= 0.5)
-							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 0, 255);
-						else if (remainingTime >= 0.5 && remainingTime < 1)
-							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 127, 255);
-						else if (remainingTime >= 1 && remainingTime < 1.5)
-							topdownOverlay.at<Vec3b>(j, i) = cv::Vec3b(0, 255, 0);
-					}
-				}
-			//	topdown = topdown + 0.5 * topdownOverlay;
-
-
-				cv::Point2f carPoint = cv::Point2f(imgWidth / 2, imgHeight);
-				cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), 10, cv::Scalar(255, 128, 128), -1);
-				cv::line(topdown, carPoint, cv::Point(carPoint.x + imgWidth * cos(-CV_PI / 4), carPoint.y + imgWidth * sin(-CV_PI / 4)), cv::Scalar(255, 128, 128));
-				cv::line(topdown, carPoint, cv::Point(carPoint.x + imgWidth * cos(-3 * CV_PI / 4), carPoint.y + imgWidth * sin(-3 * CV_PI / 4)), cv::Scalar(255, 128, 128));
-
-
-				float t1secRadius = (vehicleSpeedForRating*t / max_depth * imgHeight);
-				double stoppingDistance = vehicleSpeedForRating * vehicleSpeedForRating / (2 * tireroadFriction * gravity);
-				double stoppingDistanceRadius = stoppingDistance / max_depth * imgHeight;
-
-				//cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), t1secRadius, cv::Scalar(255, 128, 128), 1);
-				cv::circle(topdown, cv::Point2f(imgWidth / 2, imgHeight), stoppingDistanceRadius, cv::Scalar(0, 0, 0), 2, CV_AA);
-
-
-				for (int i = 0; i <= max_depth; i += 10)
-				{
-					// draw 10 meter lines
-
-					int depth = (i + depthOffset);
-					if (depth < 0) depth += 80;
-					if (depth > 80) depth -= 80;
-					float d = (1.0 * depth / max_depth);
-
-					float y = imgHeight * (1 - d);
-
-					//cv::line(topdown, cv::Point2f(0, y), cv::Point2f(imgWidth, y), cv::Scalar(192, 192, 192));
-
-					cv::circle(topdown, cv::Point(imgWidth / 2, imgHeight), d * imgHeight, cv::Scalar(128, 128, 128));
-
-					cv::putText(topdown, std::to_string(i) + "m", cv::Point2f(0, y + 12), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(128, 128, 128));
-				}
-
-				cv::Mat img = imgs[0].clone();
-				cv::Mat depthImg = imgs[1].clone();
-				for (int i = 0; i < 10; i++)
-					cv::dilate(depthImg, depthImg, cv::Mat());
-				for (int i = 0; i < 10; i++)
-					cv::erode(depthImg, depthImg, cv::Mat());
-
-				cv::GaussianBlur(depthImg, depthImg, cv::Size(5, 5), 0, 0);
-
-
-				cv::Mat overlay = cv::Mat(img.rows, img.cols, CV_8UC3, cv::Scalar(0));
-				for (int j = 0; j < img.rows; j++)
-				{
-					for (int i = 0; i < img.cols; i++)
-					{
-						float depth = 80 - 80 * imgs[1].at<float>(j, i);
-
-						double angle = CV_PI / 2 - (1.0 * i / img.cols) * CV_PI / 2; // 90 -> 0;
-						double actualAngle = angle + CV_PI / 4; // 45° offset of cone - 90° of middle split
-						float x = cos(actualAngle) * depth; // adjacent times hypotenuse
-
-						// no pixel -> x in meters
-						double remainingTime = getRemainingTimeToHitPedestrian(depth, x, vehicleSpeedForRating);
-
-						if (remainingTime <= 0)
-							overlay.at<Vec3b>(j, i) = cv::Vec3b(64, 0, 128);
-						else if (remainingTime <= 0.5)
-							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 0, 255);
-						else if (remainingTime >= 0.5 && remainingTime < 1)
-							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 127, 255);
-						else if (remainingTime >= 1 && remainingTime < 1.5)
-							overlay.at<Vec3b>(j, i) = cv::Vec3b(0, 255, 0);
-					}
-				}
-
-				img = img + 0.5 * overlay;
-
-				for (int d = 0; d < max_depth; d += 10) {
-					int depth = (d + depthOffset);
-					if (depth < 0) depth += 80;
-					if (depth > 80) depth -= 80;
-
-					marchingSquares([&](int j, int i) -> float { return 80 - 80 * depthImg.at<float>(j, i);  },
-						[&](int x1, int y1, int x2, int y2) -> void {
-						cv::line(img, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(255, 255, 255), 1);
-					},
-						depth, imgs[1].cols, imgs[1].rows, 100, 150);
-				}
-
-				for (auto& l : labels) {
-					if (!l.isDontCareArea()) {
-
-
-						float depth = (l.z_3d / max_depth);
-						float y = imgHeight * (1 - depth);
-
-						float x = imgWidth / 2 + (l.x_3d / max_depth) * imgWidth / 2;
-
-
-						float t1secVehicleRadius = vehicleSpeedForRating * t;
-						double stoppingDistance = vehicleSpeedForRating * vehicleSpeedForRating / (2 * tireroadFriction * gravity);
-						// vehicle on origin point, so - 0
-						double distanceToPedestrian = sqrt(l.x_3d * l.x_3d + l.z_3d * l.z_3d); // m
-						double remainingDistanceToAct = distanceToPedestrian - (max_pedestrian_speed*t) - (stoppingDistance); // m
-						// remainingTime * vehicleSpeedForRating = remainingDistanceToAct;
-						double remainingTime = remainingDistanceToAct / vehicleSpeedForRating;
-
-
-						cv::putText(topdown, std::to_string(remainingTime), cv::Point2f(x, y), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 0, 0));
-
-						cv::rectangle(img, l.getBbox(), cv::Scalar(255, 255, 0), 2);
-						cv::putText(img, std::to_string(remainingTime), l.getBbox().tl(), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 0));
-
-						if (remainingTime < 0) {
-							// already too late
-							remainingTime = 0;
-						}
-
-						// from 0,0,255 -> 0,255,0
-						float alpha = remainingTime / max_seconds_remaining;
-
-
-						cv::circle(topdown, cv::Point2f(x, y), 2, cv::Scalar(0, alpha * 255, (1 - alpha) * 255), -1, CV_AA);
-						cv::circle(topdown, cv::Point2f(x, y), 3, cv::Scalar(0, alpha * 128, (1 - alpha) * 128), 1, CV_AA);
-						float t1secRadiusPx = (max_pedestrian_speed*t / max_depth * imgHeight);
-						cv::circle(topdown, cv::Point2f(x, y), t1secRadiusPx, cv::Scalar(0, alpha * 255, (1 - alpha) * 255), 1, CV_AA);
-					}
-				}
-
-				cv::imshow("TopDown", topdown);
-				cv::imshow("RGB", img);
-				if (cv::waitKey(25) == 'n')
-					break;
-			}
-		}
-	}
-
-}
 
 void browseThroughTrainingSet(std::string& trainingFile, DataSet* dataSet) {
 
@@ -1378,6 +1087,42 @@ void generateFinalForEachRound(FeatureTester* tester, EvaluationSettings& settin
 	}
 }
 
+
+void drawRiskOnDepthDataSet(DataSet* set) {
+
+	if (!set->getFullfillsRequirements()[1])
+		throw new std::exception("The dataset does not have the required depth information");
+
+	float imgHeight = 400; // px
+	float imgWidth = 800; //px
+	float max_depth = 80.0; // m
+	float tireroadFriction = 0.7;
+	float gravity = 9.81; // m/s²
+
+	float max_pedestrian_speed = 0 * 1000 / 3600.0; // m/s
+	float vehicleSpeedForRating = 50 / 3.6f; // m/s
+	float t = 1;
+	float max_seconds_remaining = 10;
+
+
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber = set->getLabelsPerNumber();
+
+	for (int imgNr = 0; imgNr < set->getNrOfImages(); imgNr++)
+	{
+		auto& labels = labelsPerNumber[imgNr];
+		if (labels.size() > 0) {
+			auto imgs = set->getImagesForNumber(imgNr);
+
+
+			cv::Mat topdown = RiskAnalysis::getTopDownImage(imgWidth, imgHeight, labels, max_depth, 50, tireroadFriction);
+			cv::Mat img = RiskAnalysis::getRGBImage(imgs[0], imgs[1], labels, 50, tireroadFriction);
+
+			cv::imshow("TopDown", topdown);
+			cv::imshow("RGB", img);
+			cv::waitKey(0);
+		}
+	}
+}
 
 
 
@@ -1618,38 +1363,40 @@ int main()
 	cv::Mat imgResult2 = result2.combineHOGImage(testImage);
 	cv::imshow("HOG2", imgResult2);
 	cv::waitKey(0);*/
-	
-
-	/*KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
-	drawRiskOnDepthDataSet(&kittiDataSet);
-*/
-
-	//std::set<std::string> set = { "SDDG" };
-	//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
-	//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
-
-	//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
-	//tester.addJob(set, &kaistDataSet,settings);
-	//tester.runJobs();
 
 
-	//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+//	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
+//	drawRiskOnDepthDataSet(&kittiDataSet);
 
 
-	//explainModel(tester, settings);
+//std::set<std::string> set = { "SDDG" };
+//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
+//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
+
+//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
+//tester.addJob(set, &kaistDataSet,settings);
+//tester.runJobs();
+
+
+//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+
+
+//explainModel(tester, settings);
 
 
 
-	//testClassifier(tester, settings);
+//testClassifier(tester, settings);
 
-	if (settings.kaistDataSetPath != "") {
-		KAISTDataSet dataSet(settings.kaistDataSetPath);
-		runJobsFromInputSets(tester, &dataSet, settings);
-	}
-	
+
 
 	if (settings.kittiDataSetPath != "") {
 		KITTIDataSet dataSet(settings.kittiDataSetPath);
+		runJobsFromInputSets(tester, &dataSet, settings);
+	}
+
+
+	if (settings.kaistDataSetPath != "") {
+		KAISTDataSet dataSet(settings.kaistDataSetPath);
 		runJobsFromInputSets(tester, &dataSet, settings);
 	}
 

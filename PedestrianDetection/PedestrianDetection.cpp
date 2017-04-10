@@ -242,12 +242,12 @@ cv::Mat getMask(cv::Mat& roi) {
 
 void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
-	std::set<std::string> set = { "HDD", "HOG(RGB)" };
+	std::set<std::string> set = { "HOG(RGB)","HOG(Thermal)" };
 
 	auto fset = tester.getFeatureSet(set);
 
 	EvaluatorCascade cascade(std::string("Test"));
-	cascade.load(std::string("models\\HDD+HOG(RGB)_cascade.xml"), std::string("models"));
+	cascade.load(std::string("models\\KAIST_HOG(RGB)+HOG(Thermal)_cascade.xml"), std::string("models"));
 
 	double valueShift = -6;
 
@@ -260,7 +260,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
 
-	KITTIDataSet dataSet(settings.kittiDataSetPath);
+	KAISTDataSet dataSet(settings.kaistDataSetPath);
 
 	//	cv::namedWindow("Test");
 
@@ -276,8 +276,11 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 	ClassifierEvaluation eval(dataSet.getNrOfImages());
 
-	parallel_for(0, 1000, 6, [&](int i) -> void {
+	parallel_for(0, 4000, 6, [&](int i) -> void {
 		ProgressWindow::getInstance()->updateStatus(std::string("Testing classifier"), 1.0 * i / 1000, std::to_string(i));
+
+		if (labelsPerNumber[i].size() <= 0)
+			return;
 
 		auto imgs = dataSet.getImagesForNumber(i);
 		cv::Mat mRGB = imgs[0];
@@ -345,27 +348,31 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 					bool mustContinue = true;
 
+					bool hasDepth = depthScales.size() > 0;
+					
 					double depthSum = 0;
 					int depthCount = 0;
-					int xOffset = bbox.x + bbox.width / 2;
-					for (int y = bbox.y; y < bbox.y + bbox.height; y++)
-					{
-						for (int i = xOffset - 1; i <= xOffset + 1; i++)
+					if (hasDepth) {
+						int xOffset = bbox.x + bbox.width / 2;
+						for (int y = bbox.y; y < bbox.y + bbox.height; y++)
 						{
-							float d = depthScales[s].at<float>(y, i);
-							depthSum += d;
-							depthCount++;
+							for (int i = xOffset - 1; i <= xOffset + 1; i++)
+							{
+								float d = depthScales[s].at<float>(y, i);
+								depthSum += d;
+								depthCount++;
+							}
 						}
-					}
-					double depthAvg = (depthSum / depthCount);
+						double depthAvg = (depthSum / depthCount);
 
-					if (dataSet.isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
-						// falls within range where TP can lie, continue
-					}
-					else {
-						// reject outright, will most likely never be TP
-						mustContinue = false;
-						nrOfWindowsSkipped++;
+						if (dataSet.isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
+							// falls within range where TP can lie, continue
+						}
+						else {
+							// reject outright, will most likely never be TP
+							mustContinue = false;
+							nrOfWindowsSkipped++;
+						}
 					}
 
 					double result;
@@ -382,7 +389,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 					}
 
 					nrOfWindowsEvaluated++;
-				}, 16, settings.refWidth, settings.refHeight);
+				}, 8, settings.refWidth, settings.refHeight);
 			}
 
 			// clean up of prepared data
@@ -483,13 +490,15 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 			cv::rectangle(mRGB, cv::Rect(pos.bbox.x, pos.bbox.y - 10, pos.bbox.width - 5, 10), cv::Scalar(0, 0, 255), -1);
 			cv::putText(mRGB, s, cv::Point(pos.bbox.x, pos.bbox.y - 2), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
 
-			cv::Mat mask = getMask(imgs[1](pos.bbox));
-			for (int j = 0; j < mask.rows; j++)
-			{
-				for (int i = 0; i < mask.cols; i++)
+			if (imgs[1].rows > 0 && imgs[1].cols > 0) {
+				cv::Mat mask = getMask(imgs[1](pos.bbox));
+				for (int j = 0; j < mask.rows; j++)
 				{
-					if (mask.at<uchar>(j, i) > 128)
-						maskOverlay.at<Vec3b>(pos.bbox.y + j, pos.bbox.x + i) = cv::Vec3b(0, 0, 255);
+					for (int i = 0; i < mask.cols; i++)
+					{
+						if (mask.at<uchar>(j, i) > 128)
+							maskOverlay.at<Vec3b>(pos.bbox.y + j, pos.bbox.x + i) = cv::Vec3b(0, 0, 255);
+					}
 				}
 			}
 		}
@@ -504,13 +513,15 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 			cv::putText(mRGB, s, cv::Point(pos.bbox.x, pos.bbox.y - 2), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
 
 
-			cv::Mat mask = getMask(imgs[1](pos.bbox));
-			for (int j = 0; j < mask.rows; j++)
-			{
-				for (int i = 0; i < mask.cols; i++)
+			if (imgs[1].rows > 0 && imgs[1].cols > 0) {
+				cv::Mat mask = getMask(imgs[1](pos.bbox));
+				for (int j = 0; j < mask.rows; j++)
 				{
-					if (mask.at<uchar>(j, i) > 128)
-						maskOverlay.at<Vec3b>(pos.bbox.y + j, pos.bbox.x + i) = cv::Vec3b(0, 255, 0);
+					for (int i = 0; i < mask.cols; i++)
+					{
+						if (mask.at<uchar>(j, i) > 128)
+							maskOverlay.at<Vec3b>(pos.bbox.y + j, pos.bbox.x + i) = cv::Vec3b(0, 255, 0);
+					}
 				}
 			}
 			//	cv::imshow("Mask", mask);
@@ -552,7 +563,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 		cv::imwrite(std::to_string(i) + "_hddHOGrgb.png", mRGB);
 
-		cv::imwrite(std::to_string(i) + "_hddHOGrgb_mask.png", maskOverlay);
+	//	cv::imwrite(std::to_string(i) + "_hddHOGrgb_mask.png", maskOverlay);
 		//	cv::imshow("Test", mRGB);
 		////	cv::waitKey(0);
 			//nr++;
@@ -1365,27 +1376,27 @@ int main()
 	cv::waitKey(0);*/
 
 
-//	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
-//	drawRiskOnDepthDataSet(&kittiDataSet);
+	//	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
+	//	drawRiskOnDepthDataSet(&kittiDataSet);
 
 
-//std::set<std::string> set = { "SDDG" };
-//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
-//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
+	//std::set<std::string> set = { "SDDG" };
+	//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
+	//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
 
-//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
-//tester.addJob(set, &kaistDataSet,settings);
-//tester.runJobs();
-
-
-//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+	//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
+	//tester.addJob(set, &kaistDataSet,settings);
+	//tester.runJobs();
 
 
-//explainModel(tester, settings);
+	//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+
+
+	//explainModel(tester, settings);
 
 
 
-//testClassifier(tester, settings);
+	//testClassifier(tester, settings);
 
 
 

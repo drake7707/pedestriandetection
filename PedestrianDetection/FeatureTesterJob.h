@@ -43,6 +43,11 @@ private:
 	void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& cascadeFile, std::unique_ptr<FeatureSet>& featureSet, std::string& featureSetName) const;
 
 	/// <summary>
+	/// Runs the risk analysis and generates the classification result with the various risk categories if depth information is available
+	/// </summary>
+	void doRiskAnalysis(FinalEvaluationSlidingWindowResult& finalresult, std::string& featureSetName) const;
+
+	/// <summary>
 	/// Generates the feature explanation images of all the models in the cascade and save it to a file 
 	/// </summary>
 	void generateFeatureImportanceImage(EvaluatorCascade& cascade, std::unique_ptr<FeatureSet>& fset) const;

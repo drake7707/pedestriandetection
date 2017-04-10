@@ -24,6 +24,10 @@ public:
 	/// </summary>
 	virtual int getNumberOfFeatures() const = 0;
 
+	/// <summary>
+	/// Obtains prepared data of the used feature descriptors. This prepared data will be passed along during evaluation.
+	/// Feature descriptors that prepare data can often evaluate much quicker (e.g. integral histograms)
+	/// </summary>
 	virtual std::vector<IPreparedData*> buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const;
 
 	/// <summary>

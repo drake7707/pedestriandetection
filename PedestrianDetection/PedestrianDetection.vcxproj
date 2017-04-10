@@ -174,7 +174,6 @@
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Histogram.h" />
     <ClInclude Include="Histogram2D.h" />
-    <ClInclude Include="Histogram2DResult.h" />
     <ClInclude Include="HistogramDepthFeatureCreator.h" />
     <ClInclude Include="HistogramOfOrientedGradients.h" />
     <ClInclude Include="HOG1DPreparedData.h" />
@@ -228,7 +227,6 @@
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Histogram.cpp" />
     <ClCompile Include="Histogram2D.cpp" />
-    <ClCompile Include="Histogram2DResult.cpp" />
     <ClCompile Include="HistogramDepthFeatureCreator.cpp" />
     <ClCompile Include="HistogramOfOrientedGradients.cpp" />
     <ClCompile Include="HOG1DPreparedData.cpp" />

@@ -44,7 +44,9 @@ public:
 	/// </summary>
 	int getNumberOfFeatures() const;
 
-
+	/// <summary>
+	/// Obtains prepared data of the used feature descriptors. This prepared data will be passed along during evaluation.
+	/// </summary>
 	std::vector<std::vector<IPreparedData*>> FeatureSet::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const;
 
 	/// <summary>

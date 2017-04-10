@@ -87,9 +87,6 @@
     <ClInclude Include="HistogramResult.h">
       <Filter>Header Files\Histogram</Filter>
     </ClInclude>
-    <ClInclude Include="Histogram2DResult.h">
-      <Filter>Header Files\Histogram</Filter>
-    </ClInclude>
     <ClInclude Include="Histogram.h">
       <Filter>Header Files\Histogram</Filter>
     </ClInclude>
@@ -246,9 +243,6 @@
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
     <ClCompile Include="HistogramResult.cpp">
-      <Filter>Resource Files\Source Files\Histogram</Filter>
-    </ClCompile>
-    <ClCompile Include="Histogram2DResult.cpp">
       <Filter>Resource Files\Source Files\Histogram</Filter>
     </ClCompile>
     <ClCompile Include="Histogram2D.cpp">

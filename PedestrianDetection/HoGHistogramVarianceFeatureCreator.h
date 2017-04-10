@@ -14,6 +14,5 @@ public:
 
 	FeatureVector getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const;
 
-	virtual std::vector<bool> getRequirements() const;
 };
 

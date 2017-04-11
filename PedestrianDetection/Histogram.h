@@ -11,6 +11,9 @@ public:
 
 	}
 
+	/// <summary>
+	/// Calculates the S^2 variance of the histogram
+	/// </summary>
 	float getS2() const;
 };
 

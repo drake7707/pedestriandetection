@@ -77,10 +77,3 @@ cv::Mat HOGHistogramVarianceFeatureCreator::explainFeatures(int offset, std::vec
 	}
 	return explanation;
 }
-
-std::vector<bool> HOGHistogramVarianceFeatureCreator::getRequirements() const {
-	return{ target == IFeatureCreator::Target::RGB,
-		target == IFeatureCreator::Target::Depth,
-		target == IFeatureCreator::Target::Thermal
-	};
-}

@@ -185,8 +185,7 @@ void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& casca
 }
 
 void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& cascadeFile, std::unique_ptr<FeatureSet>& featureSet, std::string& featureSetName) const {
-	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final.csv";
-	std::string finalEvaluationRiskAnalysisSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final_risk.csv";
+	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final.csv";	
 
 	if (!fileExists(finalEvaluationSlidingFile)) {
 
@@ -243,96 +242,100 @@ void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& c
 		}
 		str.close();
 
+		doRiskAnalysis(finalresult, featureSetName);		
+	}
+}
 
+void FeatureTesterJob::doRiskAnalysis(FinalEvaluationSlidingWindowResult& finalresult, std::string& featureSetName) const {
+	std::string finalEvaluationRiskAnalysisSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final_risk.csv";
 
-		// do risk analysis if depth is available
-		if (dataSet->getFullfillsRequirements()[1]) {
-			std::map<std::string, std::vector<ClassifierEvaluation>> evaluationPerRiskCategory;
-			for (auto& cat : RiskAnalysis::getRiskCategories()) {
-				evaluationPerRiskCategory[cat] = std::vector<ClassifierEvaluation>(finalresult.combinedEvaluations.size());
+	// do risk analysis if depth is available
+	if (dataSet->getFullfillsRequirements()[1]) {
+		std::map<std::string, std::vector<ClassifierEvaluation>> evaluationPerRiskCategory;
+		for (auto& cat : RiskAnalysis::getRiskCategories()) {
+			evaluationPerRiskCategory[cat] = std::vector<ClassifierEvaluation>(finalresult.combinedEvaluations.size());
+			for (int i = 0; i < finalresult.combinedEvaluations.size(); i++)
+			{
+				ClassifierEvaluation eval(finalresult.combinedEvaluations[i]);
+				eval.nrOfTruePositives = 0;
+				eval.nrOfFalseNegatives = 0;
+				evaluationPerRiskCategory[cat][i] = eval;
+			}
+		}
+
+		auto labelsPerNumber = dataSet->getLabelsPerNumber();
+		for (int imgNr = 0; imgNr < dataSet->getNrOfImages(); imgNr++)
+		{
+			if (settings.testCriteria(imgNr)) {
+
+				auto& labels = labelsPerNumber[imgNr];
+				std::vector<DataSetLabel> truePositives;
+				for (auto& l : labels) {
+					if (!l.isDontCareArea())
+						truePositives.push_back(l);
+				}
+
 				for (int i = 0; i < finalresult.combinedEvaluations.size(); i++)
 				{
-					ClassifierEvaluation eval(finalresult.combinedEvaluations[i]);
-					eval.nrOfTruePositives = 0;
-					eval.nrOfFalseNegatives = 0;
-					evaluationPerRiskCategory[cat][i] = eval;
-				}
-			}
 
-			auto labelsPerNumber = dataSet->getLabelsPerNumber();
-			for (int imgNr = 0; imgNr < dataSet->getNrOfImages(); imgNr++)
-			{
-				if (settings.testCriteria(imgNr)) {
-
-					auto& labels = labelsPerNumber[imgNr];
-					std::vector<DataSetLabel> truePositives;
-					for (auto& l : labels) {
-						if (!l.isDontCareArea())
-							truePositives.push_back(l);
+					// assume none were missed, flag all true positives that correspond to this category as true positives
+					for (auto& tp : truePositives) {
+						std::string labelCategory = RiskAnalysis::getRiskCategory(tp.z_3d, tp.x_3d, settings.vehicleSpeedKMh, settings.tireRoadFriction);
+						if (labelCategory != "") {
+							evaluationPerRiskCategory[labelCategory][i].nrOfTruePositives++;
+						}
 					}
 
-					for (int i = 0; i < finalresult.combinedEvaluations.size(); i++)
-					{
+					// now check the missed positives and shift to false negatives for each missed true positive
+					if (finalresult.missedPositivesPerImage.find(imgNr) != finalresult.missedPositivesPerImage.end()) {
+						auto& missedPositivesOfValueShift = finalresult.missedPositivesPerImage[imgNr][i];
 
-						// assume none were missed, flag all true positives that correspond to this category as true positives
-						for (auto& tp : truePositives) {
-							std::string labelCategory = RiskAnalysis::getRiskCategory(tp.z_3d, tp.x_3d, settings.vehicleSpeedKMh, settings.tireRoadFriction);
-							if (labelCategory != "") {
-								evaluationPerRiskCategory[labelCategory][i].nrOfTruePositives++;
-							}
-						}
+						for (auto& missedPositive : missedPositivesOfValueShift) {
 
-						// now check the missed positives and shift to false negatives for each missed true positive
-						if (finalresult.missedPositivesPerImage.find(imgNr) != finalresult.missedPositivesPerImage.end()) {
-							auto& missedPositivesOfValueShift = finalresult.missedPositivesPerImage[imgNr][i];
-
-							for (auto& missedPositive : missedPositivesOfValueShift) {
-
-								// determine risk category and if it matches with the current category
-								for (auto& tp : truePositives) {
-									if (missedPositive.x == round(tp.getBbox().x) && missedPositive.y == round(tp.getBbox().y) &&
-										missedPositive.width == round(tp.getBbox().width) && missedPositive.height == round(tp.getBbox().height)) {
-										// found corresponding label
-										std::string labelCategory = RiskAnalysis::getRiskCategory(tp.z_3d, tp.x_3d, settings.vehicleSpeedKMh, settings.tireRoadFriction);
-										if (labelCategory != "") {
-											auto& eval = evaluationPerRiskCategory[labelCategory][i];
-											eval.nrOfTruePositives--;
-											eval.nrOfFalseNegatives++;
-										}
-
-										break;
+							// determine risk category and if it matches with the current category
+							for (auto& tp : truePositives) {
+								if (missedPositive.x == round(tp.getBbox().x) && missedPositive.y == round(tp.getBbox().y) &&
+									missedPositive.width == round(tp.getBbox().width) && missedPositive.height == round(tp.getBbox().height)) {
+									// found corresponding label
+									std::string labelCategory = RiskAnalysis::getRiskCategory(tp.z_3d, tp.x_3d, settings.vehicleSpeedKMh, settings.tireRoadFriction);
+									if (labelCategory != "") {
+										auto& eval = evaluationPerRiskCategory[labelCategory][i];
+										eval.nrOfTruePositives--;
+										eval.nrOfFalseNegatives++;
 									}
+
+									break;
 								}
 							}
 						}
 					}
 				}
 			}
+		}
 
-			// now write the results in the same way
+		// now write the results in the same way
 
-			str = std::ofstream(finalEvaluationRiskAnalysisSlidingFile);
-			str << "Name" << ";";
-			ClassifierEvaluation().toCSVLine(str, true);
-			str << std::endl;
+		std::ofstream str = std::ofstream(finalEvaluationRiskAnalysisSlidingFile);
+		str << "Name" << ";";
+		ClassifierEvaluation().toCSVLine(str, true);
+		str << std::endl;
 
-			for (auto& category : RiskAnalysis::getRiskCategories()) {
-				if (evaluationPerRiskCategory.find(category) != evaluationPerRiskCategory.end()) {
-					for (auto& result : evaluationPerRiskCategory[category]) {
-						str << featureSetName << "[S][" + category + "]" << ";";
-						result.toCSVLine(str, false);
-						str << std::endl;
-					}
+		for (auto& category : RiskAnalysis::getRiskCategories()) {
+			if (evaluationPerRiskCategory.find(category) != evaluationPerRiskCategory.end()) {
+				for (auto& result : evaluationPerRiskCategory[category]) {
+					str << featureSetName << "[S][" + category + "]" << ";";
+					result.toCSVLine(str, false);
+					str << std::endl;
 				}
 			}
-
-			for (auto& result : finalresult.combinedEvaluations) {
-				str << featureSetName << "[S]" << ";";
-				result.toCSVLine(str, false);
-				str << std::endl;
-			}
-			str.close();
 		}
+
+		for (auto& result : finalresult.combinedEvaluations) {
+			str << featureSetName << "[S]" << ";";
+			result.toCSVLine(str, false);
+			str << std::endl;
+		}
+		str.close();
 	}
 }
 

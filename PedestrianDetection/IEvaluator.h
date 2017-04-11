@@ -26,10 +26,20 @@ struct EvaluationSlidingWindowResult {
 
 
 struct FinalEvaluationSlidingWindowResult {
+
+	/// <summary>
+	/// Evaluation per category and per decision boundary shift
+	/// </summary>
 	std::map<std::string, std::vector<ClassifierEvaluation>> evaluations;
+
+	/// <summary>
+	/// Evaluations per decision boundary shift
+	/// </summary>
 	std::vector<ClassifierEvaluation> combinedEvaluations;
 
-
+	/// <summary>
+	/// Missed positive regions per image and per decision boundary shift
+	/// </summary>
 	std::map<int, std::vector<std::vector<cv::Rect>>> missedPositivesPerImage;
 };
 

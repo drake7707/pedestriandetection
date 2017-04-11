@@ -36,6 +36,9 @@ void EvaluationSettings::read(std::string& iniPath) {
 
 
 	addFlippedInTrainingSet = reader.GetBoolean("general", "addFlippedInTrainingSet", true);
+	
+	vehicleSpeedKMh = reader.GetReal("general", "vehicleSpeedKMh", vehicleSpeedKMh);
+	tireRoadFriction = reader.GetReal("general", "tireRoadFriction", tireRoadFriction);
 
 	trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % mod == 0; };
 	testCriteria = [=](int imageNumber) -> bool { return imageNumber % mod == 1; };

@@ -26,15 +26,15 @@ private:
 
 public:
 
-	OcclusionEnum occlusion;
-	double truncation;
-	float height;
-	float width;
-	float length;
+	OcclusionEnum occlusion = OcclusionEnum::Unknown;
+	double truncation = 0;
+	float height = 0;
+	float width = 0;
+	float length = 0;
 
-	float x_3d;
-	float y_3d;
-	float z_3d;
+	float x_3d = 0;
+	float y_3d = 0;
+	float z_3d = 0;
 
 
 	DataSetLabel(const std::string& number, const cv::Rect2d& bbox, OcclusionEnum occlusion, double truncation, bool isDontCare) : number(number), bbox(bbox), occlusion(occlusion), truncation(truncation), isDontCare(isDontCare) {

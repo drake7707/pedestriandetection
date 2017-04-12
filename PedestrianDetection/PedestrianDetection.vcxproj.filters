@@ -204,6 +204,9 @@
     <ClInclude Include="RiskAnalysis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ROIManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PedestrianDetection.cpp">
@@ -360,6 +363,9 @@
       <Filter>Resource Files\Source Files\Algorithms</Filter>
     </ClCompile>
     <ClCompile Include="RiskAnalysis.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ROIManager.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
   </ItemGroup>

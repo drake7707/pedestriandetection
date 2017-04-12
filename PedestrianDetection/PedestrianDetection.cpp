@@ -1180,7 +1180,7 @@ void generateFinalForEachRound(FeatureTester* tester, EvaluationSettings& settin
 }
 
 
-void drawRiskOnDepthDataSet(DataSet* set) {
+void drawRiskOnDepthDataSet(DataSet* set, bool dumpHeightsPerCategory = false) {
 
 	if (!set->getFullfillsRequirements()[1])
 		throw new std::exception("The dataset does not have the required depth information");
@@ -1192,12 +1192,17 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 	float gravity = 9.81; // m/s²
 
 	float max_pedestrian_speed = 0 * 1000 / 3600.0; // m/s
-	float vehicleSpeedForRating = 50 / 3.6f; // m/s
+	float vehicleSpeedKmH = 50; // km/h
 	float t = 1;
 	float max_seconds_remaining = 10;
 
 
 	std::vector<std::vector<DataSetLabel>> labelsPerNumber = set->getLabelsPerNumber();
+
+	std::map<std::string, std::vector<cv::Rect2d>> truePositivesPerCategory;
+	for (auto& c : RiskAnalysis::getRiskCategories()) {
+		truePositivesPerCategory[c] = std::vector<cv::Rect2d>();
+	}
 
 	for (int imgNr = 0; imgNr < set->getNrOfImages(); imgNr++)
 	{
@@ -1205,13 +1210,40 @@ void drawRiskOnDepthDataSet(DataSet* set) {
 		if (labels.size() > 0) {
 			auto imgs = set->getImagesForNumber(imgNr);
 
+			for (auto& l : labels) {
+				if (!l.isDontCareArea()) {
+					std::string category = RiskAnalysis::getRiskCategory(l.z_3d, l.x_3d, vehicleSpeedKmH, tireroadFriction);
+					truePositivesPerCategory[category].push_back(l.getBbox());
+				}
+			}
 
-			cv::Mat topdown = RiskAnalysis::getTopDownImage(imgWidth, imgHeight, labels, max_depth, 50, tireroadFriction);
+			cv::Mat topdown = RiskAnalysis::getTopDownImage(imgWidth, imgHeight, labels, max_depth, vehicleSpeedKmH, tireroadFriction);
 			cv::Mat img = RiskAnalysis::getRGBImage(imgs[0], imgs[1], labels, 50, tireroadFriction);
 
 			cv::imshow("TopDown", topdown);
 			cv::imshow("RGB", img);
 			cv::waitKey(0);
+		}
+	}
+
+	if (dumpHeightsPerCategory) {
+		for (auto& pair : truePositivesPerCategory) {
+
+			double minHeight = std::numeric_limits<int>().max();
+			double maxHeight = 0;
+
+			std::ofstream str(pair.first + "_bboxheight.csv");
+
+			for (auto& bbox : pair.second) {
+				if (bbox.height < minHeight) minHeight = bbox.height;
+				if (bbox.height > maxHeight) maxHeight = bbox.height;
+
+				str << bbox.height << std::endl;
+			}
+			str.close();
+			std::cout << "Bounding box range for category " << pair.first << ": " << minHeight << " ~ " << maxHeight << std::endl;
+
+			std::cout.flush();
 		}
 	}
 }
@@ -1399,6 +1431,138 @@ void evaluateClusterSize(FeatureTester& tester, EvaluationSettings settings) {
 }
 
 
+void testKAISTROI(EvaluationSettings& settings) {
+	KAISTDataSet kaist(settings.kaistDataSetPath);
+	auto labelsPerNumber = kaist.getLabelsPerNumber();
+
+	for (int i = 0; i < kaist.getNrOfImages(); i++)
+	{
+		bool show = false;
+		for (auto& l : labelsPerNumber[i]) {
+			if (!l.isDontCareArea()) {
+				show = true;
+				break;
+			}
+		}
+		if (show) {
+
+			double w = 12;
+			double alpha = 2;
+			//double beta = 8;
+
+
+			auto imgs = kaist.getImagesForNumber(i);
+			imgs[2].convertTo(imgs[2], CV_8UC1, 255);
+
+
+			std::vector<float> scales = { 0.5, 0.75, 1 };
+
+			std::vector<cv::Rect> candidates;
+
+			for (auto& scale : scales) {
+
+				cv::Mat mThermal;
+				cv::resize(imgs[2], mThermal, cv::Size(imgs[2].cols * scale, imgs[2].rows * scale));
+
+				cv::Mat mRGB;
+				cv::resize(imgs[0], mRGB, cv::Size(imgs[0].cols * scale, imgs[0].rows * scale));
+
+				cv::Mat dest = mThermal.clone();
+				for (int j = 0; j < mThermal.rows; j++)
+				{
+					for (int i = 0; i < mThermal.cols; i++)
+					{
+						char value = mThermal.at<char>(j, i);
+
+						double tl = 0;
+
+						int count = 0;
+						for (int x = i - w; x <= i + w; x++) {
+							if (x >= 0 && x < mThermal.cols) {
+								tl += mThermal.at<char>(j, x);
+								count++;
+							}
+						}
+						tl = tl / count + alpha;
+
+						double t3 = max(1.06 * (tl - alpha), tl + 2);
+						double t2 = min(t3, tl + 8);
+						double t1 = min(t2, 230.0);
+						double th = max(t1, tl);
+						//  let th = tl + beta;
+
+
+						if (value > th)
+							dest.at<char>(j, i) = 255;
+						else if (value < tl)
+							dest.at<char>(j, i) = 0;
+
+						else if (i - 1 >= 0 && dest.at<char>(j, i - 1) > 0)
+							dest.at<char>(j, i) = 255;
+						else
+							dest.at<char>(j, i) = 0;
+					}
+				}
+
+
+				cv::dilate(dest, dest, cv::Mat());
+				cv::erode(dest, dest, cv::Mat());
+
+				std::vector<std::vector<cv::Point> > contours;
+				std::vector<cv::Rect> boundRect(contours.size());
+				cv::findContours(dest, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+				for (int i = 0; i < contours.size(); i++)
+				{
+					int minX = std::numeric_limits<int>().max();
+					int maxX = std::numeric_limits<int>().min();
+
+					int minY = std::numeric_limits<int>().max();
+					int maxY = std::numeric_limits<int>().min();
+					for (auto& p : contours[i]) {
+						if (p.x > maxX) maxX = p.x;
+						if (p.x < minX) minX = p.x;
+						if (p.y > maxY) maxY = p.y;
+						if (p.y < minY) minY = p.y;
+					}
+
+					cv::Rect r = cv::Rect(minX, minY, maxX - minX + 1, maxY - minY + 1);
+
+					if (1.0 * r.height / r.width >= 1 && 1.0 * r.height / r.width < 6 && r.width >= 8 && r.height >= 16) {
+						candidates.push_back(cv::Rect(r.x / scale, r.y / scale, r.width / scale, r.height / scale));
+					}
+				}
+			}
+
+
+			cv::Mat mThermal = imgs[2].clone();
+			cv::Mat mRGB = imgs[0].clone();
+
+
+			for (auto& r : candidates) {
+				cv::rectangle(mThermal, r, cv::Scalar(255), 1);
+				cv::rectangle(mRGB, r, cv::Scalar(255, 255, 255), 1);
+			}
+
+			for (DataSetLabel& l : labelsPerNumber[i]) {
+				if (!l.isDontCareArea()) {
+					cv::rectangle(mThermal, l.getBbox(), cv::Scalar(127), 1);
+					cv::rectangle(mRGB, l.getBbox(), cv::Scalar(0, 255, 0), 1);
+
+				}
+			}
+
+
+			cv::imshow("Thermal", mThermal);
+			cv::imshow("RGB", mRGB);
+
+
+			cv::waitKey(0);
+
+		}
+	}
+
+}
+
 int main()
 {
 	EvaluationSettings settings;
@@ -1442,147 +1606,46 @@ int main()
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
+	//	testKAISTROI(settings);
+		//	testSlidingWindow(settings);
 
-	//	testSlidingWindow(settings);
+			/*cv::Mat testImage;
+			testImage = cv::imread("D:\\test.jpg");
 
-		/*cv::Mat testImage;
-		testImage = cv::imread("D:\\test.jpg");
+			LBPFeatureCreator hogcreator(std::string("HOG"), IFeatureCreator::Target::RGB);
+			auto result = hogcreator.getFeatures((testImage, patchSize, binSize, nullptr, true, false);
+			cv::Mat imgResult = result.combineHOGImage(testImage);
+			cv::imshow("HOG", imgResult);
 
-		LBPFeatureCreator hogcreator(std::string("HOG"), IFeatureCreator::Target::RGB);
-		auto result = hogcreator.getFeatures((testImage, patchSize, binSize, nullptr, true, false);
-		cv::Mat imgResult = result.combineHOGImage(testImage);
-		cv::imshow("HOG", imgResult);
-
-		auto preparedData = hogcreator.buildPreparedDataForFeatures(testImage, cv::Mat(), cv::Mat());
-		auto result2 = hogcreator.getHistogramsOfOrientedGradient(testImage, patchSize, binSize, preparedData, true, false);
-		cv::Mat imgResult2 = result2.combineHOGImage(testImage);
-		cv::imshow("HOG2", imgResult2);
-		cv::waitKey(0);*/
-
-
-		//	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
-		//	drawRiskOnDepthDataSet(&kittiDataSet);
+			auto preparedData = hogcreator.buildPreparedDataForFeatures(testImage, cv::Mat(), cv::Mat());
+			auto result2 = hogcreator.getHistogramsOfOrientedGradient(testImage, patchSize, binSize, preparedData, true, false);
+			cv::Mat imgResult2 = result2.combineHOGImage(testImage);
+			cv::imshow("HOG2", imgResult2);
+			cv::waitKey(0);*/
 
 
-		//std::set<std::string> set = { "SDDG" };
-		//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
-		//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
-
-		//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
-		//tester.addJob(set, &kaistDataSet,settings);
-		//tester.runJobs();
+	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
+	drawRiskOnDepthDataSet(&kittiDataSet);
 
 
-		//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+	//std::set<std::string> set = { "SDDG" };
+	//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
+	//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
+
+	//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
+	//tester.addJob(set, &kaistDataSet,settings);
+	//tester.runJobs();
 
 
-		//explainModel(tester, settings);
+	//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+
+
+	//explainModel(tester, settings);
 
 
 
-		//testClassifier(tester, settings);
+	//testClassifier(tester, settings);
 
-	KAISTDataSet kaist(settings.kaistDataSetPath);
-	auto labelsPerNumber = kaist.getLabelsPerNumber();
-
-	for (int i = 0; i < kaist.getNrOfImages(); i++)
-	{
-		bool show = false;
-		for (auto& l : labelsPerNumber[i]) {
-			if (!l.isDontCareArea()) {
-				show = true;
-				break;
-			}
-		}
-		if (show) {
-
-			double w = 12;
-			double alpha = 2;
-			double beta = 8;
-
-
-			auto imgs = kaist.getImagesForNumber(i);
-			imgs[2].convertTo(imgs[2], CV_8UC1, 255);
-			cv::Mat mThermal = imgs[2];
-			cv::Mat mRGB = imgs[0];
-
-			cv::Mat dest = mThermal.clone();
-
-			for (int j = 0; j < mThermal.rows; j++)
-			{
-				for (int i = 0; i < mThermal.cols; i++)
-				{
-					char value = mThermal.at<char>(j, i);
-
-					double tl = 0;
-
-					for (int x = i - w; x <= i + w; x++) {
-						if (x >= 0 && x < mThermal.cols)
-							tl += mThermal.at<char>(j, x);
-					}
-					tl = tl / (2 * w + 1) + alpha;
-
-					double t3 = max(1.06 * (tl - alpha), tl + 2);
-					double t2 = min(t3, tl + 8);
-					double t1 = min(t2, 230.0);
-					double th = max(t1, tl);
-					//  let th = tl + beta;
-
-
-					if (value > th)
-						dest.at<char>(j, i) = 255;
-					else if (value < tl)
-						dest.at<char>(j, i) = 0;
-
-					else if (i - 1 >= 0 && dest.at<char>(j, i - 1) == 255)
-						dest.at<char>(j, i) = 255;
-					else
-						dest.at<char>(j, i) = 0;
-				}
-			}
-
-
-			cv::dilate(dest, dest, cv::Mat());
-
-			cv::erode(dest, dest, cv::Mat());
-
-			std::vector<std::vector<cv::Point> > contours;
-			std::vector<cv::Rect> boundRect(contours.size());
-			cv::findContours(dest, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
-			for (int i = 0; i < contours.size(); i++)
-			{
-				int minX = std::numeric_limits<int>().max();
-				int maxX = std::numeric_limits<int>().min();
-
-				int minY = std::numeric_limits<int>().max();
-				int maxY = std::numeric_limits<int>().min();
-				for (auto& p : contours[i]) {
-					if (p.x > maxX) maxX = p.x;
-					if (p.x < minX) minX = p.x;
-					if (p.y > maxY) maxY = p.y;
-					if (p.y < minY) minY = p.y;
-				}
-
-				cv::Rect r = cv::Rect(minX, minY, maxX - minX + 1, maxY - minY + 1);
-
-				if (1.0 * r.height / r.width >= 1 && 1.0 * r.height / r.width < 6 && r.width >= 8) {
-					cv::rectangle(mThermal, r, cv::Scalar(255), 1);
-					cv::rectangle(mRGB, r, cv::Scalar(255,255,255), 1);
-
-				}
-
-			}
-
-
-			cv::imshow("Dest", dest);
-			cv::imshow("Thermal", mThermal);
-			cv::imshow("RGB", mRGB);
-
-
-			cv::waitKey(0);
-
-		}
-	}
 
 	if (settings.kittiDataSetPath != "") {
 		KITTIDataSet dataSet(settings.kittiDataSetPath);

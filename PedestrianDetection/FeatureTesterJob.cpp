@@ -250,7 +250,7 @@ void FeatureTesterJob::doRiskAnalysis(FinalEvaluationSlidingWindowResult& finalr
 	std::string finalEvaluationRiskAnalysisSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final_risk.csv";
 
 	// do risk analysis if depth is available
-	if (dataSet->getFullfillsRequirements()[1]) {
+	if (dataSet->canDoRiskAnalysis()) {
 		std::map<std::string, std::vector<ClassifierEvaluation>> evaluationPerRiskCategory;
 		for (auto& cat : RiskAnalysis::getRiskCategories()) {
 			evaluationPerRiskCategory[cat] = std::vector<ClassifierEvaluation>(finalresult.combinedEvaluations.size());

@@ -5,6 +5,7 @@
 #include "opencv2/opencv.hpp"
 #include "DataSetLabel.h"
 #include <functional>
+#include "ROIManager.h"
 
 class DataSet
 {
@@ -36,6 +37,11 @@ public:
 	/// Returns the number of images in the data set
 	/// </summary>
 	virtual int getNrOfImages() const = 0;
+
+	/// <summary>
+	/// Returns if depth information is available or is approximated so risk analysis can be done
+	/// </summary>
+	virtual bool canDoRiskAnalysis() const = 0;
 
 	/// <summary>
 	/// Iterates the data set with the given window sizes on each image that can be selected and given stride

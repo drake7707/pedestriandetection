@@ -154,3 +154,7 @@ bool KITTIDataSet::isWithinValidDepthRange(int height, float depthAverage) const
 std::vector<bool> KITTIDataSet::getFullfillsRequirements() const {
 	return{ true,true, false }; // rgb and depth only
 }
+
+bool KITTIDataSet::canDoRiskAnalysis() const {
+	return true;
+}

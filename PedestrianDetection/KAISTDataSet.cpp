@@ -51,6 +51,18 @@ std::vector<DataSetLabel> KAISTDataSet::getLabels() const {
 							lbl.width = width;
 							lbl.height = height;
 
+							// estimated from paper 11~28m corresponds to 45~115 pixels and depth/height relation is linear
+
+							// d = a / h + b
+							
+							// solving to a and b:
+							// 11 = a * 1/115 + b
+							// 28 = a * 1/45 +  b
+
+							double a = (28.0 - 11.0) / (1 / 45.0 - 1 / 115.0);
+							double b = 11.0 - a*(1 / 115.0);
+							lbl.z_3d = a / height + b;
+
 							labels.push_back(lbl);
 						}
 						else if (type == "people" || type == "cyclist") {
@@ -111,4 +123,9 @@ bool KAISTDataSet::isWithinValidDepthRange(int height, float depthAverage) const
 
 std::vector<bool> KAISTDataSet::getFullfillsRequirements() const {
 	return{ true,false, true }; // rgb and thermal only
+}
+
+bool KAISTDataSet::canDoRiskAnalysis() const {
+	// label depth are approximated
+	return true;
 }

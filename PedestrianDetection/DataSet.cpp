@@ -82,6 +82,9 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 					dontCareRegions.push_back(r.getBbox());
 			}
 
+			ROIManager roiManager;
+			//roiManager.prepare(rgbScales, depthScales, thermalScales);
+
 			for (int s = 0; s < windowSizes.size(); s++) {
 
 				// slide window over the image
@@ -106,6 +109,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 							regionThermal = thermalScales[s](bbox);
 
 
+						//bool needToEvaluate = roiManager.needToEvaluate(scaledBBox, rgbScales[s], depthScales[s], thermalScales[s]);
 						// calculate the average depth IF depth is available
 						bool hasDepth = depthScales.size() > 0 && depthScales[s].rows > 0 && depthScales[s].cols > 0;
 						double depthAvg = 0;

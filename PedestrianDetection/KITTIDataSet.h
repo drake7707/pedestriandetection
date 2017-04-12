@@ -364,5 +364,10 @@ public:
 	/// Returns which requirements the data set fullfills: RGB,Depth,Thermal. KITTI has only RGB and Depth
 	/// </summary>
 	virtual std::vector<bool> getFullfillsRequirements() const;
+
+	/// <summary>
+	/// Returns if depth information is available or is approximated so risk analysis can be done
+	/// </summary>
+	virtual bool canDoRiskAnalysis() const;
 };
 

@@ -50,5 +50,10 @@ public:
 	/// </summary>
 	virtual std::vector<bool> getFullfillsRequirements() const;
 
+	/// <summary>
+	/// Returns if depth information is available or is approximated so risk analysis can be done
+	/// </summary>
+	virtual bool canDoRiskAnalysis() const;
+
 };
 

@@ -201,6 +201,7 @@
     <ClInclude Include="ProgressWindow.h" />
     <ClInclude Include="RAWRGBFeatureCreator.h" />
     <ClInclude Include="RiskAnalysis.h" />
+    <ClInclude Include="ROIManager.h" />
     <ClInclude Include="SDDGFeatureCreator.h" />
     <ClInclude Include="Semaphore.h" />
     <ClInclude Include="SIFTFeatureCreator.h" />
@@ -255,6 +256,7 @@
     <ClCompile Include="ProgressWindow.cpp" />
     <ClCompile Include="RAWRGBFeatureCreator.cpp" />
     <ClCompile Include="RiskAnalysis.cpp" />
+    <ClCompile Include="ROIManager.cpp" />
     <ClCompile Include="SDDGFeatureCreator.cpp" />
     <ClCompile Include="Semaphore.cpp" />
     <ClCompile Include="SIFTFeatureCreator.cpp" />

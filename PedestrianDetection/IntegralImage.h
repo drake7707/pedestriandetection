@@ -15,6 +15,12 @@ public:
 	/// </summary>
 	void create(int width, int height, int binSize, std::function<void(int x, int y, std::vector<cv::Mat>& ihist)> setBinValues);
 	
+
+	/// <summary>
+	/// Calculates the histogram for a specific region from the integral histogram, uses the given histogram to fill in data to prevent an allocation and copy on return
+	/// </summary>
+	void calculateHistogramIntegral(int x, int y, int w, int h, Histogram& outHist) const;
+
 	/// <summary>
 	/// Calculates the histogram for a specific region from the integral histogram
 	/// </summary>

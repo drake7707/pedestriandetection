@@ -26,8 +26,7 @@ void IntegralHistogram::create(int width, int height, int binSize, std::function
 	}
 }
 
-Histogram IntegralHistogram::calculateHistogramIntegral(int x, int y, int w, int h) const {
-	Histogram hist(binSize, 0);
+void IntegralHistogram::calculateHistogramIntegral(int x, int y, int w, int h, Histogram& hist) const {
 	int minx = x - 1;
 	int miny = y - 1;
 	int maxx = x + w - 1;
@@ -47,6 +46,11 @@ Histogram IntegralHistogram::calculateHistogramIntegral(int x, int y, int w, int
 		float value = A + D - C - B;
 		hist[bin] = value;
 	}
+}
+
+Histogram IntegralHistogram::calculateHistogramIntegral(int x, int y, int w, int h) const {
+	Histogram hist(binSize, 0);
+	calculateHistogramIntegral(x, y, w, h, hist);
 	return hist;
 }
 

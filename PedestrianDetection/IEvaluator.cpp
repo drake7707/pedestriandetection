@@ -131,7 +131,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
-		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect2d& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * nrOfImagesEvaluated / dataSet->getNrOfImages(), std::string("Evaluating with sliding window (") + std::to_string(nrOfImagesEvaluated) + "/" + std::to_string(dataSet->getNrOfImages()) + ")");
@@ -376,7 +376,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
-		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect2d& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * nrOfImagesEvaluated / dataSet->getNrOfImages(), std::string("Evaluating with sliding window and NMS (") + std::to_string(nrOfImagesEvaluated) + ")");

@@ -284,8 +284,8 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 		auto imgs = dataSet.getImagesForNumber(i);
 		cv::Mat mRGB = imgs[0];
-		cv::Mat depth = imgs[1];
-		cv::Mat thermal = imgs[2];
+		cv::Mat mDepth = imgs[1];
+		cv::Mat mThermal = imgs[2];
 
 		int nrOfWindowsEvaluated = 0;
 		int nrOfWindowsSkipped = 0;
@@ -296,8 +296,11 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 		std::vector<SlidingWindowRegion> truepositiveregions;
 		std::vector<SlidingWindowRegion> falsepositiveregions;
 
+		
+		long evaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 
-		long slidingWindowTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+			ROIManager roiManager;
+			roiManager.prepare(mRGB, mDepth, mThermal);
 
 
 			std::vector<cv::Mat> rgbScales;
@@ -310,14 +313,14 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 					cv::resize(mRGB, rgbScale, cv::Size2d(mRGB.cols * scale, mRGB.rows * scale));
 					rgbScales.push_back(rgbScale);
 				}
-				if (depth.cols > 0 && depth.rows > 0) {
+				if (mDepth.cols > 0 && mDepth.rows > 0) {
 					cv::Mat depthScale;
-					cv::resize(depth, depthScale, cv::Size2d(depth.cols * scale, depth.rows * scale));
+					cv::resize(mDepth, depthScale, cv::Size2d(mDepth.cols * scale, mDepth.rows * scale));
 					depthScales.push_back(depthScale);
 				}
-				if (thermal.cols > 0 && thermal.rows > 0) {
+				if (mThermal.cols > 0 && mThermal.rows > 0) {
 					cv::Mat thermalScale;
-					cv::resize(thermal, thermalScale, cv::Size2d(thermal.cols * scale, thermal.rows * scale));
+					cv::resize(mThermal, thermalScale, cv::Size2d(mThermal.cols * scale, mThermal.rows * scale));
 					thermalScales.push_back(thermalScale);
 				}
 			}
@@ -325,6 +328,19 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 			auto preparedData = fset->buildPreparedDataForFeatures(rgbScales, depthScales, thermalScales);
 
 			//std::vector<std::vector<IPreparedData*>> preparedData;
+
+			//cv::Mat tmp(mRGB.rows, mRGB.cols, CV_8UC1, cv::Scalar(0));
+			//for (int j = 0; j < mRGB.rows; j++)
+			//{
+			//	for (int i = 0; i < mRGB.cols; i++)
+			//	{
+			//		bool mustContinue = roiManager.needToEvaluate(cv::Rect(i,j,1,1), mRGB, mDepth, mThermal,
+			//			[&](double height, double depthAvg) -> bool { return dataSet.isWithinValidDepthRange(height, depthAvg); });
+			//		if (mustContinue)
+			//			tmp.at<char>(j, i) = 255;
+			//	}
+			//}
+			//cv::imshow("NeedToEvaluateRegions", tmp);
 
 			for (int s = 0; s < settings.windowSizes.size(); s++) {
 
@@ -346,34 +362,34 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 					if (thermalScales.size() > 0)
 						regionThermal = thermalScales[s](bbox);
 
-					bool mustContinue = true;
+					bool mustContinue = roiManager.needToEvaluate(scaledBBox, mRGB, mDepth, mThermal,
+						[&](double height, double depthAvg) -> bool { return dataSet.isWithinValidDepthRange(height, depthAvg); });
+					//bool hasDepth = depthScales.size() > 0;
 
-					bool hasDepth = depthScales.size() > 0;
+					//double depthSum = 0;
+					//int depthCount = 0;
+					//if (hasDepth) {
+					//	int xOffset = bbox.x + bbox.width / 2;
+					//	for (int y = bbox.y; y < bbox.y + bbox.height; y++)
+					//	{
+					//		for (int i = xOffset - 1; i <= xOffset + 1; i++)
+					//		{
+					//			float d = depthScales[s].at<float>(y, i);
+					//			depthSum += d;
+					//			depthCount++;
+					//		}
+					//	}
+					//	double depthAvg = (depthSum / depthCount);
 
-					double depthSum = 0;
-					int depthCount = 0;
-					if (hasDepth) {
-						int xOffset = bbox.x + bbox.width / 2;
-						for (int y = bbox.y; y < bbox.y + bbox.height; y++)
-						{
-							for (int i = xOffset - 1; i <= xOffset + 1; i++)
-							{
-								float d = depthScales[s].at<float>(y, i);
-								depthSum += d;
-								depthCount++;
-							}
-						}
-						double depthAvg = (depthSum / depthCount);
-
-						if (dataSet.isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
-							// falls within range where TP can lie, continue
-						}
-						else {
-							// reject outright, will most likely never be TP
-							mustContinue = false;
-							nrOfWindowsSkipped++;
-						}
-					}
+					//	if (dataSet.isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
+					//		// falls within range where TP can lie, continue
+					//	}
+					//	else {
+					//		// reject outright, will most likely never be TP
+					//		mustContinue = false;
+					//		nrOfWindowsSkipped++;
+					//	}
+					//}
 
 					double result;
 					bool predictedPositive = false;
@@ -387,9 +403,12 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 							predictedPositiveRegions.push_back(SlidingWindowRegion(i, scaledBBox, abs(result)));
 						}
 					}
+					else
+						nrOfWindowsSkipped++;
 
 					nrOfWindowsEvaluated++;
-				}, 8, settings.refWidth, settings.refHeight);
+					
+				}, 16, settings.refWidth, settings.refHeight);
 			}
 
 			// clean up of prepared data
@@ -551,22 +570,22 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 		//	}
 
 		cv::rectangle(mRGB, cv::Rect(0, 0, mRGB.cols, 20), cv::Scalar(255, 255, 255), -1);
-		std::string str = "FP: " + std::to_string(eval.falsePositivesPerImage[i]) + ", missed: " + std::to_string(nrMissed) + " #windows : " + std::to_string(nrOfWindowsEvaluated) + " (#skipped with depth check: " + std::to_string(nrOfWindowsSkipped) + "). Eval time: " + std::to_string(slidingWindowTime) + "ms " + "(decision shift : " + std::to_string(valueShift) + ")";
+		std::string str = "FP: " + std::to_string(eval.falsePositivesPerImage[i]) + ", missed: " + std::to_string(nrMissed) + " #windows : " + std::to_string(nrOfWindowsEvaluated) + " (#skipped: " + std::to_string(nrOfWindowsSkipped) + "). Eval time: " + std::to_string(evaluationTime) + "ms " + "(decision shift : " + std::to_string(valueShift) + ")";
 		cv::putText(mRGB, str, cv::Point(10, 10), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(0, 0, 0), 1, CV_AA);
 
 		//cv::imshow("TestNMS", nms);
 		m.lock();
 		double posPercentage = 100.0 * nrOfWindowsPositive / (nrOfWindowsEvaluated - nrOfWindowsSkipped);
-		std::cout << "Image: " << i << " Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << slidingWindowTime << "ms (value shift: " << valueShift << ")" << std::endl;
+		std::cout << "Image: " << i << " Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << evaluationTime << "ms (value shift: " << valueShift << ")" << std::endl;
 		// this will leak because creators are never disposed!
 		m.unlock();
 
 		cv::imwrite(std::to_string(i) + "_hddHOGrgb.png", mRGB);
 
 		//	cv::imwrite(std::to_string(i) + "_hddHOGrgb_mask.png", maskOverlay);
-			//	cv::imshow("Test", mRGB);
-			////	cv::waitKey(0);
-				//nr++;
+	//	cv::imshow("Test", mRGB);
+	//	cv::waitKey(0);
+		//nr++;
 	});
 }
 
@@ -792,7 +811,7 @@ void testSlidingWindow(EvaluationSettings& settings) {
 		// start of image
 		predictedPositiveregionsPerImage[imgNr] = std::vector<SlidingWindowRegion>();
 	},
-		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
+		[&](int idx, int resultClass, int imageNumber, int scale, cv::Rect2d& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string("Testing sliding window"), 1.0 * nrEvaluated / dataSet.getNrOfImages(), std::string("Evaluating sliding window (") + std::to_string(nrEvaluated) + ")");
@@ -1624,27 +1643,27 @@ int main()
 			cv::waitKey(0);*/
 
 
-	KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
-	drawRiskOnDepthDataSet(&kittiDataSet);
+			//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
+			//drawRiskOnDepthDataSet(&kittiDataSet);
 
 
-	//std::set<std::string> set = { "SDDG" };
-	//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
-	//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
+			//std::set<std::string> set = { "SDDG" };
+			//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
+			//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
 
-	//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
-	//tester.addJob(set, &kaistDataSet,settings);
-	//tester.runJobs();
-
-
-	//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+			//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
+			//tester.addJob(set, &kaistDataSet,settings);
+			//tester.runJobs();
 
 
-	//explainModel(tester, settings);
+			//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+
+
+			//explainModel(tester, settings);
 
 
 
-	//testClassifier(tester, settings);
+	testClassifier(tester, settings);
 
 
 	if (settings.kittiDataSetPath != "") {

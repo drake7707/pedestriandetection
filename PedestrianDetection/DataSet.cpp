@@ -26,7 +26,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 	std::function<bool(int number)> canSelectFunc,
 
 	std::function<void(int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales)> onImageStarted,
-	std::function<void(int idx, int resultClass, int imageNumber, int scale, cv::Rect& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive)> func,
+	std::function<void(int idx, int resultClass, int imageNumber, int scale, cv::Rect2d& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive)> func,
 	std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 	int parallization) const {
 
@@ -83,7 +83,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 			}
 
 			ROIManager roiManager;
-			//roiManager.prepare(rgbScales, depthScales, thermalScales);
+			roiManager.prepare(mRGB, mDepth, mThermal);
 
 			for (int s = 0; s < windowSizes.size(); s++) {
 
@@ -91,7 +91,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 				int idx = 0;
 				slideWindow(rgbScales[s].cols, rgbScales[s].rows, [&](cv::Rect bbox) -> void {
 					double scale = 1.0  *  windowSizes[s].width / refWidth;
-					cv::Rect scaledBBox = cv::Rect(bbox.x * scale, bbox.y * scale, windowSizes[s].width, windowSizes[s].height);
+					cv::Rect2d scaledBBox = cv::Rect2d(bbox.x * scale, bbox.y * scale, windowSizes[s].width, windowSizes[s].height);
 
 					// skip all windows that intersect with the don't care regions
 					if (!intersectsWith(scaledBBox, dontCareRegions)) {
@@ -109,27 +109,31 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 							regionThermal = thermalScales[s](bbox);
 
 
-						//bool needToEvaluate = roiManager.needToEvaluate(scaledBBox, rgbScales[s], depthScales[s], thermalScales[s]);
-						// calculate the average depth IF depth is available
-						bool hasDepth = depthScales.size() > 0 && depthScales[s].rows > 0 && depthScales[s].cols > 0;
-						double depthAvg = 0;
-						if (hasDepth) {
-							double depthSum = 0;
-							int depthCount = 0;
-							int xOffset = bbox.x + bbox.width / 2;
-							for (int y = bbox.y; y < bbox.y + bbox.height; y++)
-							{
-								for (int i = xOffset - 1; i <= xOffset + 1; i++)
-								{
-									depthSum += depthScales[s].at<float>(y, i);
-									depthCount++;
-								}
-							}
-							depthAvg = (depthSum / depthCount);
-						}
+						bool needToEvaluate = roiManager.needToEvaluate(scaledBBox, mRGB, mDepth, mThermal,
+							[&](double height, double depthAvg) -> bool { return this->isWithinValidDepthRange(height, depthAvg); });
 
-						//	 only evaluate windows that fall within the depth range to speed up the evaluation
-						if (!hasDepth || isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
+
+						//// calculate the average depth IF depth is available
+						//bool hasDepth = depthScales.size() > 0 && depthScales[s].rows > 0 && depthScales[s].cols > 0;
+						//double depthAvg = 0;
+						//if (hasDepth) {
+						//	double depthSum = 0;
+						//	int depthCount = 0;
+						//	int xOffset = bbox.x + bbox.width / 2;
+						//	for (int y = bbox.y; y < bbox.y + bbox.height; y++)
+						//	{
+						//		for (int i = xOffset - 1; i <= xOffset + 1; i++)
+						//		{
+						//			depthSum += depthScales[s].at<float>(y, i);
+						//			depthCount++;
+						//		}
+						//	}
+						//	depthAvg = (depthSum / depthCount);
+						//}
+
+						////	 only evaluate windows that fall within the depth range to speed up the evaluation
+						//if (!hasDepth || isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
+						if (needToEvaluate) {
 
 							bool overlapsWithTruePositive = false;
 							int resultClass;

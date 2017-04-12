@@ -257,7 +257,7 @@ namespace hog {
 					}
 				}
 				else
-					histogram = preparedData->calculateHistogramIntegral(iHistRoi.x + x * patchSize, iHistRoi.y + y * patchSize, patchSize, patchSize);
+					preparedData->calculateHistogramIntegral(iHistRoi.x + x * patchSize, iHistRoi.y + y * patchSize, patchSize, patchSize, histogram);
 
 			}
 		}

@@ -787,7 +787,7 @@ void testFeature() {
 
 void testSlidingWindow(EvaluationSettings& settings) {
 
-	KITTIDataSet dataSet(settings.kittiDataSetPath);
+	KAISTDataSet dataSet(settings.kaistDataSetPath);
 
 
 
@@ -1620,13 +1620,17 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SDDG(Thermal)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SDDGFeatureCreator(name, IFeatureCreator::Target::Thermal, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SDDG(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SDDGFeatureCreator(name, IFeatureCreator::Target::Depth, settings.refWidth, settings.refHeight))); }));
 
-
+	//for (auto& f : tester.getFeatureCreatorFactories()) {
+	//	std::set<std::string> set = { f };
+	//	auto fset = tester.getFeatureSet(set);
+	//	std::cout << f << " " << fset->getNumberOfFeatures() << std::endl;
+	//}
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
 	//	testKAISTROI(settings);
-		//	testSlidingWindow(settings);
+			testSlidingWindow(settings);
 
 			/*cv::Mat testImage;
 			testImage = cv::imread("D:\\test.jpg");

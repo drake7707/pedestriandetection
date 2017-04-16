@@ -96,44 +96,23 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 					// skip all windows that intersect with the don't care regions
 					if (!intersectsWith(scaledBBox, dontCareRegions)) {
 
-						cv::Mat regionRGB;
-						if (rgbScales.size() > 0)
-							regionRGB = rgbScales[s](bbox);
-
-						cv::Mat regionDepth;
-						if (depthScales.size() > 0)
-							regionDepth = depthScales[s](bbox);
-
-						cv::Mat regionThermal;
-						if (thermalScales.size() > 0)
-							regionThermal = thermalScales[s](bbox);
-
-
 						bool needToEvaluate = roiManager.needToEvaluate(scaledBBox, mRGB, mDepth, mThermal,
 							[&](double height, double depthAvg) -> bool { return this->isWithinValidDepthRange(height, depthAvg); });
 
 
-						//// calculate the average depth IF depth is available
-						//bool hasDepth = depthScales.size() > 0 && depthScales[s].rows > 0 && depthScales[s].cols > 0;
-						//double depthAvg = 0;
-						//if (hasDepth) {
-						//	double depthSum = 0;
-						//	int depthCount = 0;
-						//	int xOffset = bbox.x + bbox.width / 2;
-						//	for (int y = bbox.y; y < bbox.y + bbox.height; y++)
-						//	{
-						//		for (int i = xOffset - 1; i <= xOffset + 1; i++)
-						//		{
-						//			depthSum += depthScales[s].at<float>(y, i);
-						//			depthCount++;
-						//		}
-						//	}
-						//	depthAvg = (depthSum / depthCount);
-						//}
-
-						////	 only evaluate windows that fall within the depth range to speed up the evaluation
-						//if (!hasDepth || isWithinValidDepthRange(scaledBBox.height, depthAvg)) {
 						if (needToEvaluate) {
+
+							cv::Mat regionRGB;
+							if (rgbScales.size() > 0)
+								regionRGB = rgbScales[s](bbox);
+
+							cv::Mat regionDepth;
+							if (depthScales.size() > 0)
+								regionDepth = depthScales[s](bbox);
+
+							cv::Mat regionThermal;
+							if (thermalScales.size() > 0)
+								regionThermal = thermalScales[s](bbox);
 
 							bool overlapsWithTruePositive = false;
 							int resultClass;
@@ -144,10 +123,8 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 							else
 								resultClass = -1;
 
-							if (resultClass != 0) { // don't evaluate don't care regions
-								func(idx, resultClass, imgNumber, s, scaledBBox, bbox, regionRGB, regionDepth, regionThermal, overlapsWithTruePositive);
-								idx++;
-							}
+							func(idx, resultClass, imgNumber, s, scaledBBox, bbox, regionRGB, regionDepth, regionThermal, overlapsWithTruePositive);
+							idx++;
 						}
 					}
 				}, baseWindowStride, refWidth, refHeight);

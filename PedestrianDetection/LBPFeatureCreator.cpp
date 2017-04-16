@@ -19,12 +19,12 @@ int LBPFeatureCreator::getNumberOfFeatures() const {
 	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, false);
 }
 
-std::unique_ptr<IPreparedData> LBPFeatureCreator:: buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
+std::unique_ptr<IPreparedData> LBPFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
 
 	cv::Mat weights;
 	cv::Mat binningValues;
 	if (target == IFeatureCreator::Target::RGB) {
-			buildWeightAndBinningValues(rgbScale, weights, binningValues);
+		buildWeightAndBinningValues(rgbScale, weights, binningValues);
 	}
 	else if (target == IFeatureCreator::Target::Depth) {
 		buildWeightAndBinningValues(depthScale, weights, binningValues);

@@ -25,9 +25,9 @@ FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 	cv::Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
 
 	//depth = depth * 255;
-	for (int y = 1; y < depth.rows; y++)
+	for (int y = 0; y < depth.rows; y++)
 	{
-		for (int x = 1; x < depth.cols; x++)
+		for (int x = 0; x < depth.cols; x++)
 		{
 
 

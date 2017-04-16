@@ -399,8 +399,8 @@ namespace hog {
 			hog = createHoGImage(m, flattenedCells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
 		}
 		HistogramResult result;
-		result.width = nrOfCellsWidth - 1;
-		result.height = nrOfCellsHeight - 1;
+		result.width = nrOfCellsWidth;
+		result.height = nrOfCellsHeight;
 		result.data = flattenedCells;
 		result.hogImage = hog;
 		return result;

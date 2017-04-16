@@ -63,12 +63,8 @@ void parallel_for(int from, int to, int nrOfThreads, std::function<void(int)> fu
 }
 
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, int slidingWindowStep, int refWidth, int refHeight) {
-	int slidingWindowWidth = 64;
-	int slidingWindowHeight = 128;
-	//	int slidingWindowStep = 8;
-
-	double topOffset = 0.3 * imgHeight;
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, int slidingWindowStep, int refWidth, int refHeight, double topOffsetPercentage) {
+	double topOffset = topOffsetPercentage * imgHeight;
 
 	for (double j = topOffset; j < imgHeight - refHeight; j += slidingWindowStep) {
 		for (double i = 0; i < imgWidth - refWidth; i += slidingWindowStep) {

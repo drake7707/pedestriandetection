@@ -83,6 +83,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 				int idx = 0;
 				slideWindow(rgbScale.cols, rgbScale.rows, [&](cv::Rect bbox) -> void {
 
+					// Calculate the bounding box on the original image size
 					cv::Rect2d scaledBBox = cv::Rect2d(bbox.x / scale, bbox.y / scale,bbox.width / scale, bbox.height / scale);
 
 					// skip all windows that intersect with the don't care regions

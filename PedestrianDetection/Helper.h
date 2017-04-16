@@ -26,7 +26,7 @@ int randBetween(int min, int max);
 
 int ceilTo(double val, double target);
 
-void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, int slidingWindowStep, int refWidth, int refHeight);
+void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, int slidingWindowStep, int refWidth, int refHeight, double topOffsetPercentage = 0.3);
 
 void slideWindow(int imgWidth, int imgHeight, std::function<void(cv::Rect bbox)> func, const std::vector<cv::Size>& windowSizes, int slidingWindowStep, int refWidth, int refHeight);
 

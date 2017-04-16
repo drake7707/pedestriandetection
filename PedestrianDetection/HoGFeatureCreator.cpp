@@ -28,7 +28,7 @@ void HOGFeatureCreator::buildMagnitudeAndAngle(cv::Mat& img, cv::Mat& magnitude,
 	cv::Sobel(mat, gx, CV_32F, 1, 0, 1);
 	cv::Sobel(mat, gy, CV_32F, 0, 1, 1);
 
-	magnitude= cv::Mat(img.size(), CV_32FC1, cv::Scalar(0));
+	magnitude = cv::Mat(img.size(), CV_32FC1, cv::Scalar(0));
 	angle = cv::Mat(img.size(), CV_32FC1, cv::Scalar(0));
 
 	for (int j = 0; j < mat.rows; j++)
@@ -54,10 +54,10 @@ void HOGFeatureCreator::buildMagnitudeAndAngle(cv::Mat& img, cv::Mat& magnitude,
 
 
 hog::HistogramResult HOGFeatureCreator::getHistogramsOfOrientedGradient(cv::Mat& img, int patchSize, int binSize, cv::Rect& roi, const IPreparedData* preparedData, bool createImage, bool l2normalize) const {
-	
+
 	cv::Mat magnitude;
 	cv::Mat angle;
-	
+
 	const HOG1DPreparedData* hogData = dynamic_cast<const HOG1DPreparedData*>(preparedData);
 	if (hogData == nullptr) {
 		buildMagnitudeAndAngle(img, magnitude, angle);
@@ -66,55 +66,27 @@ hog::HistogramResult HOGFeatureCreator::getHistogramsOfOrientedGradient(cv::Mat&
 	return hog::getHistogramsOfX(magnitude, angle, patchSize, binSize, createImage, l2normalize, roi, hogData == nullptr ? nullptr : &(hogData->integralHistogram), refWidth, refHeight);
 }
 
-
-std::vector<IPreparedData*> HOGFeatureCreator::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const {
+std::unique_ptr<IPreparedData> HOGFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
 	cv::Mat magnitude;
 	cv::Mat angle;
-	
-	std::vector<IPreparedData*> dataPerScale;
 
-	
 	if (target == IFeatureCreator::Target::Depth) {
-		for (auto& depth : depthScales) {
-			cv::Mat magnitude;
-			cv::Mat angle;
-
-			buildMagnitudeAndAngle(depth, magnitude, angle);
-			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
-			HOG1DPreparedData* data = new HOG1DPreparedData();
-			data->integralHistogram = hist;
-			dataPerScale.push_back(data);
-		}
+		buildMagnitudeAndAngle(depthScale, magnitude, angle);
 	}
 	else if (target == IFeatureCreator::Target::Thermal) {
-		for (auto& thermal : thermalScales) {
-			cv::Mat magnitude;
-			cv::Mat angle;
-
-			buildMagnitudeAndAngle(thermal, magnitude, angle);
-			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
-			HOG1DPreparedData* data = new HOG1DPreparedData();
-			data->integralHistogram = hist;
-			dataPerScale.push_back(data);
-		}
+		buildMagnitudeAndAngle(thermalScale, magnitude, angle);
 	}
 	else {
-		for (auto& rgb : rgbScales) {
-			cv::Mat magnitude;
-			cv::Mat angle;
-
-			buildMagnitudeAndAngle(rgb, magnitude, angle);
-			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
-			HOG1DPreparedData* data = new HOG1DPreparedData();
-			data->integralHistogram = hist;
-			dataPerScale.push_back(data);
-		}
+		buildMagnitudeAndAngle(rgbScale, magnitude, angle);
 	}
 
-	return dataPerScale;
+	IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
+	HOG1DPreparedData* data = new HOG1DPreparedData();
+	data->integralHistogram = hist;
+	return std::unique_ptr<IPreparedData>(data);
 }
 
-FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi ,const IPreparedData* preparedData) const {
+FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 
 	hog::HistogramResult result;
 	if (target == IFeatureCreator::Target::Depth)
@@ -122,7 +94,7 @@ FeatureVector HOGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::M
 	else if (target == IFeatureCreator::Target::Thermal)
 		result = getHistogramsOfOrientedGradient(thermal, patchSize, binSize, roi, preparedData, false, true);
 	else
-		result = getHistogramsOfOrientedGradient(rgb, patchSize, binSize, roi, preparedData,false, true);
+		result = getHistogramsOfOrientedGradient(rgb, patchSize, binSize, roi, preparedData, false, true);
 
 	return result.getFeatureArray();
 }

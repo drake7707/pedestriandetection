@@ -23,6 +23,9 @@ class ModelEvaluator : public IEvaluator
 {
 	Model model;
 
+private:
+	void  buildTrainingData(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, std::function<bool(int number)> canSelectFunc, cv::Mat& trainingMat, cv::Mat& trainingLabels, int& nrTruePositives, int& nrTrueNegatives);
+
 public:
 	ModelEvaluator(std::string& name);
 	virtual ~ModelEvaluator();

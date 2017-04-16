@@ -55,7 +55,7 @@ double EvaluatorCascade::evaluateFeatures(FeatureVector& v) {
 
 double EvaluatorCascade::evaluateCascadeFeatures(FeatureVector& v, int* classifierIndex) {
 
-	double result;
+	double result = 0;
 	for (int i = 0; i < cascade.size(); i++)
 	{
 		*classifierIndex = i;

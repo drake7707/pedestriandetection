@@ -38,7 +38,7 @@ std::vector<ClassifierEvaluation> IEvaluator::evaluateDataSet(const TrainingData
 			ProgressWindow::getInstance()->updateStatus(std::string(name), 1.0 * imageNumber / trainingDataSet.getNumberOfImages(), std::string("Evaluating training set regions (") + std::to_string(imageNumber) + ")");
 
 		// don't use prepared data and roi for training set
-		std::vector<IPreparedData*> preparedData;
+		std::vector<std::unique_ptr<IPreparedData>> preparedData;
 		cv::Rect roi;
 
 		FeatureVector v;
@@ -118,16 +118,25 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 		FPPerValueShift(settings.nrOfEvaluations, std::set<SlidingWindowRegion>()));
 
 
-	std::map<int, std::vector<std::vector<IPreparedData*>>> preparedDataPerImage;
+	std::map<int, std::vector<std::unique_ptr<IPreparedData>>> preparedDataPerImage;
 
 	int nrOfImagesEvaluated = 0;
 	dataSet->iterateDataSetWithSlidingWindow(settings.windowSizes, settings.baseWindowStride, settings.refWidth, settings.refHeight,
 		canSelectFunc,
-		[&](int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) -> void {
+		[&](int imgNr) -> void {
 		// image has started
 
-		std::vector<std::vector<IPreparedData*>> preparedData = set.buildPreparedDataForFeatures(rgbScales, depthScales, thermalScales);
+
+	}, [&](int imgNr, double scale, cv::Mat& fullRGBScale, cv::Mat& fullDepthScale, cv::Mat& fullThermalScale) -> void {
+		std::vector<std::unique_ptr<IPreparedData>> preparedData = set.buildPreparedDataForFeatures(fullRGBScale, fullDepthScale, fullThermalScale);
 		lock([&]() -> void {
+			//if (preparedDataPerImage.find(imgNr) != preparedDataPerImage.end()) {
+			//	// delete old scale prepared data
+			//	for (int i = 0; i < preparedDataPerImage[imgNr].size(); i++) {
+			//		if (preparedDataPerImage[imgNr][i] != nullptr)
+			//			delete preparedDataPerImage[imgNr][i];
+			//	}
+			//}
 			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
@@ -138,7 +147,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			v = set.getFeatures(rgb, depth, thermal, unscaledROI, preparedDataPerImage[imageNumber][scale]);
+			v = set.getFeatures(rgb, depth, thermal, unscaledROI, preparedDataPerImage[imageNumber]);
 		});
 
 		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
@@ -240,13 +249,11 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 	}, [&](int imgNr, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions) -> void {
 		// full image is processed
 		lock([&]() -> void {
-			// clean up of prepared data
-			for (auto& v : preparedDataPerImage[imgNr]) {
-				for (int i = 0; i < v.size(); i++) {
-					if (v[i] != nullptr)
-						delete v[i];
-				}
-			}
+			//// clean up of prepared data
+			//for (int i = 0; i < preparedDataPerImage[imgNr].size(); i++) {
+			//	if (preparedDataPerImage[imgNr][i] != nullptr)
+			//		delete preparedDataPerImage[imgNr][i];
+			//}
 			preparedDataPerImage.erase(imgNr);
 
 			for (int i = 0; i < settings.nrOfEvaluations; i++)
@@ -362,17 +369,26 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 	};;
 
 	std::map<int, std::vector<SlidingWindowRegion>> evaluatedWindowsPerImage;
-	std::map<int, std::vector<std::vector<IPreparedData*>>> preparedDataPerImage;
+	std::map<int, std::vector<std::unique_ptr<IPreparedData>>> preparedDataPerImage;
 	int nrOfImagesEvaluated = 0;
 	dataSet->iterateDataSetWithSlidingWindow(settings.windowSizes, settings.baseWindowStride, settings.refWidth, settings.refHeight,
 		canSelectFunc,
-		[&](int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) -> void {
+		[&](int imgNr) -> void {
 		// image has started
-
-		std::vector<std::vector<IPreparedData*>> preparedData = set.buildPreparedDataForFeatures(rgbScales, depthScales, thermalScales);
 		lock([&]() -> void {
 			swresult.missedPositivesPerImage[imgNr] = std::vector<std::vector<cv::Rect>>(settings.nrOfEvaluations);
 			evaluatedWindowsPerImage[imgNr] = std::vector<SlidingWindowRegion>();
+		});
+	}, [&](int imgNr, double scale, cv::Mat& fullRGBScale, cv::Mat& fullDepthScale, cv::Mat& fullThermalScale) -> void {
+		std::vector<std::unique_ptr<IPreparedData>> preparedData = set.buildPreparedDataForFeatures(fullRGBScale, fullDepthScale, fullThermalScale);
+		lock([&]() -> void {
+			//if (preparedDataPerImage.find(imgNr) != preparedDataPerImage.end()) {
+			//	// delete old scale prepared data
+			//	for (int i = 0; i < preparedDataPerImage[imgNr].size(); i++) {
+			//		if (preparedDataPerImage[imgNr][i] != nullptr)
+			//			delete preparedDataPerImage[imgNr][i];
+			//	}
+			//}
 			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
@@ -384,7 +400,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 
 		FeatureVector v;
 		long buildTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			v = set.getFeatures(rgb, depth, thermal, unscaledROI, preparedDataPerImage[imageNumber][scale]);
+			v = set.getFeatures(rgb, depth, thermal, unscaledROI, preparedDataPerImage[imageNumber]);
 		});
 
 		lock([&]() -> void { // lock everything that is outside the function body as the iteration is done over multiple threads
@@ -467,12 +483,10 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 			evaluatedWindowsPerImage.erase(imgNr);
 
 			// clean up of prepared data
-			for (auto& v : preparedDataPerImage[imgNr]) {
-				for (int i = 0; i < v.size(); i++) {
-					if (v[i] != nullptr)
-						delete v[i];
-				}
-			}
+			/*for (int i = 0; i < preparedDataPerImage[imgNr].size(); i++) {
+				if (preparedDataPerImage[imgNr][i] != nullptr)
+					delete preparedDataPerImage[imgNr][i];
+			}*/
 			preparedDataPerImage.erase(imgNr);
 
 			for (int i = 0; i < settings.nrOfEvaluations; i++) {

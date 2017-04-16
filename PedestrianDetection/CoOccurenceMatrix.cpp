@@ -61,7 +61,7 @@ cv::Mat getCoOccurenceMatrixImage(int width, int height, CoOccurrenceMatrix& mat
 	height = height < bins ? bins : height;
 	
 
-	int max = std::numeric_limits<int>().min();
+	float max = std::numeric_limits<float>().min();
 	for (int j = 0; j < bins; j++)
 	{
 		for (int i = 0; i < bins; i++)
@@ -74,12 +74,12 @@ cv::Mat getCoOccurenceMatrixImage(int width, int height, CoOccurrenceMatrix& mat
 
 	cv::Mat img(width, height, CV_8UC3, cv::Scalar(0, 0, 0));
 
-	float cellSize = img.cols / bins;
+	int cellSize = img.cols / bins;
 	for (int j = 0; j < bins; j++)
 	{
 		for (int i = 0; i < bins; i++)
 		{
-			float alpha = 1.0 * matrix[j][i] / max;
+			float alpha = 1.0f * matrix[j][i] / max;
 			// white (255,255,255) -> blue (255,0,0)
 			cv::rectangle(img, cv::Rect(i * cellSize, j * cellSize, cellSize, cellSize), cv::Scalar(255, 255 - alpha * 255, 255 - alpha * 255), -1);
 		}

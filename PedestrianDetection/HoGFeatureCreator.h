@@ -33,7 +33,7 @@ public:
 	/// </summary>
 	cv::Mat explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
 
-	std::vector<IPreparedData*> HOGFeatureCreator::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const;
+	virtual std::unique_ptr<IPreparedData> buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const;
 
 	/// <summary>
 	/// Determines the HOG result from gradient magnitude and orientation

@@ -15,14 +15,12 @@ ModelEvaluator::~ModelEvaluator()
 
 
 
-void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, std::function<bool(int number)> canSelectFunc)
-{
-
+void  ModelEvaluator::buildTrainingData(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, std::function<bool(int number)> canSelectFunc, cv::Mat& trainingMat, cv::Mat& trainingLabels, int& nrTruePositives, int& nrTrueNegatives) {
 	std::vector<FeatureVector> truePositiveFeatures;
 	std::vector<FeatureVector> trueNegativeFeatures;
 
 	// don't use prepared data for training
-	 std::vector<IPreparedData*> preparedData;
+	std::vector<std::unique_ptr<IPreparedData>> preparedData;
 
 	trainingDataSet.iterateDataSet(canSelectFunc,
 		[&](int idx, int resultClass, int imageNumber, cv::Rect region, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal) -> void {
@@ -77,8 +75,8 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 		featureVector.applyMeanAndVariance(model.meanVector, model.sigmaVector);
 
 	// build training dataset
-	cv::Mat trainingMat(N, featureSize, CV_32FC1);
-	cv::Mat trainingLabels(N, 1, CV_32SC1);
+	trainingMat = cv::Mat(N, featureSize, CV_32FC1);
+	trainingLabels = cv::Mat(N, 1, CV_32SC1);
 
 	int idx = 0;
 	for (int i = 0; i < truePositiveFeatures.size(); i++)
@@ -106,14 +104,28 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 		idx++;
 	}
 
+	nrTrueNegatives =  trueNegativeFeatures.size();
+	nrTruePositives = truePositiveFeatures.size();
+}
+
+void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const FeatureSet& set, const EvaluationSettings& settings, std::function<bool(int number)> canSelectFunc)
+{
+
+	cv::Mat trainingMat;
+	cv::Mat trainingLabels;
+	int nrTruePositives;
+	int nrTrueNegatives;
+
+	buildTrainingData(trainingDataSet, set, settings, canSelectFunc, trainingMat, trainingLabels, nrTruePositives, nrTrueNegatives);
+
 	cv::Ptr<cv::ml::Boost> boost = cv::ml::Boost::create();
 	cv::Ptr<cv::ml::TrainData> tdata = cv::ml::TrainData::create(trainingMat, cv::ml::SampleTypes::ROW_SAMPLE, trainingLabels,
 		cv::noArray(), cv::noArray(), cv::noArray(), cv::noArray());
 
 	std::vector<double>	priors(2);
 
-	double tnWeight = trueNegativeFeatures.size();// *1.0 / N;
-	double tpWeight = truePositiveFeatures.size();// *1.0 / N;
+	double tnWeight = nrTrueNegatives;// *1.0 / N;
+	double tpWeight = nrTruePositives;
 	priors[0] = tnWeight;
 	priors[1] = tpWeight;
 
@@ -124,7 +136,7 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 
 	ProgressWindow::getInstance()->updateStatus(name, 0, std::string("Training boost classifier"));
 
-	std::cout << "Training boost classifier on " << N << " samples (" << truePositiveFeatures.size() << " TP, " << trueNegativeFeatures.size() << " TN), feature size " << featureSize << std::endl;
+	std::cout << "Training boost classifier on " << trainingMat.rows << " samples (" << nrTruePositives << " TP, " << nrTrueNegatives  << " TN), feature size " << trainingMat.cols << std::endl;
 
 	double trainingTimeMS = measure<std::chrono::milliseconds>::execution([&]() -> void {
 		boost->train(tdata);
@@ -137,12 +149,6 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 	model.boost = boost;
 
 	ProgressWindow::getInstance()->finish(name);
-	//auto& roots = boost->getRoots();
-	//auto& nodes = boost->getNodes();
-	//auto& splits = boost->getSplits();
-	//for (auto& r : roots) {
-	//	std::cout << "Root split " << nodes[r].split << " variable index " << splits[nodes[r].split].varIdx << " quality: " << splits[nodes[r].split].quality << " explain: " << set.explainFeature(splits[nodes[r].split].varIdx, nodes[r].value) << std::endl;
-	//}
 }
 
 

@@ -19,49 +19,24 @@ int LBPFeatureCreator::getNumberOfFeatures() const {
 	return hog::getNumberOfFeatures(refWidth, refHeight, patchSize, binSize, false);
 }
 
-std::vector<IPreparedData*> LBPFeatureCreator::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const {
-	std::vector<IPreparedData*> dataPerScale;
+std::unique_ptr<IPreparedData> LBPFeatureCreator:: buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
 
+	cv::Mat weights;
+	cv::Mat binningValues;
 	if (target == IFeatureCreator::Target::RGB) {
-		for (auto& rgb : rgbScales) {
-
-			cv::Mat weights;
-			cv::Mat binningValues;
-			buildWeightAndBinningValues(rgb, weights, binningValues);
-
-			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(weights, binningValues, binSize);
-			HOG1DPreparedData* data = new HOG1DPreparedData();
-			data->integralHistogram = hist;
-			dataPerScale.push_back(data);
-		}
+			buildWeightAndBinningValues(rgbScale, weights, binningValues);
 	}
 	else if (target == IFeatureCreator::Target::Depth) {
-		for (auto& depth : depthScales) {
-
-			cv::Mat weights;
-			cv::Mat binningValues;
-			buildWeightAndBinningValues(depth, weights, binningValues);
-
-			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(weights, binningValues, binSize);
-			HOG1DPreparedData* data = new HOG1DPreparedData();
-			data->integralHistogram = hist;
-			dataPerScale.push_back(data);
-		}
+		buildWeightAndBinningValues(depthScale, weights, binningValues);
 	}
 	else {
-		for (auto& thermal : thermalScales) {
-
-			cv::Mat weights;
-			cv::Mat binningValues;
-			buildWeightAndBinningValues(thermal, weights, binningValues);
-
-			IntegralHistogram hist = hog::prepareDataForHistogramsOfX(weights, binningValues, binSize);
-			HOG1DPreparedData* data = new HOG1DPreparedData();
-			data->integralHistogram = hist;
-			dataPerScale.push_back(data);
-		}
+		buildWeightAndBinningValues(thermalScale, weights, binningValues);
 	}
-	return dataPerScale;
+
+	IntegralHistogram hist = hog::prepareDataForHistogramsOfX(weights, binningValues, binSize);
+	HOG1DPreparedData* data = new HOG1DPreparedData();
+	data->integralHistogram = hist;
+	return std::unique_ptr<IPreparedData>(data);
 }
 
 

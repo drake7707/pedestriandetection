@@ -41,7 +41,7 @@ public:
 	/// <summary>
 	/// Prepares integral histograms for each scale to quickly evaluate windows at each scale
 	/// </summary>
-	std::vector<IPreparedData*> buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const;
+	virtual std::unique_ptr<IPreparedData> buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const;
 
 	/// <summary>
 	/// Creates a feature vector of the given input data. Prepared data will be used if given

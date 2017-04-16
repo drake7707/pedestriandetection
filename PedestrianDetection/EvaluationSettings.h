@@ -16,7 +16,7 @@ public:
 	int maxNrOfFalsePosOrNeg = 4000;
 	int maxNrOfFPPerImage = 10;
 
-	float requiredTPRRate = 0.95;
+	float requiredTPRRate = 0.95f;
 	int maxWeakClassifiers = 500;
 	int nrOfTrainingRounds = 4;
 
@@ -27,7 +27,7 @@ public:
 	bool addFlippedInTrainingSet = true;
 
 	float vehicleSpeedKMh = 50;
-	float tireRoadFriction = 0.7;
+	float tireRoadFriction = 0.7f;
 
 	std::string kittiDataSetPath = "";
 	std::string kaistDataSetPath = "";

@@ -22,31 +22,29 @@ int FeatureSet::size() const {
 }
 
 
-std::vector<std::vector<IPreparedData*>> FeatureSet::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const {
+std::vector<std::unique_ptr<IPreparedData>> FeatureSet::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
 	if (creators.size() == 0)
 		throw std::exception("No feature creators were present");
 
-	int nrOfScales = rgbScales.size();
+	std::vector<std::unique_ptr<IPreparedData>> preparedDataPerCreator;
+	preparedDataPerCreator.reserve(creators.size());
 
-	std::vector<std::vector<IPreparedData*>> preparedDataPerScalePerCreator(nrOfScales, std::vector<IPreparedData*>());
-	
 	for (int i = 0; i < creators.size(); i++) {
-		auto preparedDataPerScale = creators[i]->buildPreparedDataForFeatures(rgbScales, depthScales, thermalScales);
-		for (int s = 0; s < preparedDataPerScale.size(); s++)
-			preparedDataPerScalePerCreator[s].push_back(preparedDataPerScale[s]);
+		auto preparedData = creators[i]->buildPreparedDataForFeatures(rgbScale, depthScale, thermalScale);
+		preparedDataPerCreator.push_back(std::move(preparedData));
 	}
-	
-	return preparedDataPerScalePerCreator;
+
+	return preparedDataPerCreator;
 }
 
-FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const std::vector<IPreparedData*>& preparedDataOfScale) const {
+FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const std::vector<std::unique_ptr<IPreparedData>>& preparedDataOfScale) const {
 	if (creators.size() == 0)
 		throw std::exception("No feature creators were present");
 
-	FeatureVector v = creators[0]->getFeatures(rgb, depth, thermal, roi, preparedDataOfScale.size() > 0 ? preparedDataOfScale.at(0) : nullptr);
+	FeatureVector v = creators[0]->getFeatures(rgb, depth, thermal, roi, preparedDataOfScale.size() > 0 ? preparedDataOfScale.at(0).get() : nullptr);
 	for (int i = 1; i < creators.size(); i++)
 	{
-		FeatureVector v2 = creators[i]->getFeatures(rgb, depth, thermal, roi, preparedDataOfScale.size() > 0 ? preparedDataOfScale.at(i) : nullptr);
+		FeatureVector v2 = creators[i]->getFeatures(rgb, depth, thermal, roi, preparedDataOfScale.size() > 0 ? preparedDataOfScale.at(i).get() : nullptr);
 		for (auto& f : v2)
 			v.push_back(f);
 	}

@@ -17,16 +17,13 @@ int HOIFeatureCreator::getNumberOfFeatures() const {
 }
 
 
-std::vector<IPreparedData*> HOIFeatureCreator::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const {
-	std::vector<IPreparedData*> dataPerScale;
+std::unique_ptr<IPreparedData> HOIFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
 
-	for (auto& thermal : thermalScales) {
-		IntegralHistogram hist = hog::prepareDataForHistogramsOfX(cv::Mat(thermal.rows, thermal.cols, CV_32FC1, cv::Scalar(1)), thermal, binSize);
-		HOG1DPreparedData* data = new HOG1DPreparedData();
-		data->integralHistogram = hist;
-		dataPerScale.push_back(data);
-	}
-	return dataPerScale;
+	IntegralHistogram hist = hog::prepareDataForHistogramsOfX(cv::Mat(thermalScale.rows, thermalScale.cols, CV_32FC1, cv::Scalar(1)), thermalScale, binSize);
+	HOG1DPreparedData* data = new HOG1DPreparedData();
+	data->integralHistogram = hist;
+
+	return std::unique_ptr<IPreparedData>(data);
 }
 
 

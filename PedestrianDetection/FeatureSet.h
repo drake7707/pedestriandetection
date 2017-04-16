@@ -47,12 +47,12 @@ public:
 	/// <summary>
 	/// Obtains prepared data of the used feature descriptors. This prepared data will be passed along during evaluation.
 	/// </summary>
-	std::vector<std::vector<IPreparedData*>> FeatureSet::buildPreparedDataForFeatures(std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales) const;
+	std::vector<std::unique_ptr<IPreparedData>> FeatureSet::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const;
 
 	/// <summary>
 	/// Builds feature vectors from the given window input data from all the separarate feature descriptors, at ref size
 	/// </summary>
-	FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const std::vector<IPreparedData*>& preparedDataOfScale) const;
+	FeatureVector FeatureSet::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const std::vector<std::unique_ptr<IPreparedData>>& preparedDataOfScale) const;
 
 	/// <summary>
 	/// Explains the various features from the trained models, usually in the form of a heat map

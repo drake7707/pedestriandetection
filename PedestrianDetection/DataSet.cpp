@@ -24,8 +24,8 @@ std::vector<std::vector<DataSetLabel>> DataSet::getLabelsPerNumber() const {
 void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windowSizes, int baseWindowStride,
 	int refWidth, int refHeight,
 	std::function<bool(int number)> canSelectFunc,
-
-	std::function<void(int imgNr, std::vector<cv::Mat>& rgbScales, std::vector<cv::Mat>& depthScales, std::vector<cv::Mat>& thermalScales)> onImageStarted,
+	std::function<void(int imgNr)> onImageStarted,
+	std::function<void(int imgNr, double scale, cv::Mat& fullRGBScale, cv::Mat& fullDepthScale, cv::Mat& fullThermalScale)> onScaleStarted,
 	std::function<void(int idx, int resultClass, int imageNumber, int scale, cv::Rect2d& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& thermal, bool overlapsWithTruePositive)> func,
 	std::function<void(int imageNumber, std::vector<std::string>& truePositiveCategories, std::vector<cv::Rect2d>& truePositiveRegions)> onImageProcessed,
 	int parallization) const {
@@ -44,30 +44,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 			cv::Mat mThermal = imgs[2];
 
 			// notify start of image
-			std::vector<cv::Mat> rgbScales;
-			std::vector<cv::Mat> depthScales;
-			std::vector<cv::Mat> thermalScales;
-			for (auto& s : windowSizes) {
-				double scale = 1.0  * refWidth / s.width;
-				if (mRGB.cols > 0 && mRGB.rows > 0) {
-					cv::Mat rgbScale;
-					cv::resize(mRGB, rgbScale, cv::Size2d(mRGB.cols * scale, mRGB.rows * scale));
-					rgbScales.push_back(rgbScale);
-				}
-				if (mDepth.cols > 0 && mDepth.rows > 0) {
-					cv::Mat depthScale;
-					cv::resize(mDepth, depthScale, cv::Size2d(mDepth.cols * scale, mDepth.rows * scale));
-					depthScales.push_back(depthScale);
-				}
-				if (mThermal.cols > 0 && mThermal.rows > 0) {
-					cv::Mat thermalScale;
-					cv::resize(mThermal, thermalScale, cv::Size2d(mThermal.cols * scale, mThermal.rows * scale));
-					thermalScales.push_back(thermalScale);
-				}
-			}
-
-
-			onImageStarted(imgNumber, rgbScales, depthScales, thermalScales);
+			onImageStarted(imgNumber);
 
 			// determine the true positive and their categories and the don't care regions
 			std::vector<cv::Rect2d> truePositiveRegions;
@@ -86,12 +63,27 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 			roiManager.prepare(mRGB, mDepth, mThermal);
 
 			for (int s = 0; s < windowSizes.size(); s++) {
+				double scale = 1.0  *  windowSizes[s].width / refWidth;
+
+				cv::Mat rgbScale;
+				if (mRGB.cols > 0 && mRGB.rows > 0)
+					cv::resize(mRGB, rgbScale, cv::Size2d(mRGB.cols * scale, mRGB.rows * scale));
+
+				cv::Mat depthScale;
+				if (mDepth.cols > 0 && mDepth.rows > 0)
+					cv::resize(mDepth, depthScale, cv::Size2d(mDepth.cols * scale, mDepth.rows * scale));
+
+				cv::Mat thermalScale;
+				if (mThermal.cols > 0 && mThermal.rows > 0)
+					cv::resize(mThermal, thermalScale, cv::Size2d(mThermal.cols * scale, mThermal.rows * scale));
+
+				onScaleStarted(imgNumber, scale, rgbScale, depthScale, thermalScale);
 
 				// slide window over the image
 				int idx = 0;
-				slideWindow(rgbScales[s].cols, rgbScales[s].rows, [&](cv::Rect bbox) -> void {
-					double scale = 1.0  *  windowSizes[s].width / refWidth;
-					cv::Rect2d scaledBBox = cv::Rect2d(bbox.x * scale, bbox.y * scale, windowSizes[s].width, windowSizes[s].height);
+				slideWindow(rgbScale.cols, rgbScale.rows, [&](cv::Rect bbox) -> void {
+
+					cv::Rect2d scaledBBox = cv::Rect2d(bbox.x / scale, bbox.y / scale,bbox.width / scale, bbox.height / scale);
 
 					// skip all windows that intersect with the don't care regions
 					if (!intersectsWith(scaledBBox, dontCareRegions)) {
@@ -99,20 +91,19 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 						bool needToEvaluate = roiManager.needToEvaluate(scaledBBox, mRGB, mDepth, mThermal,
 							[&](double height, double depthAvg) -> bool { return this->isWithinValidDepthRange(height, depthAvg); });
 
-
 						if (needToEvaluate) {
 
 							cv::Mat regionRGB;
-							if (rgbScales.size() > 0)
-								regionRGB = rgbScales[s](bbox);
+							if (rgbScale.cols > 0 && rgbScale.rows > 0)
+								regionRGB = rgbScale(bbox);
 
 							cv::Mat regionDepth;
-							if (depthScales.size() > 0)
-								regionDepth = depthScales[s](bbox);
+							if (depthScale.cols > 0 && depthScale.rows > 0)
+								regionDepth = depthScale(bbox);
 
 							cv::Mat regionThermal;
-							if (thermalScales.size() > 0)
-								regionThermal = thermalScales[s](bbox);
+							if (thermalScale.cols > 0 && thermalScale.rows > 0)
+								regionThermal = thermalScale(bbox);
 
 							bool overlapsWithTruePositive = false;
 							int resultClass;

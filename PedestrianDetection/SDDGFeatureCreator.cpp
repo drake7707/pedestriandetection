@@ -73,7 +73,7 @@ FeatureVector SDDGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 }
 
 cv::Mat SDDGFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
-	cv::Mat explanation;
+	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 
 	int nrOfCellsX = refWidth / cellSize;
 	int nrOfCellsY = refHeight / cellSize;

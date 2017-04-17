@@ -191,12 +191,12 @@ cv::Mat getMask(cv::Mat& roi) {
 
 void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
-	std::set<std::string> set = { "HOG(RGB)","HOG(Thermal)" };
+	std::set<std::string> set = { "HOG(RGB)","HDD" };
 
 	auto fset = tester.getFeatureSet(set);
 
 	EvaluatorCascade cascade(std::string("Test"));
-	cascade.load(std::string("models\\KAIST_HOG(RGB)+HOG(Thermal)_cascade.xml"), std::string("models"));
+	cascade.load(std::string("models\\KITTI_HDD+HOG(RGB)_cascade.xml"), std::string("models"));
 
 	double valueShift = -6;
 
@@ -209,7 +209,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
 	eval.print(std::cout);*/
 
-	KAISTDataSet dataSet(settings.kaistDataSetPath);
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
 
 	//	cv::namedWindow("Test");
 
@@ -1189,7 +1189,7 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 
 
 	std::set<std::string> set;
-	set = { "HOG(RGB)", "HDD" };
+	set = { "HOG(RGB)", "SDDG(Depth)" };
 
 	std::string featureSetName("");
 	for (auto& name : set) {
@@ -1239,14 +1239,15 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 
 		for (int j = 0; j < cur.size(); j++) {
 
-			cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
+			if (cur[j].cols > 0 && cur[j].rows > 0) {
+				cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
 
-			totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
+				totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
 
 
-			cv::Mat& dst = imgs[j](cv::Rect(i*(settings.refWidth + padding), 0, settings.refWidth, settings.refHeight));
-			cur[j].copyTo(dst);
-
+				cv::Mat& dst = imgs[j](cv::Rect(i*(settings.refWidth + padding), 0, settings.refWidth, settings.refHeight));
+				cur[j].copyTo(dst);
+			}
 
 
 			//	cv::imshow("Test" + std::to_string(j), toHeatMap(cur[j]));
@@ -1284,7 +1285,80 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 	cv::waitKey(0);
 }
 
-void runJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, EvaluationSettings& settings) {
+
+void testSpeed(FeatureTester& tester, DataSet* dataSet) {
+
+	auto imgs = dataSet->getImagesForNumber(0);
+	cv::Mat rgbScale = imgs[0];
+	cv::Mat depthScale = imgs[1];
+	cv::Mat thermalScale = depthScale; // temporarily just to evaluate speed
+
+	cv::Rect bbox(64, 128, 64, 128);
+
+	cv::Mat regionRGB;
+	if (rgbScale.cols > 0 && rgbScale.rows > 0)
+		regionRGB = rgbScale(bbox);
+
+	cv::Mat regionDepth;
+	if (depthScale.cols > 0 && depthScale.rows > 0)
+		regionDepth = depthScale(bbox);
+
+	cv::Mat regionThermal = regionDepth; // temporarily just to evaluate speed
+	/*if (thermalScale.cols > 0 && thermalScale.rows > 0)
+		regionThermal = thermalScale(bbox);*/
+
+
+	std::ofstream str("speed.csv");
+	str << "Name;PreparationTime;WindowEvaluationTime" << std::endl;
+
+	if (fileExists("inputsets.txt")) {
+		std::ifstream istr("inputsets.txt");
+		std::string line;
+		while (std::getline(istr, line)) {
+
+			if (line.length() > 0 && line[0] != '#') {
+				std::set<std::string> set;
+				auto parts = splitString(line, '+');
+				for (auto& p : parts)
+					set.emplace(p);
+
+				auto fset = tester.getFeatureSet(set);
+
+				std::vector<std::unique_ptr<IPreparedData>> preparedData;
+				int n = 100;
+				long preparationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+					for (int i = 0; i < n; i++)
+					{
+						preparedData = fset->buildPreparedDataForFeatures(rgbScale, depthScale, thermalScale);
+					}
+				});
+
+				double avgPreparationTime = 1.0 * preparationTime / n;
+
+				n = 1000;
+				long evaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
+					for (int i = 0; i < n; i++)
+					{
+						fset->getFeatures(regionRGB,regionDepth, regionThermal, bbox, preparedData);
+					}
+				});
+
+				double avgEvaluationTime = 1.0 * evaluationTime / n;
+
+				str << fset->getFeatureSetName() << ";" << avgPreparationTime << ";" << avgEvaluationTime << std::endl;
+				std::cout << fset->getFeatureSetName() << ": prep time: " << avgPreparationTime << "ms, window eval time: " << avgEvaluationTime << "ms" << std::endl;
+			}
+		}
+		istr.close();
+	}
+	else {
+		std::cout << "Input sets file does not exist" << std::endl;
+	}
+}
+
+
+void buildTesterJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, EvaluationSettings& settings) {
+
 
 
 	tester.nrOfConcurrentJobs = 1;
@@ -1317,7 +1391,6 @@ void runJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, EvaluationSet
 		initialSet.save(initialTrain0File);
 	}
 
-	tester.runJobs();
 }
 
 
@@ -1578,21 +1651,24 @@ int main()
 
 
 	//explainModel(tester, settings);
+	/*KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
+	testSpeed(tester, &kittiDataSet);
+*/
 
-
-
-	//testClassifier(tester, settings);
+	testClassifier(tester, settings);
 
 
 	if (settings.kittiDataSetPath != "") {
 		KITTIDataSet dataSet(settings.kittiDataSetPath);
-		runJobsFromInputSets(tester, &dataSet, settings);
+		buildTesterJobsFromInputSets(tester, &dataSet, settings);
+		tester.runJobs();
 	}
 
 
 	if (settings.kaistDataSetPath != "") {
 		KAISTDataSet dataSet(settings.kaistDataSetPath);
-		runJobsFromInputSets(tester, &dataSet, settings);
+		buildTesterJobsFromInputSets(tester, &dataSet, settings);
+		tester.runJobs();
 	}
 
 

@@ -1,3 +1,6 @@
+HOG(RGB)+HDD
+
+
 ############################################################################################################
 # Input sets, use <descriptor>+<descriptor>+... format, lines starting with '#' or blank lines are ignored #
 ############################################################################################################
@@ -56,13 +59,13 @@ CoOccurrence(RGB)
 LBP(RGB)
 RAW(RGB)
 
-#Corner(RGB)
-#SIFT(RGB)
-#ORB(RGB)
-#CenSurE(RGB)
-#FAST(RGB)
-#MSD(RGB)
-#SURF(RGB)
+Corner(RGB)
+SIFT(RGB)
+ORB(RGB)
+CenSurE(RGB)
+FAST(RGB)
+MSD(RGB)
+SURF(RGB)
 
 
 
@@ -74,7 +77,7 @@ HOG(Depth)
 SDDG(Depth)
 Histogram(Depth)
 
-#Corner(Depth)
+Corner(Depth)
 
 
 
@@ -88,23 +91,23 @@ SDDG(Thermal)
 #############################
 
 
-HOG(RGB)+SIFT(RGB)
-HOG(RGB)+MSD(RGB)
-HOG(RGB)+SURF(RGB)
-HOG(RGB)+Corner(RGB)
-HOG(RGB)+SURF(RGB)
-HOG(RGB)+ORB(RGB)
-HOG(RGB)+CenSurE(RGB)
-HOG(RGB)+FAST(RGB)
+#HOG(RGB)+SIFT(RGB)
+#HOG(RGB)+MSD(RGB)
+#HOG(RGB)+SURF(RGB)
+#HOG(RGB)+Corner(RGB)
+#HOG(RGB)+SURF(RGB)
+#HOG(RGB)+ORB(RGB)
+#HOG(RGB)+CenSurE(RGB)
+#HOG(RGB)+FAST(RGB)
 
-HOG(RGB)+Corner(Depth)
+#HOG(RGB)+Corner(Depth)
 
-Corner(RGB)
-SIFT(RGB)
-ORB(RGB)
-CenSurE(RGB)
-FAST(RGB)
-MSD(RGB)
-SURF(RGB)
+#Corner(RGB)
+#SIFT(RGB)
+#ORB(RGB)
+#CenSurE(RGB)
+#FAST(RGB)
+#MSD(RGB)
+#SURF(RGB)
 
-Corner(Depth)
+#Corner(Depth)

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>7</trainingRound>
+<name_count>7</name_count>
+<name_0>"KITTI_HDD+HOG(RGB) round 0"</name_0>
+<name_1>"KITTI_HDD+HOG(RGB) round 1"</name_1>
+<name_2>"KITTI_HDD+HOG(RGB) round 2"</name_2>
+<name_3>"KITTI_HDD+HOG(RGB) round 3"</name_3>
+<name_4>"KITTI_HDD+HOG(RGB) round 4"</name_4>
+<name_5>"KITTI_HDD+HOG(RGB) round 5"</name_5>
+<name_6>"KITTI_HDD+HOG(RGB) round 6"</name_6>
+<valueShifts>
+  1.08000002e+01 7.19999981e+00 6.80000019e+00 6.80000019e+00
+  6.80000019e+00 6.59999990e+00 6.80000019e+00</valueShifts>
+<classifierHitCount>
+  855986 103010 66252 57656 38368 50620 297006</classifierHitCount>
+</opencv_storage>

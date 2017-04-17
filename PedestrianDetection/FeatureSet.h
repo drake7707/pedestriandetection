@@ -63,5 +63,10 @@ public:
 	/// Returns the combination of requirements for all the feature descriptors to match against the data set RGB/Depth/Thermal
 	/// </summary>
 	std::vector<bool> getRequirements() const;
+
+	/// <summary>
+	/// Returns the concatenated name of the feature set
+	/// </summary>
+	std::string getFeatureSetName(); 
 };
 

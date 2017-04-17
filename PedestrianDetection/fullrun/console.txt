@@ -29503,3 +29503,78 @@ Image: 502 Number of windows evaluated: 13924 (skipped 4011) and 7 positive (0.0
 Image: 836 Number of windows evaluated: 13924 (skipped 3971) and 3 positive (0.0301417%) 11040ms (value shift: -6)
 Image: 1 Number of windows evaluated: 13924 (skipped 4092) and 9 positive (0.0915378%) 11256ms (value shift: -6)
 Image: 169 Number of windows evaluated: 13924 (skipped 4200) and 12 positive (0.123406%) 11883ms (value shift: -6)
+Starting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 0
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Evaluation with sliding window and NMS complete after 1349824ms for HDD+HOG(RGB)
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Evaluation with sliding window and NMS complete after 533336ms for HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Starting job HDD+HOG(RGB)
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Training boost classifier on 1518 samples (318 TP, 1200 TN), feature size 28356
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Evaluation with sliding window and NMS complete after 558175ms for HDD+HOG(RGB)
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Bounding box range for category : 18.93 ~ 47.63
+Bounding box range for category Critical: 76.05 ~ 295.48
+Bounding box range for category High: 14.52 ~ 121.3
+Bounding box range for category Low: 34.87 ~ 63.65
+Bounding box range for category Moderate: 35.39 ~ 81.9
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Bounding box range for category : 18.93 ~ 47.63
+Bounding box range for category Critical: 76.05 ~ 295.48
+Bounding box range for category High: 14.52 ~ 121.3
+Bounding box range for category Low: 34.87 ~ 63.65
+Bounding box range for category Moderate: 35.39 ~ 81.9
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Bounding box range for category : 18.93 ~ 47.63
+Bounding box range for category Critical: 76.05 ~ 295.48
+Bounding box range for category High: 14.52 ~ 121.3
+Bounding box range for category Low: 34.87 ~ 63.65
+Bounding box range for category Moderate: 35.39 ~ 81.9
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Bounding box range for category : 119 ~ 292
+Bounding box range for category Critical: 2.14748e+09 ~ 0
+Bounding box range for category High: 25 ~ 32
+Bounding box range for category Low: 83 ~ 118
+Bounding box range for category Moderate: 33 ~ 82
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Bounding box range for category : 25 ~ 43
+Bounding box range for category Critical: 2.14748e+09 ~ 0
+Bounding box range for category High: 161 ~ 292
+Bounding box range for category Low: 44 ~ 62
+Bounding box range for category Moderate: 63 ~ 160
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Bounding box range for category : 25 ~ 36
+Bounding box range for category Critical: 90 ~ 292
+Bounding box range for category High: 61 ~ 89
+Bounding box range for category Low: 37 ~ 45
+Bounding box range for category Moderate: 46 ~ 60
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0

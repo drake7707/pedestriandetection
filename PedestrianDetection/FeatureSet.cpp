@@ -97,3 +97,15 @@ std::vector<bool> FeatureSet::getRequirements() const {
 	}
 	return v;
 }
+
+std::string FeatureSet::getFeatureSetName() {
+	std::string featureSetName("");
+	for (auto& name : creators) {
+
+		if (name != *(creators.begin()))
+			featureSetName += "+" + name->getName();
+		else
+			featureSetName += name->getName();
+	}
+	return featureSetName;
+}

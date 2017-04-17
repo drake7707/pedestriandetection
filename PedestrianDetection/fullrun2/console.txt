@@ -982,3 +982,783 @@ Started training of HOG(RGB)+SDDG(Depth), round 0
 Training boost classifier on 19372 samples (4408 TP, 14964 TN), feature size 9268
 Starting job HOG(Thermal)
 Started training of HOG(Thermal), round 0
+Starting job CoOccurrence(RGB)+HOG(RGB)Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+
+Started training of CoOccurrence(RGB)+HOG(RGB), round 0
+Job HDD+HOG(RGB) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Started training of CoOccurrence(RGB)+HOG(RGB), round 0
+Starting job HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 0
+Training boost classifier on 9746 samples (2262 TP, 7484 TN), feature size 7560
+Training round 0 complete after 943598ms for HDD+HOG(RGB)
+Started evaluation of HDD+HOG(RGB)
+Evaluation complete after 84450ms for HDD+HOG(RGB)
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Skipped training of HDD+HOG(RGB), loading from existing model instead
+Skipped evaluation of HDD+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of HDD+HOG(RGB)
+Chosen 8.200000 as decision boundary shift to attain TPR of 0.952459
+Evaluation with sliding window complete after 753676ms for HDD+HOG(RGB)
+Started training of HDD+HOG(RGB), round 1
+Training boost classifier on 12914 samples (1170 TP, 11744 TN), feature size 7560
+Image: 49 Number of windows evaluated: 20844 (skipped 11890) and 63 positive (0.703596%) 4712ms (value shift: -6)
+Image: 49 Number of windows evaluated: 20844 (skipped 11890) and 63 positive (0.703596%) 4432ms (value shift: -6)
+Image: 49 Number of windows evaluated: 20844 (skipped 11890) and 63 positive (0.703596%) 4600ms (value shift: -6)
+Image: 50 Number of windows evaluated: 20844 (skipped 13267) and 48 positive (0.633496%) 4090ms (value shift: -6)
+Image: 51 Number of windows evaluated: 20844 (skipped 11815) and 68 positive (0.753129%) 4740ms (value shift: -6)
+Image: 54 Number of windows evaluated: 20844 (skipped 9565) and 31 positive (0.274847%) 5740ms (value shift: -6)
+Image: 55 Number of windows evaluated: 20844 (skipped 9331) and 63 positive (0.547208%) 5860ms (value shift: -6)
+Image: 56 Number of windows evaluated: 20844 (skipped 8679) and 79 positive (0.649404%) 6060ms (value shift: -6)
+Image: 57 Number of windows evaluated: 20844 (skipped 9254) and 57 positive (0.491803%) 5750ms (value shift: -6)
+Image: 49 Number of windows evaluated: 20844 (skipped 11890) and 63 positive (0.703596%) 4530ms (value shift: -6)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive ( 0%) 2030ms (value shift: -6)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive ( 0%) 2040ms (value shift: -6)
+Image: 50 Number of windows evaluated: 5250 (skipped 3323) and 1 positive (0.0518941%) 1940ms (value shift: -6)
+Image: 51 Number of windows evaluated: 5250 (skipped 2949) and 1 positive (0.0434594%) 2080ms (value shift: -6)
+Image: 54 Number of windows evaluated: 5250 (skipped 2392) and 0 positive ( 0%) 2300ms (value shift: -6)
+Image: 55 Number of windows evaluated: 5250 (skipped 2312) and 2 positive (0.0680735%) 2370ms (value shift: -6)
+Image: 56 Number of windows evaluated: 5250 (skipped 2169) and 2 positive (0.064914%) 2390ms (value shift: -6)
+Image: 57 Number of windows evaluated: 5250 (skipped 2288) and 0 positive ( 0%) 2350ms (value shift: -6)
+Image: 58 Number of windows evaluated: 5250 (skipped 2261) and 3 positive (0.100368%) 2340ms (value shift: -6)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive ( 0%) 2150ms (value shift: -6)
+Image: 50 Number of windows evaluated: 5250 (skipped 3323) and 1 positive (0.0518941%) 1810ms (value shift: -6)
+Image: 51 Number of windows evaluated: 5250 (skipped 2949) and 1 positive (0.0434594%) 1980ms (value shift: -6)
+Image: 54 Number of windows evaluated: 5250 (skipped 2392) and 0 positive ( 0%) 2420ms (value shift: -6)
+Image: 55 Number of windows evaluated: 5250 (skipped 2312) and 2 positive (0.0680735%) 2450ms (value shift: -6)
+Image: 56 Number of windows evaluated: 5250 (skipped 2169) and 2 positive (0.064914%) 2430ms (value shift: -6)
+Image: 57 Number of windows evaluated: 5250 (skipped 2288) and 0 positive ( 0%) 2500ms (value shift: -6)
+Image: 58 Number of windows evaluated: 5250 (skipped 2261) and 3 positive (0.100368%) 2500ms (value shift: -6)
+Image: 59 Number of windows evaluated: 5250 (skipped 2392) and 1 positive (0.0349895%) 2330ms (value shift: -6)
+Image: 60 Number of windows evaluated: 5250 (skipped 1952) and 3 positive (0.0909642%) 2630ms (value shift: -6)
+Image: 61 Number of windows evaluated: 5250 (skipped 2766) and 2 positive (0.0805153%) 2220ms (value shift: -6)
+Image: 62 Number of windows evaluated: 5250 (skipped 2789) and 3 positive (0.121902%) 2200ms (value shift: -6)
+Image: 63 Number of windows evaluated: 5250 (skipped 2774) and 0 positive ( 0%) 2060ms (value shift: -6)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive ( 0%) 2189ms (value shift: -6)
+Image: 50 Number of windows evaluated: 5250 (skipped 3323) and 1 positive (0.0518941%) 1905ms (value shift: -6)
+Image: 51 Number of windows evaluated: 5250 (skipped 2949) and 1 positive (0.0434594%) 2161ms (value shift: -6)
+Image: 54 Number of windows evaluated: 5250 (skipped 2392) and 0 positive ( 0%) 2378ms (value shift: -6)
+Image: 55 Number of windows evaluated: 5250 (skipped 2312) and 2 positive (0.0680735%) 2396ms (value shift: -6)
+Image: 56 Number of windows evaluated: 5250 (skipped 2169) and 2 positive (0.064914%) 2432ms (value shift: -6)
+Image: 57 Number of windows evaluated: 5250 (skipped 2288) and 0 positive ( 0%) 2339ms (value shift: -6)
+Image: 58 Number of windows evaluated: 5250 (skipped 2261) and 3 positive (0.100368%) 2354ms (value shift: -6)
+Image: 59 Number of windows evaluated: 5250 (skipped 2392) and 1 positive (0.0349895%) 2265ms (value shift: -6)
+Image: 60 Number of windows evaluated: 5250 (skipped 1952) and 3 positive (0.0909642%) 2495ms (value shift: -6)
+Image: 49 Number of windows evaluated: 5250 (skipped 0) and 0 positive ( 0%) 2993ms (value shift: -6)
+Image: 50 Number of windows evaluated: 5250 (skipped 0) and 1 positive (0.0190476%) 3040ms (value shift: -6)
+Image: 51 Number of windows evaluated: 5250 (skipped 0) and 1 positive (0.0190476%) 3130ms (value shift: -6)
+Image: 54 Number of windows evaluated: 5250 (skipped 0) and 0 positive ( 0%) 3190ms (value shift: -6)
+Image: 55 Number of windows evaluated: 5250 (skipped 0) and 2 positive (0.0380952%) 3243ms (value shift: -6)
+Image: 56 Number of windows evaluated: 5250 (skipped 0) and 2 positive (0.0380952%) 3234ms (value shift: -6)
+Image: 57 Number of windows evaluated: 5250 (skipped 0) and 0 positive ( 0%) 3140ms (value shift: -6)
+Image: 2029 Number of windows evaluated: 5250 (skipped 4022) and 0 positive ( 0%) 2898ms (value shift: -6)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive ( 0%) 3498ms (value shift: -6)
+Image: 2715 Number of windows evaluated: 5250 (skipped 2955) and 0 positive ( 0%) 3717ms (value shift: -6)
+Image: 1340 Number of windows evaluated: 5250 (skipped 1691) and 0 positive ( 0%) 4442ms (value shift: -6)
+Image: 703 Number of windows evaluated: 5250 (skipped 1613) and 3 positive (0.0824856%) 4806ms (value shift: -6)
+Image: 3338 Number of windows evaluated: 5250 (skipped 370) and 1 positive (0.0204918%) 5761ms (value shift: -6)
+Image: 2045 Number of windows evaluated: 5250 (skipped 3638) and 0 positive ( 0%) 3180ms (value shift: -6)
+Image: 50 Number of windows evaluated: 5250 (skipped 3323) and 1 positive (0.0518941%) 3210ms (value shift: -6)
+Image: 2716 Number of windows evaluated: 5250 (skipped 2952) and 1 positive (0.0435161%) 3608ms (value shift: -6)
+Image: 1341 Number of windows evaluated: 5250 (skipped 1887) and 2 positive (0.0594707%) 4215ms (value shift: -6)
+Image: 2050 Number of windows evaluated: 5250 (skipped 4113) and 0 positive ( 0%) 2719ms (value shift: -6)
+Image: 704 Number of windows evaluated: 5250 (skipped 2223) and 1 positive (0.033036%) 4165ms (value shift: -6)
+Image: 51 Number of windows evaluated: 5250 (skipped 2949) and 1 positive (0.0434594%) 3359ms (value shift: -6)
+Image: 2717 Number of windows evaluated: 5250 (skipped 3514) and 2 positive (0.115207%) 3025ms (value shift: -6)
+Image: 3339 Number of windows evaluated: 5250 (skipped 648) and 1 positive (0.0217297%) 4961ms (value shift: -6)
+Image: 2051 Number of windows evaluated: 5250 (skipped 4402) and 0 positive ( 0%) 2369ms (value shift: -6)
+Image: 2029 Number of windows evaluated: 5250 (skipped 4022) and 0 positive ( 0%) 2776ms (value shift: -6)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive ( 0%) 3690ms (value shift: -6)
+Image: 2715 Number of windows evaluated: 5250 (skipped 2955) and 0 positive ( 0%) 3736ms (value shift: -6)
+Image: 1340 Number of windows evaluated: 5250 (skipped 1691) and 0 positive ( 0%) 4347ms (value shift: -6)
+Image: 703 Number of windows evaluated: 5250 (skipped 1613) and 3 positive (0.0824856%) 4476ms (value shift: -6)
+Image: 3338 Number of windows evaluated: 5250 (skipped 370) and 1 positive (0.0204918%) 5298ms (value shift: -6)
+Image: 2045 Number of windows evaluated: 5250 (skipped 3638) and 0 positive ( 0%) 2921ms (value shift: -6)
+Image: 50 Number of windows evaluated: 5250 (skipped 3323) and 1 positive (0.0518941%) 3073ms (value shift: -6)
+Image: 2716 Number of windows evaluated: 5250 (skipped 2952) and 1 positive (0.0435161%) 3409ms (value shift: -6)
+Image: 1341 Number of windows evaluated: 5250 (skipped 1887) and 2 positive (0.0594707%) 4006ms (value shift: -6)
+Image: 704 Number of windows evaluated: 5250 (skipped 2223) and 1 positive (0.033036%) 3873ms (value shift: -6)
+Image: 2050 Number of windows evaluated: 5250 (skipped 4113) and 0 positive ( 0%) 2636ms (value shift: -6)
+Image: 3339 Number of windows evaluated: 5250 (skipped 648) and 1 positive (0.0217297%) 4646ms (value shift: -6)
+Image: 51 Number of windows evaluated: 5250 (skipped 2949) and 1 positive (0.0434594%) 3362ms (value shift: -6)
+Image: 2717 Number of windows evaluated: 5250 (skipped 3514) and 2 positive (0.115207%) 2977ms (value shift: -6)
+Image: 2051 Number of windows evaluated: 5250 (skipped 4402) and 0 positive ( 0%) 2414ms (value shift: -6)
+Image: 705 Number of windows evaluated: 5250 (skipped 2134) and 5 positive (0.160462%) 3871ms (value shift: -6)
+Image: 1342 Number of windows evaluated: 5250 (skipped 1679) and 4 positive (0.112013%) 4021ms (value shift: -6)
+Image: 2718 Number of windows evaluated: 5250 (skipped 3450) and 0 positive ( 0%) 3057ms (value shift: -6)
+Image: 2058 Number of windows evaluated: 5250 (skipped 3983) and 0 positive ( 0%) 2713ms (value shift: -6)
+Image: 54 Number of windows evaluated: 5250 (skipped 2392) and 0 positive ( 0%) 3923ms (value shift: -6)
+Image: 3340 Number of windows evaluated: 5250 (skipped 725) and 2 positive (0.0441989%) 4779ms (value shift: -6)
+Image: 1343 Number of windows evaluated: 5250 (skipped 2775) and 1 positive (0.040404%) 3377ms (value shift: -6)
+Image: 706 Number of windows evaluated: 5250 (skipped 2709) and 3 positive (0.118064%) 3594ms (value shift: -6)
+Image: 2060 Number of windows evaluated: 5250 (skipped 3145) and 4 positive (0.190024%) 3249ms (value shift: -6)
+Image: 2719 Number of windows evaluated: 5250 (skipped 2573) and 3 positive (0.112066%) 3666ms (value shift: -6)
+Image: 55 Number of windows evaluated: 5250 (skipped 2312) and 2 positive (0.0680735%) 3938ms (value shift: -6)
+Image: 3341 Number of windows evaluated: 5250 (skipped 1101) and 3 positive (0.0723066%) 4533ms (value shift: -6)
+Image: 1344 Number of windows evaluated: 5250 (skipped 2207) and 3 positive (0.0985869%) 3823ms (value shift: -6)
+Image: 707 Number of windows evaluated: 5250 (skipped 2379) and 7 positive (0.243817%) 3903ms (value shift: -6)
+Image: 2061 Number of windows evaluated: 5250 (skipped 3341) and 0 positive ( 0%) 3229ms (value shift: -6)
+Image: 2720 Number of windows evaluated: 5250 (skipped 2266) and 5 positive (0.16756%) 3945ms (value shift: -6)
+Image: 56 Number of windows evaluated: 5250 (skipped 2169) and 2 positive (0.064914%) 3968ms (value shift: -6)
+Image: 2062 Number of windows evaluated: 5250 (skipped 3425) and 2 positive (0.109589%) 3080ms (value shift: -6)
+Image: 1345 Number of windows evaluated: 5250 (skipped 1840) and 1 positive (0.0293255%) 4074ms (value shift: -6)
+Image: 3342 Number of windows evaluated: 5250 (skipped 1494) and 0 positive ( 0%) 4535ms (value shift: -6)
+Image: 708 Number of windows evaluated: 5250 (skipped 1834) and 7 positive (0.204918%) 4202ms (value shift: -6)
+Image: 2728 Number of windows evaluated: 5250 (skipped 1268) and 1 positive (0.025113%) 4605ms (value shift: -6)
+Image: 57 Number of windows evaluated: 5250 (skipped 2288) and 0 positive ( 0%) 3964ms (value shift: -6)
+Image: 2063 Number of windows evaluated: 5250 (skipped 2989) and 0 positive ( 0%) 3469ms (value shift: -6)
+Image: 1346 Number of windows evaluated: 5250 (skipped 1889) and 1 positive (0.029753%) 4084ms (value shift: -6)
+Image: 3343 Number of windows evaluated: 5250 (skipped 1580) and 1 positive (0.027248%) 4336ms (value shift: -6)
+Image: 709 Number of windows evaluated: 5250 (skipped 1884) and 4 positive (0.118835%) 4335ms (value shift: -6)
+Image: 58 Number of windows evaluated: 5250 (skipped 2261) and 3 positive (0.100368%) 3894ms (value shift: -6)
+Image: 2064 Number of windows evaluated: 5250 (skipped 3178) and 0 positive ( 0%) 3345ms (value shift: -6)
+Image: 2729 Number of windows evaluated: 5250 (skipped 1075) and 4 positive (0.0958084%) 4610ms (value shift: -6)
+Image: 1347 Number of windows evaluated: 5250 (skipped 1830) and 3 positive (0.0877193%) 4228ms (value shift: -6)
+Image: 3344 Number of windows evaluated: 5250 (skipped 1641) and 2 positive (0.055417%) 4289ms (value shift: -6)
+Image: 710 Number of windows evaluated: 5250 (skipped 1840) and 9 positive (0.26393%) 4243ms (value shift: -6)
+Image: 2065 Number of windows evaluated: 5250 (skipped 2852) and 0 positive ( 0%) 3434ms (value shift: -6)
+Image: 59 Number of windows evaluated: 5250 (skipped 2392) and 1 positive (0.0349895%) 3925ms (value shift: -6)
+Image: 2730 Number of windows evaluated: 5250 (skipped 996) and 1 positive (0.0235073%) 4787ms (value shift: -6)
+Image: 1348 Number of windows evaluated: 5250 (skipped 1599) and 1 positive (0.0273898%) 4266ms (value shift: -6)
+Image: 3345 Number of windows evaluated: 5250 (skipped 1799) and 3 positive (0.0869313%) 4157ms (value shift: -6)
+Image: 711 Number of windows evaluated: 5250 (skipped 1835) and 6 positive (0.175695%) 4273ms (value shift: -6)
+Image: 2066 Number of windows evaluated: 5250 (skipped 2438) and 1 positive (0.0355619%) 3718ms (value shift: -6)
+Image: 60 Number of windows evaluated: 5250 (skipped 1952) and 3 positive (0.0909642%) 4372ms (value shift: -6)
+Image: 2738 Number of windows evaluated: 5250 (skipped 1355) and 5 positive (0.12837%) 4555ms (value shift: -6)
+Image: 712 Number of windows evaluated: 5250 (skipped 2526) and 1 positive (0.0367107%) 3648ms (value shift: -6)
+Image: 3347 Number of windows evaluated: 5250 (skipped 1898) and 0 positive ( 0%) 4091ms (value shift: -6)
+Image: 1349 Number of windows evaluated: 5250 (skipped 1367) and 3 positive (0.0772599%) 4468ms (value shift: -6)
+Image: 2067 Number of windows evaluated: 5250 (skipped 2698) and 1 positive (0.039185%) 3639ms (value shift: -6)
+Image: 61 Number of windows evaluated: 5250 (skipped 2766) and 2 positive (0.0805153%) 3564ms (value shift: -6)
+Image: 2739 Number of windows evaluated: 5250 (skipped 1600) and 2 positive (0.0547945%) 4282ms (value shift: -6)
+Image: 2068 Number of windows evaluated: 5250 (skipped 3255) and 2 positive (0.100251%) 3254ms (value shift: -6)
+Image: 713 Number of windows evaluated: 5250 (skipped 2094) and 1 positive (0.0316857%) 4088ms (value shift: -6)
+Image: 3348 Number of windows evaluated: 5250 (skipped 1713) and 2 positive (0.0565451%) 4271ms (value shift: -6)
+Image: 1350 Number of windows evaluated: 5250 (skipped 1738) and 2 positive (0.0569476%) 4223ms (value shift: -6)
+Image: 62 Number of windows evaluated: 5250 (skipped 2789) and 3 positive (0.121902%) 3521ms (value shift: -6)
+Image: 2069 Number of windows evaluated: 5250 (skipped 3428) and 0 positive ( 0%) 3227ms (value shift: -6)
+Image: 2740 Number of windows evaluated: 5250 (skipped 1454) and 2 positive (0.052687%) 4483ms (value shift: -6)
+Image: 714 Number of windows evaluated: 5250 (skipped 2638) and 1 positive (0.0382848%) 3800ms (value shift: -6)
+Image: 63 Number of windows evaluated: 5250 (skipped 2774) and 0 positive ( 0%) 3725ms (value shift: -6)
+Image: 1351 Number of windows evaluated: 5250 (skipped 1798) and 2 positive (0.0579374%) 4198ms (value shift: -6)
+Image: 3353 Number of windows evaluated: 5250 (skipped 1830) and 1 positive (0.0292398%) 4270ms (value shift: -6)
+Image: 2070 Number of windows evaluated: 5250 (skipped 3181) and 1 positive (0.0483325%) 3277ms (value shift: -6)
+Image: 715 Number of windows evaluated: 5250 (skipped 2746) and 1 positive (0.0399361%) 3629ms (value shift: -6)
+Image: 64 Number of windows evaluated: 5250 (skipped 2670) and 1 positive (0.0387597%) 3690ms (value shift: -6)
+Image: 2741 Number of windows evaluated: 5250 (skipped 1427) and 3 positive (0.0784724%) 4749ms (value shift: -6)
+Image: 1352 Number of windows evaluated: 5250 (skipped 1968) and 3 positive (0.0914077%) 3956ms (value shift: -6)
+Image: 3361 Number of windows evaluated: 5250 (skipped 1676) and 3 positive (0.0839396%) 4271ms (value shift: -6)
+Image: 2071 Number of windows evaluated: 5250 (skipped 3311) and 1 positive (0.051573%) 3406ms (value shift: -6)
+Image: 2029 Number of windows evaluated: 5250 (skipped 4022) and 0 positive ( 0%) 2720ms (value shift: -6)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive ( 0%) 3456ms (value shift: -6)
+Image: 2715 Number of windows evaluated: 5250 (skipped 2955) and 0 positive ( 0%) 3543ms (value shift: -6)
+Image: 1340 Number of windows evaluated: 5250 (skipped 1691) and 0 positive ( 0%) 4344ms (value shift: -6)
+Image: 703 Number of windows evaluated: 5250 (skipped 1613) and 3 positive (0.0824856%) 4546ms (value shift: -6)
+Image: 3338 Number of windows evaluated: 5250 (skipped 370) and 1 positive (0.0204918%) 5453ms (value shift: -6)
+Image: 2045 Number of windows evaluated: 5250 (skipped 3638) and 0 positive ( 0%) 2952ms (value shift: -6)
+Image: 50 Number of windows evaluated: 5250 (skipped 3323) and 1 positive (0.0518941%) 3042ms (value shift: -6)
+Image: 2716 Number of windows evaluated: 5250 (skipped 2952) and 1 positive (0.0435161%) 3366ms (value shift: -6)
+Image: 1341 Number of windows evaluated: 5250 (skipped 1887) and 2 positive (0.0594707%) 3700ms (value shift: -6)
+Image: 704 Number of windows evaluated: 5250 (skipped 2223) and 1 positive (0.033036%) 3531ms (value shift: -6)
+Image: 2050 Number of windows evaluated: 5250 (skipped 4113) and 0 positive ( 0%) 2465ms (value shift: -6)
+Image: 51 Number of windows evaluated: 5250 (skipped 2949) and 1 positive (0.0434594%) 3097ms (value shift: -6)
+Image: 2717 Number of windows evaluated: 5250 (skipped 3514) and 2 positive (0.115207%) 2798ms (value shift: -6)
+Image: 3339 Number of windows evaluated: 5250 (skipped 648) and 1 positive (0.0217297%) 4413ms (value shift: -6)
+Image: 2051 Number of windows evaluated: 5250 (skipped 4402) and 0 positive ( 0%) 2304ms (value shift: -6)
+Image: 705 Number of windows evaluated: 5250 (skipped 2134) and 5 positive (0.160462%) 3543ms (value shift: -6)
+Image: 1342 Number of windows evaluated: 5250 (skipped 1679) and 4 positive (0.112013%) 3793ms (value shift: -6)
+Image: 2718 Number of windows evaluated: 5250 (skipped 3450) and 0 positive ( 0%) 2834ms (value shift: -6)
+Image: 2058 Number of windows evaluated: 5250 (skipped 3983) and 0 positive ( 0%) 2590ms (value shift: -6)
+Image: 54 Number of windows evaluated: 5250 (skipped 2392) and 0 positive ( 0%) 3538ms (value shift: -6)
+Image: 3340 Number of windows evaluated: 5250 (skipped 725) and 2 positive (0.0441989%) 4314ms (value shift: -6)
+Image: 706 Number of windows evaluated: 5250 (skipped 2709) and 3 positive (0.118064%) 3279ms (value shift: -6)
+Image: 1343 Number of windows evaluated: 5250 (skipped 2775) and 1 positive (0.040404%) 3103ms (value shift: -6)
+Image: 2719 Number of windows evaluated: 5250 (skipped 2573) and 3 positive (0.112066%) 3342ms (value shift: -6)
+Image: 2060 Number of windows evaluated: 5250 (skipped 3145) and 4 positive (0.190024%) 3023ms (value shift: -6)
+Image: 55 Number of windows evaluated: 5250 (skipped 2312) and 2 positive (0.0680735%) 3525ms (value shift: -6)
+Image: 3341 Number of windows evaluated: 5250 (skipped 1101) and 3 positive (0.0723066%) 4074ms (value shift: -6)
+Image: 1344 Number of windows evaluated: 5250 (skipped 2207) and 3 positive (0.0985869%) 3533ms (value shift: -6)
+Image: 707 Number of windows evaluated: 5250 (skipped 2379) and 7 positive (0.243817%) 3606ms (value shift: -6)
+Image: 2061 Number of windows evaluated: 5250 (skipped 3341) and 0 positive ( 0%) 2979ms (value shift: -6)
+Image: 2720 Number of windows evaluated: 5250 (skipped 2266) and 5 positive (0.16756%) 3556ms (value shift: -6)
+Image: 56 Number of windows evaluated: 5250 (skipped 2169) and 2 positive (0.064914%) 3586ms (value shift: -6)
+Image: 2062 Number of windows evaluated: 5250 (skipped 3425) and 2 positive (0.109589%) 2814ms (value shift: -6)
+Image: 3342 Number of windows evaluated: 5250 (skipped 1494) and 0 positive ( 0%) 3981ms (value shift: -6)
+Image: 1345 Number of windows evaluated: 5250 (skipped 1840) and 1 positive (0.0293255%) 3749ms (value shift: -6)
+Image: 708 Number of windows evaluated: 5250 (skipped 1834) and 7 positive (0.204918%) 3920ms (value shift: -6)
+Image: 2728 Number of windows evaluated: 5250 (skipped 1268) and 1 positive (0.025113%) 4034ms (value shift: -6)
+Image: 57 Number of windows evaluated: 5250 (skipped 2288) and 0 positive ( 0%) 3524ms (value shift: -6)
+Image: 2063 Number of windows evaluated: 5250 (skipped 2989) and 0 positive ( 0%) 3203ms (value shift: -6)
+Image: 1346 Number of windows evaluated: 5250 (skipped 1889) and 1 positive (0.029753%) 3664ms (value shift: -6)
+Image: 3343 Number of windows evaluated: 5250 (skipped 1580) and 1 positive (0.027248%) 3896ms (value shift: -6)
+Image: 709 Number of windows evaluated: 5250 (skipped 1884) and 4 positive (0.118835%) 3793ms (value shift: -6)
+Image: 58 Number of windows evaluated: 5250 (skipped 2261) and 3 positive (0.100368%) 3473ms (value shift: -6)
+Image: 2729 Number of windows evaluated: 5250 (skipped 1075) and 4 positive (0.0958084%) 4194ms (value shift: -6)
+Image: 2064 Number of windows evaluated: 5250 (skipped 3178) and 0 positive ( 0%) 2999ms (value shift: -6)
+Image: 1347 Number of windows evaluated: 5250 (skipped 1830) and 3 positive (0.0877193%) 3810ms (value shift: -6)
+Image: 3344 Number of windows evaluated: 5250 (skipped 1641) and 2 positive (0.055417%) 4019ms (value shift: -6)
+Image: 710 Number of windows evaluated: 5250 (skipped 1840) and 9 positive (0.26393%) 3913ms (value shift: -6)
+Image: 59 Number of windows evaluated: 5250 (skipped 2392) and 1 positive (0.0349895%) 3480ms (value shift: -6)
+Image: 2065 Number of windows evaluated: 5250 (skipped 2852) and 0 positive ( 0%) 3240ms (value shift: -6)
+Image: 2730 Number of windows evaluated: 5250 (skipped 996) and 1 positive (0.0235073%) 4233ms (value shift: -6)
+Image: 1348 Number of windows evaluated: 5250 (skipped 1599) and 1 positive (0.0273898%) 3910ms (value shift: -6)
+Image: 3345 Number of windows evaluated: 5250 (skipped 1799) and 3 positive (0.0869313%) 3809ms (value shift: -6)
+Image: 711 Number of windows evaluated: 5250 (skipped 1835) and 6 positive (0.175695%) 3818ms (value shift: -6)
+Image: 60 Number of windows evaluated: 5250 (skipped 1952) and 3 positive (0.0909642%) 3734ms (value shift: -6)
+Image: 2066 Number of windows evaluated: 5250 (skipped 2438) and 1 positive (0.0355619%) 3568ms (value shift: -6)
+Image: 2738 Number of windows evaluated: 5250 (skipped 1355) and 5 positive (0.12837%) 4088ms (value shift: -6)
+Image: 712 Number of windows evaluated: 5250 (skipped 2526) and 1 positive (0.0367107%) 3362ms (value shift: -6)
+Image: 1349 Number of windows evaluated: 5250 (skipped 1367) and 3 positive (0.0772599%) 3975ms (value shift: -6)
+Image: 3347 Number of windows evaluated: 5250 (skipped 1898) and 0 positive ( 0%) 3718ms (value shift: -6)
+Image: 61 Number of windows evaluated: 5250 (skipped 2766) and 2 positive (0.0805153%) 3154ms (value shift: -6)
+Image: 2067 Number of windows evaluated: 5250 (skipped 2698) and 1 positive (0.039185%) 3286ms (value shift: -6)
+Image: 2739 Number of windows evaluated: 5250 (skipped 1600) and 2 positive (0.0547945%) 3890ms (value shift: -6)
+Image: 62 Number of windows evaluated: 5250 (skipped 2789) and 3 positive (0.121902%) 3195ms (value shift: -6)
+Image: 713 Number of windows evaluated: 5250 (skipped 2094) and 1 positive (0.0316857%) 3713ms (value shift: -6)
+Image: 1350 Number of windows evaluated: 5250 (skipped 1738) and 2 positive (0.0569476%) 3843ms (value shift: -6)
+Image: 2068 Number of windows evaluated: 5250 (skipped 3255) and 2 positive (0.100251%) 3061ms (value shift: -6)
+Image: 3348 Number of windows evaluated: 5250 (skipped 1713) and 2 positive (0.0565451%) 3899ms (value shift: -6)
+Image: 2740 Number of windows evaluated: 5250 (skipped 1454) and 2 positive (0.052687%) 4028ms (value shift: -6)
+Image: 63 Number of windows evaluated: 5250 (skipped 2774) and 0 positive ( 0%) 3183ms (value shift: -6)
+Image: 2069 Number of windows evaluated: 5250 (skipped 3428) and 0 positive ( 0%) 2914ms (value shift: -6)
+Image: 714 Number of windows evaluated: 5250 (skipped 2638) and 1 positive (0.0382848%) 3341ms (value shift: -6)
+Image: 1351 Number of windows evaluated: 5250 (skipped 1798) and 2 positive (0.0579374%) 3750ms (value shift: -6)
+Image: 3353 Number of windows evaluated: 5250 (skipped 1830) and 1 positive (0.0292398%) 3811ms (value shift: -6)
+Image: 64 Number of windows evaluated: 5250 (skipped 2670) and 1 positive (0.0387597%) 3233ms (value shift: -6)
+Image: 2070 Number of windows evaluated: 5250 (skipped 3181) and 1 positive (0.0483325%) 3029ms (value shift: -6)
+Image: 715 Number of windows evaluated: 5250 (skipped 2746) and 1 positive (0.0399361%) 3328ms (value shift: -6)
+Image: 2741 Number of windows evaluated: 5250 (skipped 1427) and 3 positive (0.0784724%) 4068ms (value shift: -6)
+Image: 1352 Number of windows evaluated: 5250 (skipped 1968) and 3 positive (0.0914077%) 3596ms (value shift: -6)
+Image: 3361 Number of windows evaluated: 5250 (skipped 1676) and 3 positive (0.0839396%) 3874ms (value shift: -6)
+Image: 2071 Number of windows evaluated: 5250 (skipped 3311) and 1 positive (0.051573%) 3037ms (value shift: -6)
+Image: 65 Number of windows evaluated: 5250 (skipped 2625) and 2 positive (0.0761905%) 3381ms (value shift: -6)
+Image: 716 Number of windows evaluated: 5250 (skipped 2392) and 0 positive ( 0%) 3569ms (value shift: -6)
+HOG(RGB) 3780
+CoOccurrence(RGB) 8192
+HONV 10368
+S2HOG(RGB) 105
+Corner(Depth) 80
+HOI 3780
+HOG(Depth) 3780
+SURF(RGB) 80
+HOG(Thermal) 3780
+Corner(RGB) 80
+Histogram(Depth) 26
+ORB(RGB) 90
+SIFT(RGB) 10
+CenSurE(RGB) 30
+FAST(RGB) 80
+MSD(RGB) 80
+HDD 3780
+LBP(RGB) 2560
+RAW(RGB) 24576
+SDDG(Thermal) 5488
+SDDG(Depth) 5488
+Evaluation of ground truth with sliding window done, results: 
+Evaluation result 
+-------------------
+# True Positives 1437
+# True Negatives 0
+# False Positives 0
+# False Negatives 307
+-------------------
+TPR 82.40%
+FPR -nan(ind)%
+-------------------
+
+Precision 1.000000
+Recall 0.823968
+F1-score 0.903489
+-------------------
+FPPI -1.000000
+Miss rate 0.176032
+-------------------
+Evaluation time 0.000000ms
+Evaluation of ground truth with sliding window for category Critical
+Min. miss rate for category: 0.119369
+Evaluation of ground truth with sliding window for category High
+Min. miss rate for category: 0.138211
+Evaluation of ground truth with sliding window for category Moderate
+Min. miss rate for category: 0.353333
+Evaluation of ground truth with sliding window for category Low
+Min. miss rate for category: 0.900000
+Image: 2029 Number of windows evaluated: 5250 (skipped 4022) and 0 positive (0.000000%) 2662ms (value shift: -6.000000)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive (0.000000%) 3425ms (value shift: -6.000000)
+Image: 2715 Number of windows evaluated: 5250 (skipped 2955) and 0 positive (0.000000%) 3509ms (value shift: -6.000000)
+Image: 1340 Number of windows evaluated: 5250 (skipped 1691) and 0 positive (0.000000%) 4222ms (value shift: -6.000000)
+Image: 703 Number of windows evaluated: 5250 (skipped 1613) and 3 positive (0.082486%) 4561ms (value shift: -6.000000)
+Image: 3338 Number of windows evaluated: 5250 (skipped 370) and 1 positive (0.020492%) 5235ms (value shift: -6.000000)
+Image: 2045 Number of windows evaluated: 5250 (skipped 3638) and 0 positive (0.000000%) 3124ms (value shift: -6.000000)
+Image: 50 Number of windows evaluated: 5250 (skipped 3323) and 1 positive (0.051894%) 3145ms (value shift: -6.000000)
+Image: 2716 Number of windows evaluated: 5250 (skipped 2952) and 1 positive (0.043516%) 3391ms (value shift: -6.000000)
+Image: 1341 Number of windows evaluated: 5250 (skipped 1887) and 2 positive (0.059471%) 3906ms (value shift: -6.000000)
+Image: 704 Number of windows evaluated: 5250 (skipped 2223) and 1 positive (0.033036%) 3786ms (value shift: -6.000000)
+Image: 2050 Number of windows evaluated: 5250 (skipped 4113) and 0 positive (0.000000%) 2550ms (value shift: -6.000000)
+Image: 3339 Number of windows evaluated: 5250 (skipped 648) and 1 positive (0.021730%) 4486ms (value shift: -6.000000)
+Image: 51 Number of windows evaluated: 5250 (skipped 2949) and 1 positive (0.043459%) 3150ms (value shift: -6.000000)
+Image: 2717 Number of windows evaluated: 5250 (skipped 3514) and 2 positive (0.115207%) 2914ms (value shift: -6.000000)
+Image: 2051 Number of windows evaluated: 5250 (skipped 4402) and 0 positive (0.000000%) 2406ms (value shift: -6.000000)
+Image: 1342 Number of windows evaluated: 5250 (skipped 1679) and 4 positive (0.112013%) 3933ms (value shift: -6.000000)
+Image: 705 Number of windows evaluated: 5250 (skipped 2134) and 5 positive (0.160462%) 3754ms (value shift: -6.000000)
+Image: 2718 Number of windows evaluated: 5250 (skipped 3450) and 0 positive (0.000000%) 3012ms (value shift: -6.000000)
+Image: 54 Number of windows evaluated: 5250 (skipped 2392) and 0 positive (0.000000%) 3659ms (value shift: -6.000000)
+Image: 2058 Number of windows evaluated: 5250 (skipped 3983) and 0 positive (0.000000%) 2648ms (value shift: -6.000000)
+Image: 3340 Number of windows evaluated: 5250 (skipped 725) and 2 positive (0.044199%) 4465ms (value shift: -6.000000)
+Image: 1343 Number of windows evaluated: 5250 (skipped 2775) and 1 positive (0.040404%) 3129ms (value shift: -6.000000)
+Image: 706 Number of windows evaluated: 5250 (skipped 2709) and 3 positive (0.118064%) 3418ms (value shift: -6.000000)
+Image: 2719 Number of windows evaluated: 5250 (skipped 2573) and 3 positive (0.112066%) 3357ms (value shift: -6.000000)
+Image: 2060 Number of windows evaluated: 5250 (skipped 3145) and 4 positive (0.190024%) 3114ms (value shift: -6.000000)
+Image: 55 Number of windows evaluated: 5250 (skipped 2312) and 2 positive (0.068074%) 3692ms (value shift: -6.000000)
+Image: 3341 Number of windows evaluated: 5250 (skipped 1101) and 3 positive (0.072307%) 4191ms (value shift: -6.000000)
+Image: 1344 Number of windows evaluated: 5250 (skipped 2207) and 3 positive (0.098587%) 3579ms (value shift: -6.000000)
+Image: 707 Number of windows evaluated: 5250 (skipped 2379) and 7 positive (0.243817%) 3583ms (value shift: -6.000000)
+Image: 2061 Number of windows evaluated: 5250 (skipped 3341) and 0 positive (0.000000%) 2945ms (value shift: -6.000000)
+Image: 2720 Number of windows evaluated: 5250 (skipped 2266) and 5 positive (0.167560%) 3553ms (value shift: -6.000000)
+Image: 56 Number of windows evaluated: 5250 (skipped 2169) and 2 positive (0.064914%) 3632ms (value shift: -6.000000)
+Image: 3342 Number of windows evaluated: 5250 (skipped 1494) and 0 positive (0.000000%) 3869ms (value shift: -6.000000)
+Evaluation of ground truth with sliding window done, results: 
+Evaluation result 
+-------------------
+# True Positives 1878
+# True Negatives 0
+# False Positives 0
+# False Negatives 199
+-------------------
+TPR 90.42%
+FPR -nan(ind)%
+-------------------
+
+Precision 1.000000
+Recall 0.904189
+F1-score 0.949684
+-------------------
+FPPI -1.000000
+Miss rate 0.095811
+-------------------
+Evaluation time 0.000000ms
+Evaluation of ground truth with sliding window for category Critical
+Min. miss rate for category: 0.111111
+Evaluation of ground truth with sliding window for category High
+Min. miss rate for category: 0.030120
+Evaluation of ground truth with sliding window for category Moderate
+Min. miss rate for category: 0.214286
+Evaluation of ground truth with sliding window for category Low
+Min. miss rate for category: 0.827160
+Image: 2029 Number of windows evaluated: 5250 (skipped 4022) and 0 positive (0.000000%) 2447ms (value shift: -6.000000)
+Image: 49 Number of windows evaluated: 5250 (skipped 2984) and 0 positive (0.000000%) 3117ms (value shift: -6.000000)
+Image: 2715 Number of windows evaluated: 5250 (skipped 2955) and 0 positive (0.000000%) 3241ms (value shift: -6.000000)
+Image: 2029 Number of windows evaluated: 12321 (skipped 10086) and 5 positive (0.223714%) 4980ms (value shift: -6)
+Image: 49 Number of windows evaluated: 12321 (skipped 7741) and 18 positive (0.393013%) 6493ms (value shift: -6)
+Image: 2715 Number of windows evaluated: 12321 (skipped 7381) and 9 positive (0.182186%) 6852ms (value shift: -6)
+Image: 1340 Number of windows evaluated: 12321 (skipped 4720) and 21 positive (0.276279%) 8200ms (value shift: -6)
+Image: 703 Number of windows evaluated: 12321 (skipped 4277) and 15 positive (0.186474%) 8780ms (value shift: -6)
+Image: 3338 Number of windows evaluated: 12321 (skipped 1084) and 19 positive (0.169084%) 10382ms (value shift: -6)
+Image: 2045 Number of windows evaluated: 12321 (skipped 9093) and 5 positive (0.154895%) 5862ms (value shift: -6)
+Image: 50 Number of windows evaluated: 12321 (skipped 8577) and 10 positive (0.267094%) 6113ms (value shift: -6)
+Image: 2716 Number of windows evaluated: 12321 (skipped 7372) and 20 positive (0.404122%) 7075ms (value shift: -6)
+Image: 2050 Number of windows evaluated: 12321 (skipped 10314) and 3 positive (0.149477%) 5118ms (value shift: -6)
+Image: 1341 Number of windows evaluated: 12321 (skipped 5196) and 37 positive (0.519298%) 8063ms (value shift: -6)
+Image: 704 Number of windows evaluated: 12321 (skipped 6154) and 15 positive (0.24323%) 7606ms (value shift: -6)
+Image: 51 Number of windows evaluated: 12321 (skipped 7740) and 24 positive (0.523903%) 6633ms (value shift: -6)
+Image: 2717 Number of windows evaluated: 12321 (skipped 8570) and 35 positive (0.933085%) 6198ms (value shift: -6)
+Image: 3339 Number of windows evaluated: 12321 (skipped 1853) and 19 positive (0.181506%) 10011ms (value shift: -6)
+Image: 2051 Number of windows evaluated: 12321 (skipped 10691) and 6 positive (0.368098%) 4973ms (value shift: -6)
+Image: 705 Number of windows evaluated: 12321 (skipped 5799) and 13 positive (0.199325%) 8122ms (value shift: -6)
+Image: 1342 Number of windows evaluated: 12321 (skipped 4672) and 22 positive (0.287619%) 8397ms (value shift: -6)
+Image: 2718 Number of windows evaluated: 12321 (skipped 8676) and 25 positive (0.685871%) 6191ms (value shift: -6)
+Image: 2058 Number of windows evaluated: 12321 (skipped 9871) and 8 positive (0.326531%) 5602ms (value shift: -6)
+Image: 54 Number of windows evaluated: 12321 (skipped 6406) and 4 positive (0.0676247%) 7806ms (value shift: -6)
+Image: 3340 Number of windows evaluated: 12321 (skipped 2033) and 18 positive (0.174961%) 9890ms (value shift: -6)
+Image: 1343 Number of windows evaluated: 12321 (skipped 7277) and 21 positive (0.416336%) 6827ms (value shift: -6)
+Image: 706 Number of windows evaluated: 12321 (skipped 7360) and 14 positive (0.282201%) 7105ms (value shift: -6)
+Image: 2060 Number of windows evaluated: 12321 (skipped 7968) and 10 positive (0.229727%) 6511ms (value shift: -6)
+Image: 2719 Number of windows evaluated: 12321 (skipped 6685) and 33 positive (0.585522%) 7407ms (value shift: -6)
+Image: 55 Number of windows evaluated: 12321 (skipped 6097) and 23 positive (0.369537%) 7716ms (value shift: -6)
+Image: 1344 Number of windows evaluated: 12321 (skipped 6003) and 26 positive (0.411523%) 7558ms (value shift: -6)
+Image: 707 Number of windows evaluated: 12321 (skipped 6411) and 25 positive (0.423012%) 7650ms (value shift: -6)
+Image: 2061 Number of windows evaluated: 12321 (skipped 8258) and 11 positive (0.270736%) 6276ms (value shift: -6)
+Image: 3341 Number of windows evaluated: 12321 (skipped 2990) and 15 positive (0.160754%) 9242ms (value shift: -6)
+Image: 2720 Number of windows evaluated: 12321 (skipped 5743) and 37 positive (0.562481%) 8048ms (value shift: -6)
+Image: 56 Number of windows evaluated: 12321 (skipped 5757) and 22 positive (0.335161%) 8024ms (value shift: -6)
+Image: 2062 Number of windows evaluated: 12321 (skipped 8821) and 7 positive (0.2%) 5990ms (value shift: -6)
+Image: 1345 Number of windows evaluated: 12321 (skipped 4977) and 32 positive (0.43573%) 8223ms (value shift: -6)
+Image: 708 Number of windows evaluated: 12321 (skipped 4951) and 16 positive (0.217096%) 8529ms (value shift: -6)
+Image: 3342 Number of windows evaluated: 12321 (skipped 4027) and 10 positive (0.120569%) 8773ms (value shift: -6)
+Image: 57 Number of windows evaluated: 12321 (skipped 6195) and 12 positive (0.195886%) 7677ms (value shift: -6)
+Image: 2728 Number of windows evaluated: 12321 (skipped 3508) and 39 positive (0.442528%) 9331ms (value shift: -6)
+Image: 2063 Number of windows evaluated: 12321 (skipped 7722) and 15 positive (0.326158%) 6854ms (value shift: -6)
+Image: 1346 Number of windows evaluated: 12321 (skipped 5056) and 35 positive (0.481762%) 8409ms (value shift: -6)
+Image: 709 Number of windows evaluated: 12321 (skipped 5094) and 18 positive (0.249066%) 8566ms (value shift: -6)
+Image: 3343 Number of windows evaluated: 12321 (skipped 4359) and 14 positive (0.175835%) 8754ms (value shift: -6)
+Image: 58 Number of windows evaluated: 12321 (skipped 6043) and 16 positive (0.254858%) 7891ms (value shift: -6)
+Image: 2064 Number of windows evaluated: 12321 (skipped 8173) and 8 positive (0.192864%) 6518ms (value shift: -6)
+Image: 2729 Number of windows evaluated: 12321 (skipped 2908) and 36 positive (0.38245%) 9687ms (value shift: -6)
+Image: 1347 Number of windows evaluated: 12321 (skipped 4980) and 48 positive (0.653862%) 8220ms (value shift: -6)
+Image: 710 Number of windows evaluated: 12321 (skipped 5034) and 25 positive (0.343077%) 8441ms (value shift: -6)
+Image: 3344 Number of windows evaluated: 12321 (skipped 4425) and 14 positive (0.177305%) 8559ms (value shift: -6)
+Image: 2065 Number of windows evaluated: 12321 (skipped 7403) and 10 positive (0.203335%) 6918ms (value shift: -6)
+Image: 59 Number of windows evaluated: 12321 (skipped 6427) and 9 positive (0.152698%) 7553ms (value shift: -6)
+Image: 2730 Number of windows evaluated: 12321 (skipped 2571) and 29 positive (0.297436%) 9608ms (value shift: -6)
+Image: 1348 Number of windows evaluated: 12321 (skipped 4384) and 27 positive (0.340179%) 8704ms (value shift: -6)
+Image: 711 Number of windows evaluated: 12321 (skipped 4919) and 18 positive (0.243178%) 8405ms (value shift: -6)
+Image: 2066 Number of windows evaluated: 12321 (skipped 6491) and 15 positive (0.25729%) 7562ms (value shift: -6)
+Image: 3345 Number of windows evaluated: 12321 (skipped 4852) and 9 positive (0.120498%) 8266ms (value shift: -6)
+Image: 60 Number of windows evaluated: 12321 (skipped 5192) and 24 positive (0.336653%) 8207ms (value shift: -6)
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 3
+Error: Unknown exception
+Starting job CoOccurrence(RGB)+HOG(RGB)
+Error: Unable to open file
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 3
+Error: Unknown exception
+Starting job HOG(RGB)+LBP(RGB)
+Started training of HOG(RGB)+LBP(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+S2HOG(RGB)
+Started training of HOG(RGB)+S2HOG(RGB), round 0
+Error: Unknown exception
+Starting job HDD+HOG(RGB)
+Error: Unable to open file
+Starting job HOG(RGB)+HONV
+Error: Unable to open file
+Starting job HOG(Depth)+HOG(RGB)
+Error: Unable to open file
+Starting job HOG(RGB)+Histogram(Depth)
+Error: Unable to open file
+Starting job HOG(RGB)+SDDG(Depth)
+Error: Unable to open file
+Starting job HOG(RGB)+HOI
+Can't evaluate the feature set HOG(RGB)+HOI against the data set KITTI, requirements not met
+Starting job HOG(RGB)+SDDG(Thermal)
+Can't evaluate the feature set HOG(RGB)+SDDG(Thermal) against the data set KITTI, requirements not met
+Starting job HOG(RGB)+HOG(Thermal)
+Can't evaluate the feature set HOG(RGB)+HOG(Thermal) against the data set KITTI, requirements not met
+Starting job HOG(RGB)
+Started training of HOG(RGB), round 0
+Error: Unknown exception
+Starting job S2HOG(RGB)
+Started training of S2HOG(RGB), round 0
+Error: Unknown exception
+Starting job CoOccurrence(RGB)
+Started training of CoOccurrence(RGB), round 0
+Error: Unknown exception
+Starting job LBP(RGB)
+Started training of LBP(RGB), round 0
+Error: Unknown exception
+Starting job RAW(RGB)
+Started training of RAW(RGB), round 0
+Error: Unknown exception
+Starting job HDD
+Started training of HDD, round 0
+Error: Unknown exception
+Starting job HONV
+Started training of HONV, round 0
+Error: Unknown exception
+Starting job HOG(Depth)
+Started training of HOG(Depth), round 0
+Error: Unknown exception
+Starting job SDDG(Depth)
+Started training of SDDG(Depth), round 0
+Error: Unknown exception
+Starting job Histogram(Depth)
+Started training of Histogram(Depth), round 0
+Error: Unknown exception
+Starting job HOG(Thermal)
+Can't evaluate the feature set HOG(Thermal) against the data set KITTI, requirements not met
+Starting job HOI
+Can't evaluate the feature set HOI against the data set KITTI, requirements not met
+Starting job SDDG(Thermal)
+Can't evaluate the feature set SDDG(Thermal) against the data set KITTI, requirements not met
+Starting job HOG(RGB)+SIFT(RGB)
+Started training of HOG(RGB)+SIFT(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+MSD(RGB)
+Started training of HOG(RGB)+MSD(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+SURF(RGB)
+Started training of HOG(RGB)+SURF(RGB), round 0
+Error: Unknown exception
+Starting job Corner(RGB)+HOG(RGB)
+Started training of Corner(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+SURF(RGB)
+Started training of HOG(RGB)+SURF(RGB), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+ORB(RGB)
+Started training of HOG(RGB)+ORB(RGB), round 0
+Error: Unknown exception
+Starting job CenSurE(RGB)+HOG(RGB)
+Started training of CenSurE(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job FAST(RGB)+HOG(RGB)
+Started training of FAST(RGB)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job Corner(Depth)+HOG(RGB)
+Started training of Corner(Depth)+HOG(RGB), round 0
+Error: Unknown exception
+Starting job Corner(RGB)
+Started training of Corner(RGB), round 0
+Error: Unknown exception
+Starting job SIFT(RGB)
+Started training of SIFT(RGB), round 0
+Error: Unknown exception
+Starting job ORB(RGB)
+Started training of ORB(RGB), round 0
+Error: Unknown exception
+Starting job CenSurE(RGB)
+Started training of CenSurE(RGB), round 0
+Error: Unknown exception
+Starting job FAST(RGB)
+Started training of FAST(RGB), round 0
+Error: Unknown exception
+Starting job MSD(RGB)
+Started training of MSD(RGB), round 0
+Error: Unknown exception
+Starting job SURF(RGB)
+Started training of SURF(RGB), round 0
+Error: Unknown exception
+Starting job Corner(Depth)
+Started training of Corner(Depth), round 0
+Error: Unknown exception
+Starting job HOG(RGB)+RAW(RGB)
+Error: Unable to open file
+Starting job CoOccurrence(RGB)+HOG(RGB)
+Error: Unable to open file
+Starting job HOG(RGB)+RAW(RGB)
+Error: Unable to open file
+Starting job HOG(RGB)+LBP(RGB)
+Error: Unable to open file
+Starting job HOG(RGB)+S2HOG(RGB)
+Error: Unable to open file
+Starting job HDD+HOG(RGB)
+Can't evaluate the feature set HDD+HOG(RGB) against the data set KAIST, requirements not met
+Starting job HOG(RGB)+HONV
+Can't evaluate the feature set HOG(RGB)+HONV against the data set KAIST, requirements not met
+Starting job HOG(Depth)+HOG(RGB)
+Can't evaluate the feature set HOG(Depth)+HOG(RGB) against the data set KAIST, requirements not met
+Starting job HOG(RGB)+Histogram(Depth)
+Can't evaluate the feature set HOG(RGB)+Histogram(Depth) against the data set KAIST, requirements not met
+Starting job HOG(RGB)+SDDG(Depth)
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 3
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 3
+Training boost classifier on 21920 samples (2262 TP, 19658 TN), feature size 28356
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 3
+Starting job HDD+HOG(RGB)
+Error: Unable to open file
+Starting job CoOccurrence(RGB)+HOG(RGB)
+Error: Unable to open file
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 3
+Starting job HDD+HOG(RGB)
+Error: Unable to open file
+Starting job CoOccurrence(RGB)+HOG(RGB)
+Error: Unable to open file
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 3
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Evaluation of ground truth with sliding window done, results: 
+Evaluation result 
+-------------------
+# True Positives 1570
+# True Negatives 0
+# False Positives 0
+# False Negatives 301
+-------------------
+TPR 83.91%
+FPR -nan(ind)%
+-------------------
+
+Precision 1.000000
+Recall 0.839123
+F1-score 0.912525
+-------------------
+FPPI -1.000000
+Miss rate 0.160877
+-------------------
+Evaluation time 0.000000ms
+Evaluation of ground truth with sliding window for category Critical
+Min. miss rate for category: 0.119369
+Evaluation of ground truth with sliding window for category High
+Min. miss rate for category: 0.121951
+Evaluation of ground truth with sliding window for category Moderate
+Min. miss rate for category: 0.340000
+Evaluation of ground truth with sliding window for category Low
+Min. miss rate for category: 0.900000
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+Evaluation of ground truth with sliding window done, results: 
+Evaluation result 
+-------------------
+# True Positives 1764
+# True Negatives 0
+# False Positives 0
+# False Negatives 211
+-------------------
+TPR 89.32%
+FPR -nan(ind)%
+-------------------
+
+Precision 1.000000
+Recall 0.893165
+F1-score 0.943568
+-------------------
+FPPI -1.000000
+Miss rate 0.106835
+-------------------
+Evaluation time 0.000000ms
+Evaluation of ground truth with sliding window for category Critical
+Min. miss rate for category: 0.136752
+Evaluation of ground truth with sliding window for category High
+Min. miss rate for category: 0.036145
+Evaluation of ground truth with sliding window for category Moderate
+Min. miss rate for category: 0.214286
+Evaluation of ground truth with sliding window for category Low
+Min. miss rate for category: 0.839506
+Starting job HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HDD+HOG(RGB)
+HDD+HOG(RGB): prep time: 202.2ms, window eval time: 0.2487ms
+HDD+HOG(RGB): prep time: 198.15ms, window eval time: 0.2497ms
+HDD+HOG(RGB): prep time: 200.88ms, window eval time: 0.2505ms
+HOG(RGB): prep time: 100.93ms, window eval time: 0.1093ms
+S2HOG(RGB): prep time: 99.42ms, window eval time: 0.1112ms
+HOG(RGB): prep time: 101.08ms, window eval time: 0.113ms
+S2HOG(RGB): prep time: 99.96ms, window eval time: 0.112ms
+CoOccurrence(RGB): prep time: 0ms, window eval time: 0.566ms
+LBP(RGB): prep time: 192.26ms, window eval time: 0.103ms
+RAW(RGB): prep time: 0ms, window eval time: 0.075ms
+Corner(RGB): prep time: 0ms, window eval time: 0.536ms
+SIFT(RGB): prep time: 0ms, window eval time: 12.129ms
+ORB(RGB): prep time: 0ms, window eval time: 2.163ms
+CenSurE(RGB): prep time: 0ms, window eval time: 1.452ms
+FAST(RGB): prep time: 0ms, window eval time: 0.667ms
+MSD(RGB): prep time: 0ms, window eval time: 13.837ms
+SURF(RGB): prep time: 0ms, window eval time: 2.32ms
+HDD: prep time: 99.07ms, window eval time: 0.113ms
+HONV: prep time: 0ms, window eval time: 1.494ms
+HOG(Depth): prep time: 96.6ms, window eval time: 0.122ms
+SDDG(Depth): prep time: 0ms, window eval time: 3.088ms
+Histogram(Depth): prep time: 0ms, window eval time: 0.161ms
+Corner(Depth): prep time: 0ms, window eval time: 0.362ms
+HOG(RGB): prep time: 101.74ms, window eval time: 0.111ms
+S2HOG(RGB): prep time: 100.37ms, window eval time: 0.111ms
+CoOccurrence(RGB): prep time: 0ms, window eval time: 0.626ms
+LBP(RGB): prep time: 191.75ms, window eval time: 0.102ms
+RAW(RGB): prep time: 0ms, window eval time: 0.075ms
+Corner(RGB): prep time: 0ms, window eval time: 0.466ms
+SIFT(RGB): prep time: 0ms, window eval time: 12.021ms
+ORB(RGB): prep time: 0ms, window eval time: 1.773ms
+CenSurE(RGB): prep time: 0ms, window eval time: 1.393ms
+FAST(RGB): prep time: 0ms, window eval time: 0.652ms
+MSD(RGB): prep time: 0ms, window eval time: 13.522ms
+SURF(RGB): prep time: 0ms, window eval time: 2.203ms
+HDD: prep time: 99.56ms, window eval time: 0.119ms
+HONV: prep time: 0ms, window eval time: 1.514ms
+HOG(Depth): prep time: 96.48ms, window eval time: 0.109ms
+SDDG(Depth): prep time: 0ms, window eval time: 3.005ms
+Histogram(Depth): prep time: 0ms, window eval time: 0.198ms
+Corner(Depth): prep time: 0ms, window eval time: 0.342ms
+HOG(RGB): prep time: 103.19ms, window eval time: 0.115ms
+S2HOG(RGB): prep time: 102.68ms, window eval time: 0.111ms
+CoOccurrence(RGB): prep time: 0ms, window eval time: 0.641ms
+LBP(RGB): prep time: 193.36ms, window eval time: 0.112ms
+RAW(RGB): prep time: 0ms, window eval time: 0.08ms
+Corner(RGB): prep time: 0ms, window eval time: 0.498ms
+SIFT(RGB): prep time: 0ms, window eval time: 12.061ms
+ORB(RGB): prep time: 0ms, window eval time: 1.865ms
+CenSurE(RGB): prep time: 0ms, window eval time: 1.453ms
+FAST(RGB): prep time: 0ms, window eval time: 0.688ms
+MSD(RGB): prep time: 0ms, window eval time: 14.142ms
+SURF(RGB): prep time: 0ms, window eval time: 2.319ms
+HDD: prep time: 102.87ms, window eval time: 0.123ms
+HONV: prep time: 0ms, window eval time: 1.523ms
+HOG(Depth): prep time: 100.57ms, window eval time: 0.124ms
+SDDG(Depth): prep time: 0ms, window eval time: 3.159ms
+Histogram(Depth): prep time: 0ms, window eval time: 0.146ms
+Corner(Depth): prep time: 0ms, window eval time: 0.315ms
+HOG(RGB): prep time: 105.65ms, window eval time: 0.11ms
+S2HOG(RGB): prep time: 102.64ms, window eval time: 0.112ms
+CoOccurrence(RGB): prep time: 0ms, window eval time: 0.611ms
+LBP(RGB): prep time: 194.77ms, window eval time: 0.107ms
+RAW(RGB): prep time: 0ms, window eval time: 0.076ms
+Corner(RGB): prep time: 0ms, window eval time: 0.471ms
+SIFT(RGB): prep time: 0ms, window eval time: 11.997ms
+ORB(RGB): prep time: 0ms, window eval time: 1.861ms
+CenSurE(RGB): prep time: 0ms, window eval time: 1.433ms
+FAST(RGB): prep time: 0ms, window eval time: 0.71ms
+MSD(RGB): prep time: 0ms, window eval time: 13.804ms
+SURF(RGB): prep time: 0ms, window eval time: 2.243ms
+HDD: prep time: 97.28ms, window eval time: 0.122ms
+HONV: prep time: 0ms, window eval time: 1.564ms
+HOG(Depth): prep time: 95.18ms, window eval time: 0.115ms
+SDDG(Depth): prep time: 0ms, window eval time: 3.047ms
+Histogram(Depth): prep time: 0ms, window eval time: 0.151ms
+Corner(Depth): prep time: 0ms, window eval time: 0.334ms
+HOG(Thermal): prep time: 96.43ms, window eval time: 0.143ms
+HOI: prep time: 74.26ms, window eval time: 0.114ms
+SDDG(Thermal): prep time: 0ms, window eval time: 2.892ms
+Starting job HOG(RGB)
+Starting job S2HOG(RGB)
+Starting job CoOccurrence(RGB)
+Starting job LBP(RGB)
+Starting job RAW(RGB)
+Starting job Corner(RGB)
+Started training of Corner(RGB), round 0
+Image: 1334 Number of windows evaluated: 16281 (skipped 6344) and 1 positive (0.0100634%) 10262ms (value shift: -6)
+Image: 2668 Number of windows evaluated: 16281 (skipped 5008) and 1 positive (0.00887075%) 11239ms (value shift: -6)
+Image: 3336 Number of windows evaluated: 16281 (skipped 4733) and 2 positive (0.017319%) 11568ms (value shift: -6)
+Image: 2002 Number of windows evaluated: 16281 (skipped 2368) and 0 positive ( 0%) 13416ms (value shift: -6)
+Image: 667 Number of windows evaluated: 16281 (skipped 2415) and 3 positive (0.0216357%) 13437ms (value shift: -6)
+Image: 0 Number of windows evaluated: 16019 (skipped 555) and 0 positive ( 0%) 13948ms (value shift: -6)
+Image: 1335 Number of windows evaluated: 16281 (skipped 3962) and 2 positive (0.0162351%) 12521ms (value shift: -6)
+Image: 2669 Number of windows evaluated: 16281 (skipped 3216) and 0 positive ( 0%) 13270ms (value shift: -6)
+Image: 3337 Number of windows evaluated: 16281 (skipped 3374) and 0 positive ( 0%) 13040ms (value shift: -6)
+Image: 668 Number of windows evaluated: 16281 (skipped 4677) and 0 positive ( 0%) 11684ms (value shift: -6)
+Image: 2003 Number of windows evaluated: 16281 (skipped 4616) and 3 positive (0.025718%) 12339ms (value shift: -6)
+Image: 1 Number of windows evaluated: 16281 (skipped 4277) and 0 positive ( 0%) 12312ms (value shift: -6)
+Image: 1336 Number of windows evaluated: 16281 (skipped 2391) and 2 positive (0.0143988%) 13682ms (value shift: -6)
+Image: 3338 Number of windows evaluated: 16281 (skipped 2974) and 2 positive (0.0150297%) 12992ms (value shift: -6)
+Image: 2670 Number of windows evaluated: 16281 (skipped 2653) and 2 positive (0.0146757%) 13758ms (value shift: -6)
+Image: 670 Number of windows evaluated: 16281 (skipped 1974) and 0 positive ( 0%) 13586ms (value shift: -6)
+Image: 2005 Number of windows evaluated: 16281 (skipped 3133) and 1 positive (0.00760572%) 13037ms (value shift: -6)
+Image: 3 Number of windows evaluated: 16281 (skipped 1733) and 1 positive (0.0068738%) 13793ms (value shift: -6)
+Image: 1338 Number of windows evaluated: 16281 (skipped 1184) and 0 positive ( 0%) 13917ms (value shift: -6)
+Image: 2006 Number of windows evaluated: 16281 (skipped 4098) and 0 positive ( 0%) 12329ms (value shift: -6)
+Image: 4 Number of windows evaluated: 16281 (skipped 5072) and 1 positive (0.0089214%) 11688ms (value shift: -6)
+Image: 3339 Number of windows evaluated: 16019 (skipped 555) and 1 positive (0.00646663%) 14672ms (value shift: -6)
+Image: 2671 Number of windows evaluated: 16019 (skipped 552) and 1 positive (0.00646538%) 14788ms (value shift: -6)
+Image: 671 Number of windows evaluated: 16019 (skipped 539) and 0 positive ( 0%) 14554ms (value shift: -6)
+Image: 1340 Number of windows evaluated: 16281 (skipped 3254) and 1 positive (0.00767636%) 12936ms (value shift: -6)
+Image: 5 Number of windows evaluated: 16281 (skipped 3902) and 0 positive ( 0%) 12230ms (value shift: -6)
+Image: 3340 Number of windows evaluated: 16281 (skipped 4683) and 0 positive ( 0%) 12065ms (value shift: -6)
+Image: 2007 Number of windows evaluated: 16281 (skipped 1669) and 1 positive (0.00684369%) 14413ms (value shift: -6)
+Image: 2674 Number of windows evaluated: 16281 (skipped 3110) and 3 positive (0.0227773%) 13895ms (value shift: -6)
+Image: 672 Number of windows evaluated: 16281 (skipped 1809) and 3 positive (0.0207297%) 14185ms (value shift: -6)

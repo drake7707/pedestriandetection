@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KAIST_SDDG(Thermal) round 0"</name_0>
+<name_1>"KAIST_SDDG(Thermal) round 1"</name_1>
+<name_2>"KAIST_SDDG(Thermal) round 2"</name_2>
+<name_3>"KAIST_SDDG(Thermal) round 3"</name_3>
+<valueShifts>
+  6.80000019e+00 8.19999981e+00 7.59999990e+00 7.59999990e+00</valueShifts>
+<classifierHitCount>
+  3655125 699076 251059 1532076</classifierHitCount>
+</opencv_storage>

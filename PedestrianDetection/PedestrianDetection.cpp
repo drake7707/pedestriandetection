@@ -268,8 +268,8 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 			for (int s = 0; s < settings.windowSizes.size(); s++) {
 
+				double scale = 1.0  * settings.refWidth / settings.windowSizes[s].width;
 
-				double scale = 1.0  *  settings.windowSizes[s].width / settings.refWidth;
 				cv::Mat rgbScale;
 				if (mRGB.cols > 0 && mRGB.rows > 0)
 					cv::resize(mRGB, rgbScale, cv::Size2d(mRGB.cols * scale, mRGB.rows * scale));
@@ -1647,7 +1647,8 @@ int main()
 	//tester.runJobs();
 
 
-	//browseThroughTrainingSet(std::string("trainingsets\\KAIST_train0.txt"), &kaistDataSet);
+	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
+	//browseThroughTrainingSet(std::string("trainingsets\\KITTI_HDD+HOG(RGB)_train1.txt"), &kittiDataSet);
 
 
 	//explainModel(tester, settings);
@@ -1655,7 +1656,7 @@ int main()
 	testSpeed(tester, &kittiDataSet);
 */
 
-	testClassifier(tester, settings);
+	//testClassifier(tester, settings);
 
 
 	if (settings.kittiDataSetPath != "") {

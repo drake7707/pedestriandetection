@@ -62,8 +62,9 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 			ROIManager roiManager;
 			roiManager.prepare(mRGB, mDepth, mThermal);
 
+	//		cv::Mat img = mRGB.clone();
 			for (int s = 0; s < windowSizes.size(); s++) {
-				double scale = 1.0  *  windowSizes[s].width / refWidth;
+				double scale = 1.0  * refWidth / windowSizes[s].width;
 
 				cv::Mat rgbScale;
 				if (mRGB.cols > 0 && mRGB.rows > 0)
@@ -84,12 +85,12 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 				slideWindow(rgbScale.cols, rgbScale.rows, [&](cv::Rect bbox) -> void {
 
 					// Calculate the bounding box on the original image size
-					cv::Rect2d scaledBBox = cv::Rect2d(bbox.x / scale, bbox.y / scale,bbox.width / scale, bbox.height / scale);
+					cv::Rect2d bboxInSourceSize = cv::Rect2d(bbox.x / scale, bbox.y / scale,bbox.width / scale, bbox.height / scale);
 
 					// skip all windows that intersect with the don't care regions
-					if (!intersectsWith(scaledBBox, dontCareRegions)) {
+					if (!intersectsWith(bboxInSourceSize, dontCareRegions)) {
 
-						bool needToEvaluate = roiManager.needToEvaluate(scaledBBox, mRGB, mDepth, mThermal,
+						bool needToEvaluate = roiManager.needToEvaluate(bboxInSourceSize, mRGB, mDepth, mThermal,
 							[&](double height, double depthAvg) -> bool { return this->isWithinValidDepthRange(height, depthAvg); });
 
 						if (needToEvaluate) {
@@ -106,23 +107,24 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 							if (thermalScale.cols > 0 && thermalScale.rows > 0)
 								regionThermal = thermalScale(bbox);
 
-							bool overlapsWithTruePositive = false;
+							bool overlapsWithTruePositive = intersectsWith(bboxInSourceSize, truePositiveRegions);;
 							int resultClass;
-							if (overlaps(scaledBBox, truePositiveRegions)) {
+							if (overlaps(bboxInSourceSize, truePositiveRegions)) {
 								resultClass = 1;
-								overlapsWithTruePositive = true;
+								//cv::rectangle(img, bboxInSourceSize, cv::Scalar(0, 255, 0), 2);
 							}
 							else
 								resultClass = -1;
 
-							func(idx, resultClass, imgNumber, s, scaledBBox, bbox, regionRGB, regionDepth, regionThermal, overlapsWithTruePositive);
+							func(idx, resultClass, imgNumber, s, bboxInSourceSize, bbox, regionRGB, regionDepth, regionThermal, overlapsWithTruePositive);
 							idx++;
 						}
 					}
 				}, baseWindowStride, refWidth, refHeight);
 			}
 
-
+		//	cv::imshow("Original", img);
+			//cv::waitKey(0);
 			onImageProcessed(imgNumber, truePositiveCategories, truePositiveRegions);
 			//cv::imshow("Temp", tmp);
 			//cv::waitKey(0);

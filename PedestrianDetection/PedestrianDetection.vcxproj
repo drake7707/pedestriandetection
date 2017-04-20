@@ -199,6 +199,7 @@
     <ClInclude Include="MSDFeatureCreator.h" />
     <ClInclude Include="ORBFeatureCreator.h" />
     <ClInclude Include="ProgressWindow.h" />
+    <ClInclude Include="RAWLUVFeatureCreator.h" />
     <ClInclude Include="RAWRGBFeatureCreator.h" />
     <ClInclude Include="RiskAnalysis.h" />
     <ClInclude Include="ROIManager.h" />
@@ -254,6 +255,7 @@
     <ClCompile Include="PedestrianDetection.cpp" />
     <ClCompile Include="CornerFeatureCreator.cpp" />
     <ClCompile Include="ProgressWindow.cpp" />
+    <ClCompile Include="RAWLUVFeatureCreator.cpp" />
     <ClCompile Include="RAWRGBFeatureCreator.cpp" />
     <ClCompile Include="RiskAnalysis.cpp" />
     <ClCompile Include="ROIManager.cpp" />

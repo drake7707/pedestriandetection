@@ -62,7 +62,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 			ROIManager roiManager;
 			roiManager.prepare(mRGB, mDepth, mThermal);
 
-	//		cv::Mat img = mRGB.clone();
+			//		cv::Mat img = mRGB.clone();
 			for (int s = 0; s < windowSizes.size(); s++) {
 				double scale = 1.0  * refWidth / windowSizes[s].width;
 
@@ -85,7 +85,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 				slideWindow(rgbScale.cols, rgbScale.rows, [&](cv::Rect bbox) -> void {
 
 					// Calculate the bounding box on the original image size
-					cv::Rect2d bboxInSourceSize = cv::Rect2d(bbox.x / scale, bbox.y / scale,bbox.width / scale, bbox.height / scale);
+					cv::Rect2d bboxInSourceSize = cv::Rect2d(bbox.x / scale, bbox.y / scale, bbox.width / scale, bbox.height / scale);
 
 					// skip all windows that intersect with the don't care regions
 					if (!intersectsWith(bboxInSourceSize, dontCareRegions)) {
@@ -123,8 +123,8 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 				}, baseWindowStride, refWidth, refHeight);
 			}
 
-		//	cv::imshow("Original", img);
-			//cv::waitKey(0);
+			//	cv::imshow("Original", img);
+				//cv::waitKey(0);
 			onImageProcessed(imgNumber, truePositiveCategories, truePositiveRegions);
 			//cv::imshow("Temp", tmp);
 			//cv::waitKey(0);

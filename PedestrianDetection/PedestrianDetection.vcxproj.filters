@@ -135,9 +135,6 @@
     <ClInclude Include="ORBFeatureCreator.h">
       <Filter>Header Files\FeatureCreators\Sparse</Filter>
     </ClInclude>
-    <ClInclude Include="HONVFeatureCreator.h">
-      <Filter>Header Files\FeatureCreators\Sparse</Filter>
-    </ClInclude>
     <ClInclude Include="SIFTFeatureCreator.h">
       <Filter>Header Files\FeatureCreators\Sparse</Filter>
     </ClInclude>
@@ -206,6 +203,12 @@
     </ClInclude>
     <ClInclude Include="ROIManager.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RAWLUVFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
+    </ClInclude>
+    <ClInclude Include="HONVFeatureCreator.h">
+      <Filter>Header Files\FeatureCreators</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -367,6 +370,9 @@
     </ClCompile>
     <ClCompile Include="ROIManager.cpp">
       <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RAWLUVFeatureCreator.cpp">
+      <Filter>Resource Files\Source Files\FeatureCreators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

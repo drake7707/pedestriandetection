@@ -42,6 +42,7 @@
 #include "RAWRGBFeatureCreator.h"
 #include "HOIFeatureCreator.h"
 #include "SDDGFeatureCreator.h"
+#include "RAWLUVFeatureCreator.h"
 
 
 #include "EvaluatorCascade.h"
@@ -700,9 +701,7 @@ void testFeature() {
 
 void testSlidingWindow(EvaluationSettings& settings) {
 
-	KAISTDataSet dataSet(settings.kaistDataSetPath);
-
-
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
 
 	auto labelsPerNumber = dataSet.getLabelsPerNumber();
 
@@ -736,12 +735,11 @@ void testSlidingWindow(EvaluationSettings& settings) {
 			if (!l.isDontCareArea()) {
 				// true positive
 
+
 				double iou = getIntersectionOverUnion(scaledRegion, l.getBbox());
 				predictedPositive = iou > 0.5;
 				if (predictedPositive) {
 					predictedPositiveregionsPerImage[imageNumber].push_back(SlidingWindowRegion(imageNumber, scaledRegion, iou));
-
-					std::string riskCategory = RiskAnalysis::getRiskCategory(l.z_3d, l.x_3d, settings.vehicleSpeedKMh, settings.tireRoadFriction);
 
 					break;
 				}
@@ -1606,6 +1604,7 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOI"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOIFeatureCreator(name, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SDDG(Thermal)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SDDGFeatureCreator(name, IFeatureCreator::Target::Thermal, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SDDG(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SDDGFeatureCreator(name, IFeatureCreator::Target::Depth, settings.refWidth, settings.refHeight))); }));
+	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(LUV)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWLUVFeatureCreator(name, settings.refWidth, settings.refHeight))); }));
 
 	//for (auto& f : tester.getFeatureCreatorFactories()) {
 	//	std::set<std::string> set = { f };

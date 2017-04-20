@@ -187,6 +187,8 @@ void FeatureTesterJob::evaluateTrainingWithSlidingWindow(EvaluatorCascade& casca
 void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& cascadeFile, std::unique_ptr<FeatureSet>& featureSet, std::string& featureSetName) const {
 	std::string finalEvaluationSlidingFile = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_sliding_final.csv";	
 
+	tester->getLock()->lock();
+
 	if (!fileExists(finalEvaluationSlidingFile)) {
 
 		// reset classifier hit count
@@ -244,6 +246,8 @@ void FeatureTesterJob::evaluateTestSet(EvaluatorCascade& cascade, std::string& c
 
 		doRiskAnalysis(finalresult, featureSetName);		
 	}
+
+	tester->getLock()->unlock();
 }
 
 void FeatureTesterJob::doRiskAnalysis(FinalEvaluationSlidingWindowResult& finalresult, std::string& featureSetName) const {

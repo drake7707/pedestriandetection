@@ -4,8 +4,8 @@
 
 
 
-LBPFeatureCreator::LBPFeatureCreator(std::string& name, IFeatureCreator::Target target, int patchSize, int binSize, int refWidth, int refHeight)
-	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight), target(target)
+LBPFeatureCreator::LBPFeatureCreator(std::string& name, int patchSize, int binSize, int refWidth, int refHeight)
+	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight)
 {
 }
 
@@ -23,15 +23,8 @@ std::unique_ptr<IPreparedData> LBPFeatureCreator::buildPreparedDataForFeatures(c
 
 	cv::Mat weights;
 	cv::Mat binningValues;
-	if (target == IFeatureCreator::Target::RGB) {
-		buildWeightAndBinningValues(rgbScale, weights, binningValues);
-	}
-	else if (target == IFeatureCreator::Target::Depth) {
-		buildWeightAndBinningValues(depthScale, weights, binningValues);
-	}
-	else {
-		buildWeightAndBinningValues(thermalScale, weights, binningValues);
-	}
+	buildWeightAndBinningValues(rgbScale, weights, binningValues);
+
 
 	IntegralHistogram hist = hog::prepareDataForHistogramsOfX(weights, binningValues, binSize);
 	HOG1DPreparedData* data = new HOG1DPreparedData();
@@ -52,19 +45,14 @@ void LBPFeatureCreator::buildWeightAndBinningValues(cv::Mat& img, cv::Mat& weigh
 	padded.setTo(cv::Scalar::all(0));
 	lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
 
-	weights = cv::Mat(img.size(), CV_32FC1, cv::Scalar(0));
-	binningValues = cv::Mat(img.size(), CV_32FC1, cv::Scalar(0));
-
+	weights = cv::Mat(img.size(), CV_32FC1, cv::Scalar(1));
+	binningValues = padded;
 }
 
 
 FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 	cv::Mat img;
-	if (target == IFeatureCreator::Target::Depth) {
-		cv::cvtColor(depth, img, CV_BGR2GRAY);
-	}
-	else
-		cv::cvtColor(rgb, img, CV_BGR2GRAY);
+	cv::cvtColor(rgb, img, CV_BGR2GRAY);
 
 
 	cv::Mat weights;
@@ -85,8 +73,5 @@ cv::Mat LBPFeatureCreator::explainFeatures(int offset, std::vector<float>& weigh
 }
 
 std::vector<bool> LBPFeatureCreator::getRequirements() const {
-	return{ target == IFeatureCreator::Target::RGB,
-		target == IFeatureCreator::Target::Depth,
-		target == IFeatureCreator::Target::Thermal
-	};
+	return{ true, false,false };
 }

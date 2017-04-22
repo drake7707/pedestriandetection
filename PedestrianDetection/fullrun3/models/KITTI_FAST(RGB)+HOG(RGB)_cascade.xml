@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KITTI_FAST(RGB)+HOG(RGB) round 0"</name_0>
+<name_1>"KITTI_FAST(RGB)+HOG(RGB) round 1"</name_1>
+<name_2>"KITTI_FAST(RGB)+HOG(RGB) round 2"</name_2>
+<name_3>"KITTI_FAST(RGB)+HOG(RGB) round 3"</name_3>
+<valueShifts>
+  7.40000010e+00 6.40000010e+00 5.59999990e+00 5.59999990e+00</valueShifts>
+<classifierHitCount>
+  4043474 393288 704489 4016348</classifierHitCount>
+</opencv_storage>

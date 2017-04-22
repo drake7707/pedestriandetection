@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KITTI_HDD round 0"</name_0>
+<name_1>"KITTI_HDD round 1"</name_1>
+<name_2>"KITTI_HDD round 2"</name_2>
+<name_3>"KITTI_HDD round 3"</name_3>
+<valueShifts>
+  6.59999990e+00 5. 5.40000010e+00 5.59999990e+00</valueShifts>
+<classifierHitCount>
+  5052266 732739 572230 2800364</classifierHitCount>
+</opencv_storage>

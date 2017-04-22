@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>2</trainingRound>
+<name_count>2</name_count>
+<name_0>"KITTI_CenSurE(RGB) round 0"</name_0>
+<name_1>"KITTI_CenSurE(RGB) round 1"</name_1>
+<valueShifts>
+  1.20000005e+00 -4.80000019e+00</valueShifts>
+<classifierHitCount>
+  0 0</classifierHitCount>
+</opencv_storage>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KITTI_RAW(LUV) round 0"</name_0>
+<name_1>"KITTI_RAW(LUV) round 1"</name_1>
+<name_2>"KITTI_RAW(LUV) round 2"</name_2>
+<name_3>"KITTI_RAW(LUV) round 3"</name_3>
+<valueShifts>
+  7.19999981e+00 5. 4.80000019e+00 5.19999981e+00</valueShifts>
+<classifierHitCount>
+  2903534 353370 302489 5598206</classifierHitCount>
+</opencv_storage>

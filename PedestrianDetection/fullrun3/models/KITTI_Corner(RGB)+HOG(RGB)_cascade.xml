@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KITTI_Corner(RGB)+HOG(RGB) round 0"</name_0>
+<name_1>"KITTI_Corner(RGB)+HOG(RGB) round 1"</name_1>
+<name_2>"KITTI_Corner(RGB)+HOG(RGB) round 2"</name_2>
+<name_3>"KITTI_Corner(RGB)+HOG(RGB) round 3"</name_3>
+<valueShifts>
+  7. 6.19999981e+00 5.40000010e+00 5.40000010e+00</valueShifts>
+<classifierHitCount>
+  4523120 323569 437708 3873202</classifierHitCount>
+</opencv_storage>

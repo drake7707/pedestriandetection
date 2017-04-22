@@ -272,8 +272,8 @@ namespace hog {
 			hog = createHoGImage(m, cells, nrOfCellsWidth, nrOfCellsHeight, binSize, patchSize);
 		}
 		HistogramResult result;
-		result.width = nrOfCellsWidth - 1;
-		result.height = nrOfCellsHeight - 1;
+		result.width = l2normalize ? nrOfCellsWidth - 1 : nrOfCellsWidth;
+		result.height = l2normalize ? nrOfCellsHeight - 1 : nrOfCellsHeight;
 		result.data = l2normalize ? newcells : cells;
 		result.hogImage = hog;
 		return result;

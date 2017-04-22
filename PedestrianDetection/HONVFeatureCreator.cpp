@@ -22,7 +22,7 @@ int HONVFeatureCreator::getNumberOfFeatures() const {
 
 FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 
-	cv::Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+	cv::Mat angleMat(depth.rows, depth.cols, CV_32FC2, cv::Scalar(0));
 
 	//depth = depth * 255;
 	for (int y = 0; y < depth.rows; y++)
@@ -51,8 +51,8 @@ FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 
 			double zenith = atan(sqrt(d[1] * d[1] + d[0] * d[0]));
 
-			cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 1);
-			angleMat.at<cv::Vec3f>(y, x) = angles;
+			cv::Vec2f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI);
+			angleMat.at<cv::Vec2f>(y, x) = angles;
 
 			//normals.at<Vec3f>(y, x) = n;
 		}

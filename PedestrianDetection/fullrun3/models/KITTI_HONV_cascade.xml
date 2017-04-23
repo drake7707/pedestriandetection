@@ -7,7 +7,7 @@
 <name_2>"KITTI_HONV round 2"</name_2>
 <name_3>"KITTI_HONV round 3"</name_3>
 <valueShifts>
-  1.03999996e+01 5.80000019e+00 5.59999990e+00 5.59999990e+00</valueShifts>
+  9. 5.19999981e+00 5.59999990e+00 2.59999990e+00</valueShifts>
 <classifierHitCount>
-  4922257 678718 560644 2995980</classifierHitCount>
+  4764212 1018457 390382 2984548</classifierHitCount>
 </opencv_storage>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>2</trainingRound>
+<name_count>2</name_count>
+<name_0>"KAIST_HOG(RGB)+HOI round 0"</name_0>
+<name_1>"KAIST_HOG(RGB)+HOI round 1"</name_1>
+<valueShifts>
+  5.40000010e+00 3.20000005e+00</valueShifts>
+<classifierHitCount>
+  0 0</classifierHitCount>
+</opencv_storage>

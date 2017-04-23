@@ -7,7 +7,7 @@
 <name_2>"KITTI_HOG(RGB)+LBP(RGB) round 2"</name_2>
 <name_3>"KITTI_HOG(RGB)+LBP(RGB) round 3"</name_3>
 <valueShifts>
-  1.03999996e+01 6.59999990e+00 5.59999990e+00 4.80000019e+00</valueShifts>
+  9.80000019e+00 5. 5.19999981e+00 4.80000019e+00</valueShifts>
 <classifierHitCount>
-  4020424 683966 616606 3836603</classifierHitCount>
+  4415700 436775 941249 3363875</classifierHitCount>
 </opencv_storage>

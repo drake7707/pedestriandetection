@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KITTI_LBP(RGB) round 0"</name_0>
+<name_1>"KITTI_LBP(RGB) round 1"</name_1>
+<name_2>"KITTI_LBP(RGB) round 2"</name_2>
+<name_3>"KITTI_LBP(RGB) round 3"</name_3>
+<valueShifts>
+  1.13999996e+01 1.03999996e+01 1.01999998e+01 11.</valueShifts>
+<classifierHitCount>
+  0 0 0 9157599</classifierHitCount>
+</opencv_storage>

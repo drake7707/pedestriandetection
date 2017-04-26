@@ -24,12 +24,12 @@ namespace hog {
 	/// <summary>
 	/// Explains the 2D HOG feature by building a heat map of their occurrence
 	/// </summary>
-	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize);
+	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize);
 
 	/// <summary>
 	/// Explains the HOG features by building a heat map of their occurrence
 	/// </summary>
-	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize);
+	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize);
 
 	/// <summary>
 	/// Returns the 2D HOG-like features for given weights and binning values

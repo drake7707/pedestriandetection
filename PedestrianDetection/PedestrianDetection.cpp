@@ -1478,7 +1478,7 @@ int main(int argc, char** argv)
 
 	//testKAISTROI(settings);
 	
-	explainModel(tester, settings, { "HOG(RGB)", "HDD" }, std::string("KITTI"));
+	explainModel(tester, settings, { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, std::string("KITTI"));
 	
 	//testClassifier(tester, settings, std::string("KITTI"), { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, -7.85);
 	

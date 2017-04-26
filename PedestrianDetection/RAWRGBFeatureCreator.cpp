@@ -32,7 +32,7 @@ FeatureVector RAWRGBFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv
 	return v;
 }
 
-cv::Mat RAWRGBFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+cv::Mat RAWRGBFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 
 	int nrOfFeatures = getNumberOfFeatures();
@@ -41,11 +41,11 @@ cv::Mat RAWRGBFeatureCreator::explainFeatures(int offset, std::vector<float>& we
 	for (int j = 0; j < refHeight; j++) {
 		for (int i = 0; i < refWidth; i++) {
 
-			double w1 = occurrencePerFeature[offset + idx];
+			double w1 = weightPerFeature[offset + idx];
 			idx++;
-			double w2 = occurrencePerFeature[offset + idx];
+			double w2 = weightPerFeature[offset + idx];
 			idx++;
-			double w3 = occurrencePerFeature[offset + idx];
+			double w3 = weightPerFeature[offset + idx];
 			idx++;
 
 			explanation.at<float>(j, i) = w1 + w2 + w3;

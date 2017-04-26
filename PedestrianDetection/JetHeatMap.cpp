@@ -126,10 +126,29 @@ namespace heatmap {
 
 				int r, g, b;
 
+				// 0,51,102 -> 255,255,255 -> 102,0,0
+				float val = input.at<float>(j, i);
+
+				//val = i / (float)input.cols;
+
+				if (val < 0.5) {
+					float alpha = val * 2;
+					r = 0 + alpha * (255 - 0);
+					g = 51 + alpha * (255 - 51);
+					b = 102 + alpha * (255 - 102);
+				}
+				else {
+					float alpha =(val-0.5) * 2;
+					r = 255 + alpha * (102 - 255);
+					g = 255 + alpha * (0 - 255);
+					b = 255 + alpha * (0 - 255);
+				}
+				
+				// r
 				// h: 210, 360 
 				// l: 20 -> 100 -> 20
-				float val = input.at<float>(j, i);
-				HSLtoRGB(val < 0.5 ? 210 : 360, 100, val < 0.5 ? (20 + (val * 2) * (100 - 20)) : (20 + (1 - (val - 0.5) * 2) * (100 - 20)), &r,&g,&b);
+				//float val = input.at<float>(j, i);
+			//	HSLtoRGB(val < 0.5 ? 210 : 360, 100, val < 0.5 ? (20 + (val * 2) * (100 - 20)) : (20 + (1 - (val - 0.5) * 2) * (100 - 20)), &r,&g,&b);
 
 				//heatmap.at<cv::Vec3b>(j, i) = cv::Vec3b(heatmap::blue(val) * 255, heatmap::green(val) * 255, heatmap::red(val) * 255);
 				heatmap.at<cv::Vec3b>(j, i) = cv::Vec3b(b, g, r);

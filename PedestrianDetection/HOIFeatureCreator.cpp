@@ -37,8 +37,8 @@ FeatureVector HOIFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::M
 	return hogResult.getFeatureArray();
 }
 
-cv::Mat HOIFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
-	return hog::explainHOGFeature(offset, weightPerFeature, occurrencePerFeature, refWidth, refHeight, patchSize, binSize, false, true);
+cv::Mat HOIFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
+	return hog::explainHOGFeature(offset, weightPerFeature, refWidth, refHeight, patchSize, binSize, false, true);
 }
 
 std::vector<bool> HOIFeatureCreator::getRequirements() const {

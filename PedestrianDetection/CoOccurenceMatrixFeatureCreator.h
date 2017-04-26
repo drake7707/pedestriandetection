@@ -22,7 +22,7 @@ public:
 	/// <summary>
 	/// Creates a heat map of the occurrences of the features
 	/// </summary>
-	cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
+	cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const;
 
 	/// <summary>
 	/// Creates a feature vector of the given input data

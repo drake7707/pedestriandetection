@@ -150,13 +150,13 @@ int VariableNumberFeatureCreator::getNumberOfFeatures() const {
 }
 
 
-cv::Mat VariableNumberFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+cv::Mat VariableNumberFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
 	// TODO draw centroids as keypoints
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 
 	for (int i = 0; i < centroids.size(); i++) {
 
-		double weight = occurrencePerFeature[offset + i];
+		double weight = weightPerFeature[offset + i];
 
 		cv::KeyPoint p;
 		p.pt = cv::Point2f(centroids[i][0], centroids[i][1]);

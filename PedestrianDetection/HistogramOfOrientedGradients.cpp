@@ -60,7 +60,7 @@ namespace hog {
 			return (nrOfCellsHeight) * (nrOfCellsWidth)* binSize;
 	}
 
-	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize) {
+	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize) {
 
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
@@ -80,25 +80,25 @@ namespace hog {
 
 					for (int k = 0; k < binSize; k++) {
 
-						histogram[y][x] += occurrencePerFeature[offset + idx];
+						histogram[y][x] += weightPerFeature[offset + idx];
 						idx++;
 					}
 
 					for (int k = 0; k < binSize; k++) {
 
-						histogram[y][x + 1] += occurrencePerFeature[offset + idx];
+						histogram[y][x + 1] += weightPerFeature[offset + idx];
 						idx++;
 					}
 
 					for (int k = 0; k < binSize; k++) {
 
-						histogram[y + 1][x] += occurrencePerFeature[offset + idx];
+						histogram[y + 1][x] += weightPerFeature[offset + idx];
 						idx++;
 					}
 
 					for (int k = 0; k < binSize; k++) {
 
-						histogram[y + 1][x + 1] += occurrencePerFeature[offset + idx];
+						histogram[y + 1][x + 1] += weightPerFeature[offset + idx];
 						idx++;
 					}
 				}
@@ -109,7 +109,7 @@ namespace hog {
 				for (int x = 0; x < nrOfCellsWidth; x++) {
 
 					for (int k = 0; k < binSize; k++) {
-						histogram[y][x] += occurrencePerFeature[offset + idx];
+						histogram[y][x] += weightPerFeature[offset + idx];
 						idx++;
 					}
 
@@ -281,7 +281,7 @@ namespace hog {
 	}
 
 
-	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize) {
+	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize) {
 
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
@@ -301,7 +301,7 @@ namespace hog {
 				for (int k = 0; k < binSize; k++) {
 					for (int l = 0; l < binSize; l++) {
 
-						histogram[y][x] += occurrencePerFeature[offset + idx];
+						histogram[y][x] += weightPerFeature[offset + idx];
 						idx++;
 					}
 				}

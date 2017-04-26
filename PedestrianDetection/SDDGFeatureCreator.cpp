@@ -72,7 +72,7 @@ FeatureVector SDDGFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 	return fVector;
 }
 
-cv::Mat SDDGFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+cv::Mat SDDGFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 
 	int nrOfCellsX = refWidth / cellSize;
@@ -87,7 +87,7 @@ cv::Mat SDDGFeatureCreator::explainFeatures(int offset, std::vector<float>& weig
 			float weight = 0;
 			for (int k = 0; k < SDDGLength; k++)
 			{
-				weight += occurrencePerFeature[offset + idx];
+				weight += weightPerFeature[offset + idx];
 				idx++;
 			}
 			int offsetX = i * cellSize;

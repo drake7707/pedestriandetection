@@ -36,7 +36,7 @@ public:
 	/// <summary>
 	/// Creates a heat map of the occurrences of the features
 	/// </summary>
-	cv::Mat HDDFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
+	cv::Mat HDDFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const;
 
 	/// <summary>
 	/// Prepares integral histograms for each scale to quickly evaluate windows at each scale

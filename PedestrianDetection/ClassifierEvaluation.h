@@ -20,21 +20,48 @@ struct ClassifierEvaluation {
 
 	void print(std::ostream& out);
 
+	/// <summary>
+	/// Calculates the true positive rate
+	/// </summary>
 	double getTPR() const;
 
+	/// <summary>
+	/// Calculates the false positive rate
+	/// </summary>
 	double getFPR() const;
 
+	/// <summary>
+	/// Calculates the precision
+	/// </summary>
 	double getPrecision() const;
 
+	/// <summary>
+	/// Calculates the recall
+	/// </summary>
 	double getRecall()const;
 
+	/// <summary>
+	/// Calculates the F-score with given weight
+	/// </summary>
 	double getFScore(double beta) const;
 
+	/// <summary>
+	/// Calculates the miss rate
+	/// </summary>
 	double getMissRate() const;
 
+	/// <summary>
+	/// Calculates the number of false positives per image
+	/// </summary>
 	double getFPPI() const;
 
+	/// <summary>
+	/// Returns a list of the worst performing images if available
+	/// </summary>
 	std::vector<int> getWorstPerformingImages() const; 
 
+	/// <summary>
+	/// Writes the data to the given stream in a csv format, separated with ';'
+	/// </summary>
 	void toCSVLine(std::ostream& out, bool header) const;
 };

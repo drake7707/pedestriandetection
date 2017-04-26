@@ -198,6 +198,7 @@
     <ClInclude Include="CornerFeatureCreator.h" />
     <ClInclude Include="MSDFeatureCreator.h" />
     <ClInclude Include="ORBFeatureCreator.h" />
+    <ClInclude Include="PedestrianDetection.h" />
     <ClInclude Include="ProgressWindow.h" />
     <ClInclude Include="RAWLUVFeatureCreator.h" />
     <ClInclude Include="RAWRGBFeatureCreator.h" />

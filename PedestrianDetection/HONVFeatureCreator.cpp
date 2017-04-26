@@ -58,7 +58,7 @@ FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 		}
 	}
 
-	auto& result = hog::get2DHistogramsOfX(cv::Mat(depth.rows, depth.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, binSize, false, false);
+	auto& result = hog::get2DHistogramsOfX(cv::Mat(depth.rows, depth.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, binSize, false);
 
 	return result.getFeatureArray();
 }

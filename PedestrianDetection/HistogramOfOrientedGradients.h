@@ -34,7 +34,7 @@ namespace hog {
 	/// <summary>
 	/// Returns the 2D HOG-like features for given weights and binning values
 	/// </summary>
-	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize);
+	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage);
 
 	/// <summary>
 	/// Returns the HOG-like result for given weights and binning values. For example, for HOG the weights will be the magnitudes, whereas the binning values will be

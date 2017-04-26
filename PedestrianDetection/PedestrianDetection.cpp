@@ -1,74 +1,5 @@
-// PedestrianDetection.cpp : Defines the entry point for the console application.
-//
+#include "PedestrianDetection.h"
 
-#include "stdafx.h"
-
-#include "opencv2/opencv.hpp"
-#include "opencv2/highgui.hpp"
-#include <opencv2/ml.hpp>
-#include "opencv2/features2d.hpp"
-#include "opencv2/xfeatures2d.hpp"
-
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <string>
-
-#include "ProgressWindow.h"
-
-#include "Helper.h"
-#include "TrainingDataSet.h"
-
-#include "HistogramOfOrientedGradients.h"
-#include "LocalBinaryPatterns.h"
-
-#include "ModelEvaluator.h"
-#include "IFeatureCreator.h"
-#include "HOGFeatureCreator.h"
-#include "HOGHistogramVarianceFeatureCreator.h"
-#include "CornerFeatureCreator.h"
-#include "HistogramDepthFeatureCreator.h"
-#include "SURFFeatureCreator.h"
-#include "ORBFeatureCreator.h"
-#include "SIFTFeatureCreator.h"
-#include "CenSurEFeatureCreator.h"
-#include "MSDFeatureCreator.h"
-#include "BRISKFeatureCreator.h"
-#include "FASTFeatureCreator.h"
-#include "HDDFeatureCreator.h"
-#include "LBPFeatureCreator.h"
-#include "HONVFeatureCreator.h"
-#include "CoOccurenceMatrixFeatureCreator.h"
-#include "RAWRGBFeatureCreator.h"
-#include "HOIFeatureCreator.h"
-#include "SDDGFeatureCreator.h"
-#include "RAWLUVFeatureCreator.h"
-
-
-#include "EvaluatorCascade.h"
-
-#include "ModelEvaluator.h"
-
-#include "FeatureTester.h"
-
-#include "FeatureSet.h"
-
-#include "CoOccurenceMatrix.h"
-
-#include "KITTIDataSet.h"
-#include "KAISTDataSet.h"
-
-#include "DataSet.h"
-
-#include "JetHeatMap.h"
-#include "EvaluationSettings.h"
-#include "RiskAnalysis.h"
-
-
-
-//std::string kittiDatasetPath = "D:\\PedestrianDetectionDatasets\\kitti";
-//std::string kaistDatasetPath = "D:\\PedestrianDetectionDatasets\\kaist";
-std::string kittiDatasetPath = "C:\\Users\\dwight\\Downloads\\dwight\\kitti";
 
 int patchSize = 8;
 int binSize = 9;
@@ -104,7 +35,6 @@ TrainingDataSet buildInitialTrainingSet(EvaluationSettings& settings, DataSet* d
 			cv::Mat rgbTP;
 			cv::Rect2d& r = l.getBbox();
 			if (!l.isDontCareArea() && r.x >= 0 && r.y >= 0 && r.x + r.width < currentImages[0].cols && r.y + r.height < currentImages[0].rows) {
-
 				TrainingRegion tr;
 				tr.region = l.getBbox();
 				tr.regionClass = 1;
@@ -190,49 +120,43 @@ cv::Mat getMask(cv::Mat& roi) {
 	return mask;
 }
 
-void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
-
-	std::set<std::string> set = { "HOG(RGB)","HDD" };
+void testClassifier(FeatureTester& tester, EvaluationSettings& settings, std::string& dataset, std::set<std::string> set, double valueShift) {
 
 	auto fset = tester.getFeatureSet(set);
+	std::string featureSetName = fset->getFeatureSetName();
+	std::string cascadeFile = std::string("models\\" + dataset + "_" + featureSetName + "_cascade.xml");
+	if (!fileExists(cascadeFile))
+		throw std::exception(std::string("The cascade file " + cascadeFile + " does not exist").c_str());
 
-	EvaluatorCascade cascade(std::string("Test"));
-	cascade.load(std::string("models\\KITTI_HDD+HOG(RGB)_cascade.xml"), std::string("models"));
+	EvaluatorCascade cascade(featureSetName);
+	cascade.load(cascadeFile, std::string("models"));
 
-	double valueShift = -6;
-
-
-	//ModelEvaluator modelFinal(std::string("Test"));
-	//modelFinal.loadModel(std::string("models\\HOG(Depth)+HOG(RGB)+LBP(RGB) round 3.xml"));
-
-
-
-	/*ClassifierEvaluation eval = model.evaluateDataSet(1, false)[0];
-	eval.print(std::cout);*/
-
-	KITTIDataSet dataSet(settings.kittiDataSetPath);
-
-	//	cv::namedWindow("Test");
+	std::unique_ptr<DataSet> dataSet;
+	if (dataset == "KITTI")
+		dataSet = std::unique_ptr<DataSet>(new KITTIDataSet(settings.kittiDataSetPath));
+	else if (dataset == "KAIST")
+		dataSet = std::unique_ptr<DataSet>(new KAISTDataSet(settings.kittiDataSetPath));
+	else
+		throw std::exception("Invalid data set");
 
 	auto& entries = cascade.getEntries();
 
 	std::mutex m;
+
+	std::vector<DataSetLabel> labels = dataSet->getLabels();
+
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber = dataSet->getLabelsPerNumber();
+
+	ClassifierEvaluation eval(dataSet->getNrOfImages());
+
 	int nr = 0;
-	//while (true) {
-
-	std::vector<DataSetLabel> labels = dataSet.getLabels();
-
-	std::vector<std::vector<DataSetLabel>> labelsPerNumber = dataSet.getLabelsPerNumber();
-
-	ClassifierEvaluation eval(dataSet.getNrOfImages());
-
-	parallel_for(0, 4000, 6, [&](int i) -> void {
-		ProgressWindow::getInstance()->updateStatus(std::string("Testing classifier"), 1.0 * i / 1000, std::to_string(i));
+	parallel_for(0, dataSet->getNrOfImages(), settings.slidingWindowParallelization, [&](int i) -> void {
+		ProgressWindow::getInstance()->updateStatus(std::string("Testing classifier"), 1.0 * nr / dataSet->getNrOfImages(), std::to_string(i));
 
 		if (labelsPerNumber[i].size() <= 0)
 			return;
 
-		auto imgs = dataSet.getImagesForNumber(i);
+		auto imgs = dataSet->getImagesForNumber(i);
 		cv::Mat mRGB = imgs[0];
 		cv::Mat mDepth = imgs[1];
 		cv::Mat mThermal = imgs[2];
@@ -252,21 +176,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 			ROIManager roiManager;
 			roiManager.prepare(mRGB, mDepth, mThermal);
 
-			//std::vector<std::vector<IPreparedData*>> preparedData;
-
-			//cv::Mat tmp(mRGB.rows, mRGB.cols, CV_8UC1, cv::Scalar(0));
-			//for (int j = 0; j < mRGB.rows; j++)
-			//{
-			//	for (int i = 0; i < mRGB.cols; i++)
-			//	{
-			//		bool mustContinue = roiManager.needToEvaluate(cv::Rect(i,j,1,1), mRGB, mDepth, mThermal,
-			//			[&](double height, double depthAvg) -> bool { return dataSet.isWithinValidDepthRange(height, depthAvg); });
-			//		if (mustContinue)
-			//			tmp.at<char>(j, i) = 255;
-			//	}
-			//}
-			//cv::imshow("NeedToEvaluateRegions", tmp);
-
+			// per scale 
 			for (int s = 0; s < settings.windowSizes.size(); s++) {
 
 				double scale = 1.0  * settings.refWidth / settings.windowSizes[s].width;
@@ -285,7 +195,6 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 				auto preparedData = fset->buildPreparedDataForFeatures(rgbScale, depthScale, thermalScale);
 
-
 				slideWindow(rgbScale.cols, rgbScale.rows, [&](cv::Rect bbox) -> void {
 
 					cv::Rect2d scaledBBox = cv::Rect2d(bbox.x / scale, bbox.y / scale, bbox.width / scale, bbox.height / scale);
@@ -303,7 +212,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 						regionThermal = thermalScale(bbox);
 
 					bool mustContinue = roiManager.needToEvaluate(scaledBBox, mRGB, mDepth, mThermal,
-						[&](double height, double depthAvg) -> bool { return dataSet.isWithinValidDepthRange(height, depthAvg); });
+						[&](double height, double depthAvg) -> bool { return dataSet->isWithinValidDepthRange(height, depthAvg); });
 
 					double result;
 					bool predictedPositive = false;
@@ -322,16 +231,8 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 
 					nrOfWindowsEvaluated++;
 
-				}, 16, settings.refWidth, settings.refHeight);
+				}, settings.baseWindowStride, settings.refWidth, settings.refHeight);
 			}
-
-			//// clean up of prepared data
-			//for (auto& v : preparedData) {
-			//	for (int i = 0; i < v.size(); i++) {
-			//		if (v[i] != nullptr)
-			//			delete v[i];
-			//	}
-			//}
 		});
 
 
@@ -395,8 +296,6 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 			if (!overlaps(pos, predictedPos))
 				nrMissed++;
 		}
-
-
 
 
 		for (auto& pos : posInDontCareRegions) {
@@ -467,7 +366,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 		for (auto& l : labelsPerNumber[i]) {
 			if (!l.isDontCareArea()) {
 
-				std::string category = dataSet.getCategory(&l);
+				std::string category = dataSet->getCategory(&l);
 				if (category == "easy")
 					cv::rectangle(mRGB, l.getBbox(), cv::Scalar(255, 255, 0), 2);
 				else if (category == "moderate")
@@ -478,232 +377,234 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings) {
 					cv::rectangle(mRGB, l.getBbox(), cv::Scalar(128, 0, 0), 2);
 			}
 		}
-		//	auto nmsresult = applyNonMaximumSuppression(truepositiveregions, 0.2);
-		//	for (auto& pos : nmsresult) {
-		//		cv::rectangle(nms, pos.bbox, cv::Scalar(255, 255, 0), 2);
-		//	}
 
 		cv::rectangle(mRGB, cv::Rect(0, 0, mRGB.cols, 20), cv::Scalar(255, 255, 255), -1);
 		std::string str = "FP: " + std::to_string(eval.falsePositivesPerImage[i]) + ", missed: " + std::to_string(nrMissed) + " #windows : " + std::to_string(nrOfWindowsEvaluated) + " (#skipped: " + std::to_string(nrOfWindowsSkipped) + "). Eval time: " + std::to_string(evaluationTime) + "ms " + "(decision shift : " + std::to_string(valueShift) + ")";
 		cv::putText(mRGB, str, cv::Point(10, 10), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(0, 0, 0), 1, CV_AA);
 
-		//cv::imshow("TestNMS", nms);
 		m.lock();
 		double posPercentage = 100.0 * nrOfWindowsPositive / (nrOfWindowsEvaluated - nrOfWindowsSkipped);
 		std::cout << "Image: " << i << " Number of windows evaluated: " << nrOfWindowsEvaluated << " (skipped " << nrOfWindowsSkipped << ") and " << nrOfWindowsPositive << " positive (" << std::setw(2) << posPercentage << "%) " << evaluationTime << "ms (value shift: " << valueShift << ")" << std::endl;
-		// this will leak because creators are never disposed!
 		m.unlock();
 
-		cv::imwrite(std::to_string(i) + "_hddHOGrgb.png", mRGB);
+		cv::imwrite(std::to_string(i) + ".png", mRGB);
 
 		//	cv::imwrite(std::to_string(i) + "_hddHOGrgb_mask.png", maskOverlay);
-	//	cv::imshow("Test", mRGB);
-	//	cv::waitKey(0);
-		//nr++;
+		//	cv::imshow("Test", mRGB);
+		//	cv::waitKey(0);
+		nr++;
 	});
 }
 
 
-void testFeature() {
-	int nr = 0;
-	while (true) {
-		char nrStr[7];
-		sprintf(nrStr, "%06d", nr);
-
-		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png", CV_LOAD_IMAGE_UNCHANGED);
-		//cv::Mat tp = cv::imread("D:\\test.png", CV_LOAD_IMAGE_ANYDEPTH);
-		//tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
-
-		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
-
-		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
-
-			cv::Mat rgb = img.clone();
-			cv::cvtColor(img, img, CV_BGR2HLS);
-			img.convertTo(img, CV_32FC1, 1.0);
-			cv::Mat hsl[3];
-			cv::split(img, hsl);
-
-			//hsl[0].convertTo(hsl[0], CV_32FC1, 1.0 / 360);
-
-			cv::imshow(msg + "_input", hsl[0] / 180);
-
-
-			cv::Mat hue = hsl[0] / 180;
-			auto cells = getCoOccurenceMatrix(hue, patchSize, 16);
-
-			cv::Mat m = createFullCoOccurrenceMatrixImage(rgb, cells, patchSize);
-			cv::imshow(msg, m);
-
-
-
-
-			//HOG::HOGResult result =  HOG::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
-			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
-			std::vector<cv::KeyPoint> keypoints;
-
-
-			cv::Mat descriptors;
-			detector->detect(img, keypoints);
-
-
-			//detector->compute(img, keypoints, descriptors);
-
-			cv::Mat imgKeypoints;
-			cv::drawKeypoints(img, keypoints, imgKeypoints);
-			*/
-
-			/*	cv::Mat depth;
-				int d = img.depth();
-				if (img.type() != CV_32FC1) {
-					img.convertTo(depth, CV_32FC1, 1, 0);
-				}
-				else
-					depth = img;*/
-					/*
-					Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-					Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-
-					//depth = depth * 255;
-					for (int y = 1; y < depth.rows; y++)
-					{
-						for (int x = 1; x < depth.cols; x++)
-						{
-
-
-							float r = x + 1 >= depth.cols ? depth.at<float>(y, x) : depth.at<float>(y, x + 1);
-							float l = x - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y, x - 1);
-
-							float b = y + 1 >= depth.rows ? depth.at<float>(y, x) : depth.at<float>(y + 1, x);
-							float t = y - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y - 1, x);
-
-
-							float dzdx = (r - l) / 2.0;
-							float dzdy = (b - t) / 2.0;
-
-							Vec3f d(-dzdx, -dzdy, 0.0f);
-
-							Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
-							Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
-							Vec3f c(x, y, depth.at<float>(y, x));
-
-							Vec3f d2 = (ll - c).cross(tt - c);
-
-
-							Vec3f n = normalize(d);
-
-							double azimuth = atan2(-d2[1], -d2[0]); // -pi -> pi
-							if (azimuth < 0)
-								azimuth += 2 * CV_PI;
-
-							double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
-
-							cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 0);
-
-
-							angleMat.at<cv::Vec3f>(y, x) = cv::Vec3f(dzdx, dzdy, 0);
-
-							normals.at<Vec3f>(y, x) = n;
-						}
-					}
-
-					normalize(abs(angleMat), angleMat, 0, 1, cv::NormTypes::NORM_MINMAX);
-
-					auto& result = HOG::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
-
-
-
-					//				cv::imshow(msg, normals);
-
-								//cvtColor(img, img, CV_BGR2GRAY);
-								//cv::Mat lbp = Algorithms::OLBP(img);
-								//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
-
-								//cv::Mat padded;
-								//int padding = 1;
-								//padded.create(img.rows,img.cols, lbp.type());
-								//padded.setTo(cv::Scalar::all(0));
-								//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
-
-								//
-								//auto& result = HOG::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
-
-					cv::Mat tmp;
-					img.convertTo(tmp, CV_8UC3, 255, 0);
-					cv::imshow(msg, result.combineHOGImage(img));*/
-
-					/*cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
-					cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
-
-
-					for (int j = 0; j < depth.rows; j++)
-					{
-						for (int i = 0; i < depth.cols ; i++)
-						{
-
-							float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
-							float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
-
-							float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
-							float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
-
-							float dx = (r - l) / 2;
-							float dy = (b - t) / 2;
-
-							double anglePixel = atan2(dy, dx);
-							// don't limit to 0-pi, but instead use 0-2pi range
-							anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
-							if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
-
-							double magPixel = sqrt((dx*dx) + (dy*dy));
-							magnitude.at<float>(j, i) = magPixel;
-							angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
-						}
-					}
-
-					cv::normalize(abs(magnitude), magnitude, 0, 255, cv::NormTypes::NORM_MINMAX);
-
-					auto& result =  HOG::getHistogramsOfX(magnitude, angle, patchSize, binSize, true, false);
-					cv::Mat tmp;
-					img.convertTo(tmp, CV_8UC3, 255, 0);
-					cv::imshow(msg, magnitude);*/
-
-
-					//Mat gray;
-					//cv::cvtColor(img, gray, CV_BGR2GRAY);
-
-					//Mat lbp = Algorithms::OLBP(gray);
-
-					//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
-					//cv::Mat padded;
-					//int padding = 1;
-					//padded.create(img.rows, img.cols, lbp.type());
-					//padded.setTo(cv::Scalar::all(0));
-					//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
-
-
-					//auto& result = HOG::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, binSize, true, false);
-					//cv::imshow(msg, result.combineHOGImage(img));
-
-		};
-
-		func(tp, "TP");
-
-		func(tn, "TN");
-
-		cv::waitKey(0);
-		nr++;
-	}
-
-}
-
-void testSlidingWindow(EvaluationSettings& settings) {
-
-	KITTIDataSet dataSet(settings.kittiDataSetPath);
-
-	auto labelsPerNumber = dataSet.getLabelsPerNumber();
+//void testFeature() {
+//	int nr = 0;
+//	while (true) {
+//		char nrStr[7];
+//		sprintf(nrStr, "%06d", nr);
+//
+//		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
+//		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
+//		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png", CV_LOAD_IMAGE_UNCHANGED);
+//		//cv::Mat tp = cv::imread("D:\\test.png", CV_LOAD_IMAGE_ANYDEPTH);
+//		//tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
+//
+//		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
+//
+//		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
+//
+//			cv::Mat rgb = img.clone();
+//			cv::cvtColor(img, img, CV_BGR2HLS);
+//			img.convertTo(img, CV_32FC1, 1.0);
+//			cv::Mat hsl[3];
+//			cv::split(img, hsl);
+//
+//			//hsl[0].convertTo(hsl[0], CV_32FC1, 1.0 / 360);
+//
+//			cv::imshow(msg + "_input", hsl[0] / 180);
+//
+//
+//			cv::Mat hue = hsl[0] / 180;
+//			auto cells = getCoOccurenceMatrix(hue, patchSize, 16);
+//
+//			cv::Mat m = createFullCoOccurrenceMatrixImage(rgb, cells, patchSize);
+//			cv::imshow(msg, m);
+//
+//
+//
+//
+//			//HOG::HOGResult result =  HOG::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
+//			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
+//			std::vector<cv::KeyPoint> keypoints;
+//
+//
+//			cv::Mat descriptors;
+//			detector->detect(img, keypoints);
+//
+//
+//			//detector->compute(img, keypoints, descriptors);
+//
+//			cv::Mat imgKeypoints;
+//			cv::drawKeypoints(img, keypoints, imgKeypoints);
+//			*/
+//
+//			/*	cv::Mat depth;
+//				int d = img.depth();
+//				if (img.type() != CV_32FC1) {
+//					img.convertTo(depth, CV_32FC1, 1, 0);
+//				}
+//				else
+//					depth = img;*/
+//					/*
+//					Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+//					Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
+//
+//					//depth = depth * 255;
+//					for (int y = 1; y < depth.rows; y++)
+//					{
+//						for (int x = 1; x < depth.cols; x++)
+//						{
+//
+//
+//							float r = x + 1 >= depth.cols ? depth.at<float>(y, x) : depth.at<float>(y, x + 1);
+//							float l = x - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y, x - 1);
+//
+//							float b = y + 1 >= depth.rows ? depth.at<float>(y, x) : depth.at<float>(y + 1, x);
+//							float t = y - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y - 1, x);
+//
+//
+//							float dzdx = (r - l) / 2.0;
+//							float dzdy = (b - t) / 2.0;
+//
+//							Vec3f d(-dzdx, -dzdy, 0.0f);
+//
+//							Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
+//							Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
+//							Vec3f c(x, y, depth.at<float>(y, x));
+//
+//							Vec3f d2 = (ll - c).cross(tt - c);
+//
+//
+//							Vec3f n = normalize(d);
+//
+//							double azimuth = atan2(-d2[1], -d2[0]); // -pi -> pi
+//							if (azimuth < 0)
+//								azimuth += 2 * CV_PI;
+//
+//							double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
+//
+//							cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 0);
+//
+//
+//							angleMat.at<cv::Vec3f>(y, x) = cv::Vec3f(dzdx, dzdy, 0);
+//
+//							normals.at<Vec3f>(y, x) = n;
+//						}
+//					}
+//
+//					normalize(abs(angleMat), angleMat, 0, 1, cv::NormTypes::NORM_MINMAX);
+//
+//					auto& result = HOG::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
+//
+//
+//
+//					//				cv::imshow(msg, normals);
+//
+//								//cvtColor(img, img, CV_BGR2GRAY);
+//								//cv::Mat lbp = Algorithms::OLBP(img);
+//								//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+//
+//								//cv::Mat padded;
+//								//int padding = 1;
+//								//padded.create(img.rows,img.cols, lbp.type());
+//								//padded.setTo(cv::Scalar::all(0));
+//								//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+//
+//								//
+//								//auto& result = HOG::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
+//
+//					cv::Mat tmp;
+//					img.convertTo(tmp, CV_8UC3, 255, 0);
+//					cv::imshow(msg, result.combineHOGImage(img));*/
+//
+//					/*cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
+//					cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
+//
+//
+//					for (int j = 0; j < depth.rows; j++)
+//					{
+//						for (int i = 0; i < depth.cols ; i++)
+//						{
+//
+//							float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
+//							float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
+//
+//							float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
+//							float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
+//
+//							float dx = (r - l) / 2;
+//							float dy = (b - t) / 2;
+//
+//							double anglePixel = atan2(dy, dx);
+//							// don't limit to 0-pi, but instead use 0-2pi range
+//							anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
+//							if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
+//
+//							double magPixel = sqrt((dx*dx) + (dy*dy));
+//							magnitude.at<float>(j, i) = magPixel;
+//							angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
+//						}
+//					}
+//
+//					cv::normalize(abs(magnitude), magnitude, 0, 255, cv::NormTypes::NORM_MINMAX);
+//
+//					auto& result =  HOG::getHistogramsOfX(magnitude, angle, patchSize, binSize, true, false);
+//					cv::Mat tmp;
+//					img.convertTo(tmp, CV_8UC3, 255, 0);
+//					cv::imshow(msg, magnitude);*/
+//
+//
+//					//Mat gray;
+//					//cv::cvtColor(img, gray, CV_BGR2GRAY);
+//
+//					//Mat lbp = Algorithms::OLBP(gray);
+//
+//					//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
+//					//cv::Mat padded;
+//					//int padding = 1;
+//					//padded.create(img.rows, img.cols, lbp.type());
+//					//padded.setTo(cv::Scalar::all(0));
+//					//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+//
+//
+//					//auto& result = HOG::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, binSize, true, false);
+//					//cv::imshow(msg, result.combineHOGImage(img));
+//
+//		};
+//
+//		func(tp, "TP");
+//
+//		func(tn, "TN");
+//
+//		cv::waitKey(0);
+//		nr++;
+//	}
+//
+//}
+
+void testSlidingWindow(EvaluationSettings& settings, std::string& dataset) {
+
+	std::string alwaysMissedPositivesFile = dataset + "_alwaysmissedpositives.csv";
+
+	std::unique_ptr<DataSet> dataSet;
+	if (dataset == "KITTI")
+		dataSet = std::unique_ptr<DataSet>(new KITTIDataSet(settings.kittiDataSetPath));
+	else if (dataset == "KAIST")
+		dataSet = std::unique_ptr<DataSet>(new KAISTDataSet(settings.kittiDataSetPath));
+	else
+		throw std::exception("Invalid data set");
+
+	auto labelsPerNumber = dataSet->getLabelsPerNumber();
 
 	std::mutex lock;
 	ClassifierEvaluation eval;
@@ -713,9 +614,10 @@ void testSlidingWindow(EvaluationSettings& settings) {
 		evalPerRisk[c] = ClassifierEvaluation();
 
 	std::map<int, std::vector<SlidingWindowRegion>> predictedPositiveregionsPerImage;
+	std::map<int, std::vector<cv::Rect>> missedPositivesPerImage;
 
 	int nrEvaluated = 0;
-	dataSet.iterateDataSetWithSlidingWindow(settings.windowSizes, settings.baseWindowStride, settings.refWidth, settings.refHeight,
+	dataSet->iterateDataSetWithSlidingWindow(settings.windowSizes, settings.baseWindowStride, settings.refWidth, settings.refHeight,
 
 		settings.testCriteria,
 
@@ -724,10 +626,13 @@ void testSlidingWindow(EvaluationSettings& settings) {
 		predictedPositiveregionsPerImage[imgNr] = std::vector<SlidingWindowRegion>();
 	}, [&](int imgNr, double scale, cv::Mat& fullRGBScale, cv::Mat& fullDepthScale, cv::Mat& fullThermalScale) -> void {
 
+		lock.lock();
+		missedPositivesPerImage[imgNr] = std::vector<cv::Rect>();
+		lock.unlock();
 	}, [&](int idx, int resultClass, int imageNumber, int scale, cv::Rect2d& scaledRegion, cv::Rect& unscaledROI, cv::Mat&rgb, cv::Mat&depth, cv::Mat& fullrgb, bool overlapsWithTruePositive) -> void {
 
 		if (idx % 100 == 0)
-			ProgressWindow::getInstance()->updateStatus(std::string("Testing sliding window"), 1.0 * nrEvaluated / dataSet.getNrOfImages(), std::string("Evaluating sliding window (") + std::to_string(nrEvaluated) + ")");
+			ProgressWindow::getInstance()->updateStatus(std::string("Testing sliding window"), 1.0 * nrEvaluated / dataSet->getNrOfImages(), std::string("Evaluating sliding window (") + std::to_string(nrEvaluated) + ")");
 
 		bool predictedPositive = false;
 
@@ -800,6 +705,7 @@ void testSlidingWindow(EvaluationSettings& settings) {
 				std::string category = RiskAnalysis::getRiskCategory(l.z_3d, l.x_3d, settings.vehicleSpeedKMh, settings.tireRoadFriction);
 				nrOfTruePositivesPerRiskCategory[category]--;
 				nrOfFalseNegativesPerRiskCategory[category]++;
+				missedPositivesPerImage[imageNumber].push_back(truePositiveRegions[tp]);
 			}
 		}
 
@@ -823,6 +729,20 @@ void testSlidingWindow(EvaluationSettings& settings) {
 		std::cout << "Min. miss rate for category: " << evalPerRisk[c].getMissRate() << std::endl;
 	}
 
+
+
+	std::ofstream str = std::ofstream(alwaysMissedPositivesFile);
+	for (auto& pair : missedPositivesPerImage) {
+		int imgNr = pair.first;
+		auto& missedPositives = pair.second;
+		for (int tp = 0; tp < missedPositives.size(); tp++)
+		{
+			auto& region = missedPositives[tp];
+			str << imgNr << ";" << 0 << ";" <<
+				region.x << "," << region.y << "," << region.width << "," << region.height << std::endl;
+		}
+	}
+	str.close();
 }
 
 
@@ -841,18 +761,13 @@ struct DistanceBetween {
 	}
 };
 
-void checkDistanceBetweenTPAndTN(std::string& trainingFile, EvaluationSettings& settings, std::string& outputFile) {
-	KITTIDataSet dataSet(kittiDatasetPath);
+void checkDistanceBetweenTPAndTN(std::string& trainingFile, EvaluationSettings& settings, FeatureTester& tester, std::set<std::string> set, std::string& outputFile) {
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
 	TrainingDataSet tSet(&dataSet);
 
 	tSet.load(trainingFile);
 
-	FeatureSet fset;
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HOG(Depth)"), IFeatureCreator::Target::Depth, patchSize, binSize, settings.refWidth, settings.refHeight)));
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(std::string("HOG(RGB)"), IFeatureCreator::Target::RGB, patchSize, binSize, settings.refWidth, settings.refHeight)));
-	fset.addCreator(std::unique_ptr<IFeatureCreator>(new LBPFeatureCreator(std::string("LBP(RGB)"), patchSize, 20, settings.refWidth, settings.refHeight)));
-	//fset.addCreator(std::unique_ptr<IFeatureCreator>(new HDDFeatureCreator(std::string("HDD"), patchSize, binSize, refWidth, refHeight)));
-
+	auto fset = tester.getFeatureSet(set);
 
 	std::vector<FeatureVector> truePositiveFeatures;
 	std::vector<FeatureVector> trueNegativeFeatures;
@@ -860,7 +775,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, EvaluationSettings& 
 	std::vector<SlidingWindowRegion> truePositiveRegions;
 	std::vector<SlidingWindowRegion> trueNegativeRegions;
 
-	// don't use prepared data and roi for training data set
+	// don't use prepared data and roi
 	std::vector<std::unique_ptr<IPreparedData>> preparedData;
 	cv::Rect roi;
 
@@ -870,7 +785,7 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, EvaluationSettings& 
 		if (idx % 100 == 0)
 			ProgressWindow::getInstance()->updateStatus(std::string("Min distance between TN/TP"), 1.0 * imageNumber / tSet.getNumberOfImages(), std::string("Building feature vectors (") + std::to_string(imageNumber) + ")");
 
-		FeatureVector v = fset.getFeatures(rgb, depth, thermal, roi, preparedData);
+		FeatureVector v = fset->getFeatures(rgb, depth, thermal, roi, preparedData);
 		if (resultClass == 1) {
 			truePositiveFeatures.push_back(v);
 			truePositiveRegions.push_back(SlidingWindowRegion(imageNumber, region, 0));
@@ -969,7 +884,8 @@ void checkDistanceBetweenTPAndTN(std::string& trainingFile, EvaluationSettings& 
 	str.flush();
 	str.close();
 
-	KITTIDataSet ds(kittiDatasetPath);
+	// show the regions
+	KITTIDataSet ds(settings.kittiDataSetPath);
 	for (auto& db : distances) {
 		cv::Mat tn = ds.getImagesForNumber(db.tnRegion.imageNumber)[0];
 		cv::Mat tp = ds.getImagesForNumber(db.tpRegion.imageNumber)[0];
@@ -1015,8 +931,8 @@ void browseThroughTrainingSet(std::string& trainingFile, DataSet* dataSet) {
 }
 
 
-void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstream& str) {
-	KITTIDataSet dataSet(kittiDatasetPath);
+void printHeightVerticalAvgDepthRelation(std::string& trainingFile, EvaluationSettings& settings, std::ofstream& str) {
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
 	TrainingDataSet tSet(&dataSet);
 	tSet.load(trainingFile);
 
@@ -1055,63 +971,8 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, std::ofstrea
 	str.flush();
 }
 
-void generateFinalForEachRound(FeatureTester* tester, EvaluationSettings& settings) {
-	std::set<std::string> set = { "HOG(RGB)", "HDD" };
 
-	auto featureSet = tester->getFeatureSet(set);
-
-	KITTIDataSet dataSet(kittiDatasetPath);
-
-	int nrOfEvaluations = 300;
-	std::function<bool(int)> testCriteria = [](int imageNumber) -> bool { return imageNumber % 20 == 1; };
-
-	for (int i = 0; i <= 2; i++)
-	{
-
-		std::string featureSetName = std::string("HDD+HOG(RGB)_" + std::to_string(i));
-		EvaluatorCascade cascade(featureSetName);
-		cascade.load(std::string("models\\HDD+HOG(RGB)_cascade_" + std::to_string(i) + ".xml"), std::string("models"));
-		std::cout << "Started final evaluation on test set with sliding window and NMS " << std::endl;
-		FinalEvaluationSlidingWindowResult finalresult;
-		long elapsedEvaluationSlidingTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
-			finalresult = cascade.evaluateWithSlidingWindowAndNMS(settings, &dataSet, *featureSet, testCriteria);
-		});
-		std::cout << "Evaluation with sliding window and NMS complete after " << elapsedEvaluationSlidingTime << "ms" << std::endl;
-
-		std::string finalEvaluationSlidingFile = "results\\" + std::string("HDD+HOG(RGB)_") + std::to_string(i) + ".csv";
-
-		std::ofstream str = std::ofstream(finalEvaluationSlidingFile);
-		str << "Name" << ";";
-		ClassifierEvaluation().toCSVLine(str, true);
-		str << std::endl;
-		for (auto& result : finalresult.evaluations["easy"]) {
-			str << featureSetName << "[S][E]" << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
-		}
-
-		for (auto& result : finalresult.evaluations["moderate"]) {
-			str << featureSetName << "[S][M]" << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
-		}
-
-		for (auto& result : finalresult.evaluations["hard"]) {
-			str << featureSetName << "[S][H]" << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
-		}
-
-		for (auto& result : finalresult.combinedEvaluations) {
-			str << featureSetName << "[S]" << ";";
-			result.toCSVLine(str, false);
-			str << std::endl;
-		}
-	}
-}
-
-
-void drawRiskOnDepthDataSet(DataSet* set, bool dumpHeightsPerCategory = false) {
+void drawRiskOnDepthDataSet(DataSet* set) {
 
 	if (!set->getFullfillsRequirements()[1])
 		throw new std::exception("The dataset does not have the required depth information");
@@ -1135,6 +996,7 @@ void drawRiskOnDepthDataSet(DataSet* set, bool dumpHeightsPerCategory = false) {
 		truePositivesPerCategory[c] = std::vector<cv::Rect2d>();
 	}
 
+
 	for (int imgNr = 0; imgNr < set->getNrOfImages(); imgNr++)
 	{
 		auto& labels = labelsPerNumber[imgNr];
@@ -1156,55 +1018,49 @@ void drawRiskOnDepthDataSet(DataSet* set, bool dumpHeightsPerCategory = false) {
 			cv::waitKey(0);
 		}
 	}
+}
 
-	if (dumpHeightsPerCategory) {
-		for (auto& pair : truePositivesPerCategory) {
+void dumpHeightsPerRiskCategory(DataSet* set) {
+	std::vector<std::vector<DataSetLabel>> labelsPerNumber = set->getLabelsPerNumber();
 
-			double minHeight = std::numeric_limits<int>().max();
-			double maxHeight = 0;
+	std::map<std::string, std::vector<cv::Rect2d>> truePositivesPerCategory;
+	for (auto& c : RiskAnalysis::getRiskCategories()) {
+		truePositivesPerCategory[c] = std::vector<cv::Rect2d>();
+	}
 
-			std::ofstream str(pair.first + "_bboxheight.csv");
+	for (auto& pair : truePositivesPerCategory) {
 
-			for (auto& bbox : pair.second) {
-				if (bbox.height < minHeight) minHeight = bbox.height;
-				if (bbox.height > maxHeight) maxHeight = bbox.height;
+		double minHeight = std::numeric_limits<int>().max();
+		double maxHeight = 0;
 
-				str << bbox.height << std::endl;
-			}
-			str.close();
-			std::cout << "Bounding box range for category " << pair.first << ": " << minHeight << " ~ " << maxHeight << std::endl;
+		std::ofstream str(pair.first + "_bboxheight.csv");
 
-			std::cout.flush();
+		for (auto& bbox : pair.second) {
+			if (bbox.height < minHeight) minHeight = bbox.height;
+			if (bbox.height > maxHeight) maxHeight = bbox.height;
+
+			str << bbox.height << std::endl;
 		}
+		str.close();
+		std::cout << "Bounding box range for category " << pair.first << ": " << minHeight << " ~ " << maxHeight << std::endl;
+
+		std::cout.flush();
 	}
 }
 
-
-
-
-void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
-
-
-
-	std::set<std::string> set;
-	set = { "HOG(RGB)", "SDDG(Depth)" };
-
-	std::string featureSetName("");
-	for (auto& name : set) {
-		if (name != *(set.begin()))
-			featureSetName += "+" + name;
-		else
-			featureSetName += name;
-	}
-
+void explainModel(FeatureTester& tester, EvaluationSettings& settings, std::set<std::string> set, std::string& dataset) {
 	auto fset = tester.getFeatureSet(set);
+	std::string featureSetName = fset->getFeatureSetName();
+	std::string cascadeFile = std::string("models\\" + dataset + "_" + featureSetName + "_cascade.xml");
+	if (!fileExists(cascadeFile))
+		throw std::exception(std::string("The cascade file " + cascadeFile + " does not exist").c_str());
 
 	EvaluatorCascade cascade(featureSetName);
-	cascade.load(std::string("models\\KITTI_" + featureSetName + "_cascade.xml"), std::string("models"));
+	cascade.load(cascadeFile, std::string("models"));
 
 	std::vector<int> classifierHits(cascade.size(), 0);
 
-	classifierHits = cascade.getClassifierHitCount(); // { 376310, 16947, 14280, 12743, 10857, 11272, 42062 };
+	classifierHits = cascade.getClassifierHitCount();
 
 	int classifierHitSum = 0;
 	for (auto val : classifierHits) classifierHitSum += val;
@@ -1230,8 +1086,6 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 	for (int i = 0; i < rounds; i++)
 	{
 		ModelEvaluator model = cascade.getModelEvaluator(i);
-		//	model.loadModel(std::string("models\\" + featureSetName + " round " + std::to_string(i) + ".xml"));
-
 
 		auto cur = model.explainModel(fset, settings.refWidth, settings.refHeight);
 
@@ -1239,20 +1093,19 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 
 			if (cur[j].cols > 0 && cur[j].rows > 0) {
 				cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
-
 				totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
-
 
 				cv::Mat& dst = imgs[j](cv::Rect(i*(settings.refWidth + padding), 0, settings.refWidth, settings.refHeight));
 				cur[j].copyTo(dst);
 			}
-
-
-			//	cv::imshow("Test" + std::to_string(j), toHeatMap(cur[j]));
-			//	cv::waitKey(0);
 		}
 	}
 
+	cv::Mat mergeTotalImg = totalImgs[0].clone();
+	for (int i = 1; i < imgs.size(); i++) {
+		cv::normalize(totalImgs[i], totalImgs[i], 0, 1, cv::NormTypes::NORM_MINMAX);
+		mergeTotalImg += totalImgs[i];
+	}
 
 	auto it = set.begin();
 	for (int i = 0; i < imgs.size(); i++) {
@@ -1280,16 +1133,22 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings) {
 
 		it++;
 	}
+
+	cv::normalize(mergeTotalImg, mergeTotalImg, 0, 1, cv::NormTypes::NORM_MINMAX);
+	cv::imshow("explainmergetotal", heatmap::toHeatMap(mergeTotalImg));
+
 	cv::waitKey(0);
 }
 
 
-void testSpeed(FeatureTester& tester, DataSet* dataSet) {
+void testSpeed(FeatureTester& tester, EvaluationSettings& settings) {
 
-	auto imgs = dataSet->getImagesForNumber(0);
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
+
+	auto imgs = dataSet.getImagesForNumber(0);
 	cv::Mat rgbScale = imgs[0];
 	cv::Mat depthScale = imgs[1];
-	cv::Mat thermalScale = depthScale; // temporarily just to evaluate speed
+	cv::Mat thermalScale = depthScale; // temporarily just to evaluate speed on a same size image
 
 	cv::Rect bbox(64, 128, 64, 128);
 
@@ -1337,7 +1196,7 @@ void testSpeed(FeatureTester& tester, DataSet* dataSet) {
 				long evaluationTime = measure<std::chrono::milliseconds>::execution([&]() -> void {
 					for (int i = 0; i < n; i++)
 					{
-						fset->getFeatures(regionRGB,regionDepth, regionThermal, bbox, preparedData);
+						fset->getFeatures(regionRGB, regionDepth, regionThermal, bbox, preparedData);
 					}
 				});
 
@@ -1394,7 +1253,7 @@ void buildTesterJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, Evalu
 
 void evaluateClusterSize(FeatureTester& tester, EvaluationSettings settings) {
 
-	KITTIDataSet dataSet(kittiDatasetPath);
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
 
 	std::vector<std::string> clustersToTest = { "ORB(RGB)", "SIFT(RGB)", "CenSurE(RGB)", "MSD(RGB)", "FAST(RGB)" };
 	std::set<std::string> set;
@@ -1435,7 +1294,7 @@ void evaluateClusterSize(FeatureTester& tester, EvaluationSettings settings) {
 }
 
 
-void testKAISTROI(EvaluationSettings& settings) {
+void testKAISTROI(EvaluationSettings& settings, double w, double alpha, std::vector<float> scales) {
 	KAISTDataSet kaist(settings.kaistDataSetPath);
 	auto labelsPerNumber = kaist.getLabelsPerNumber();
 
@@ -1449,9 +1308,6 @@ void testKAISTROI(EvaluationSettings& settings) {
 			}
 		}
 		if (show) {
-
-			double w = 12;
-			double alpha = 2;
 			//double beta = 8;
 
 
@@ -1459,7 +1315,7 @@ void testKAISTROI(EvaluationSettings& settings) {
 			imgs[2].convertTo(imgs[2], CV_8UC1, 255);
 
 
-			std::vector<float> scales = { 0.5, 0.75, 1 };
+
 
 			std::vector<cv::Rect> candidates;
 
@@ -1564,11 +1420,20 @@ void testKAISTROI(EvaluationSettings& settings) {
 
 		}
 	}
-
 }
 
-int main()
+void printFeatureVectorSize(FeatureTester& tester) {
+	for (auto& f : tester.getFeatureCreatorFactories()) {
+		std::set<std::string> set = { f };
+		auto fset = tester.getFeatureSet(set);
+		std::cout << f << " " << fset->getNumberOfFeatures() << std::endl;
+	}
+}
+
+int main(int argc, char** argv)
 {
+	std::cout << "--------------------- New console session -----------------------" << std::endl;
+
 	EvaluationSettings settings;
 	settings.read(std::string("settings.ini"));
 
@@ -1606,56 +1471,33 @@ int main()
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("SDDG(Depth)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new SDDGFeatureCreator(name, IFeatureCreator::Target::Depth, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("RAW(LUV)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new RAWLUVFeatureCreator(name, settings.refWidth, settings.refHeight))); }));
 
-	//for (auto& f : tester.getFeatureCreatorFactories()) {
-	//	std::set<std::string> set = { f };
-	//	auto fset = tester.getFeatureSet(set);
-	//	std::cout << f << " " << fset->getNumberOfFeatures() << std::endl;
-	//}
+
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
-	//	testKAISTROI(settings);
-	//testSlidingWindow(settings);
-
-	/*cv::Mat testImage;
-	testImage = cv::imread("D:\\test.jpg");
-
-	LBPFeatureCreator hogcreator(std::string("HOG"), IFeatureCreator::Target::RGB);
-	auto result = hogcreator.getFeatures((testImage, patchSize, binSize, nullptr, true, false);
-	cv::Mat imgResult = result.combineHOGImage(testImage);
-	cv::imshow("HOG", imgResult);
-
-	auto preparedData = hogcreator.buildPreparedDataForFeatures(testImage, cv::Mat(), cv::Mat());
-	auto result2 = hogcreator.getHistogramsOfOrientedGradient(testImage, patchSize, binSize, preparedData, true, false);
-	cv::Mat imgResult2 = result2.combineHOGImage(testImage);
-	cv::imshow("HOG2", imgResult2);
-	cv::waitKey(0);*/
-
+	//testKAISTROI(settings);
+	
+	explainModel(tester, settings, { "HOG(RGB)", "HDD" }, std::string("KITTI"));
+	
+	//testClassifier(tester, settings, std::string("KITTI"), { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, -7.85);
+	
+	//testSlidingWindow(settings, std::string("KITTI"));
 
 	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
 	//drawRiskOnDepthDataSet(&kittiDataSet);
 
-
-	//std::set<std::string> set = { "SDDG" };
-	//settings.trainingCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 0; };
-	//settings.testCriteria = [=](int imageNumber) -> bool { return imageNumber % 20 == 1; };
-
-	//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
-	//tester.addJob(set, &kaistDataSet,settings);
-	//tester.runJobs();
-
-
 	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
 	//browseThroughTrainingSet(std::string("trainingsets\\KITTI_HDD+HOG(RGB)_train1.txt"), &kittiDataSet);
 
+	//testSpeed(tester, settings);
 
-	//explainModel(tester, settings);
-	/*KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
-	testSpeed(tester, &kittiDataSet);
-*/
+	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\HOG(RGB)_train3.txt"), std::string("tptnsimilarity_hog_train3.csv"));
 
-	//testClassifier(tester, settings);
+	//std::ofstream str("heightdepthvaluesTN.csv");
+	//printHeightVerticalAvgDepthRelation(std::string("trainingsets\\train0.txt"), str);
+
+	
 
 
 	if (settings.kittiDataSetPath != "") {
@@ -1672,29 +1514,7 @@ int main()
 	}
 
 
-
-	//testFeature();
-
-
-	//generateFinalForEachRound(&tester);
-
-	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\LBP(RGB)_train3.txt"), std::string("tptnsimilarity_lbp_train3.csv"));
-
-
-
-	/*std::ofstream str("heightdepthvaluesTN.csv");
-	printHeightVerticalAvgDepthRelation(std::string("trainingsets\\train0.txt"), str);*/
-
-	//browseThroughDataSet(std::string("trainingsets\\train0.txt"));
-
-	//	testSlidingWindow();
-
-
-	//trainDetailedClassifier();
-	//testFeature();
-
-	std::cout << "--------------------- New console session -----------------------" << std::endl;
-
+	std::cout << "--------------------- Finished, press any key to exit -----------------------" << std::endl;
 	getchar();
 	return 0;
 }

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KAIST_CenSurE(RGB) round 0"</name_0>
+<name_1>"KAIST_CenSurE(RGB) round 1"</name_1>
+<name_2>"KAIST_CenSurE(RGB) round 2"</name_2>
+<name_3>"KAIST_CenSurE(RGB) round 3"</name_3>
+<valueShifts>
+  6.00000024e-01 6.00000024e-01 4.00000006e-01 4.00000006e-01</valueShifts>
+<classifierHitCount>
+  52939 2122 59406 2753371</classifierHitCount>
+</opencv_storage>

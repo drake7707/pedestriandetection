@@ -160,10 +160,12 @@ cv::Mat VariableNumberFeatureCreator::explainFeatures(int offset, std::vector<fl
 
 		cv::KeyPoint p;
 		p.pt = cv::Point2f(centroids[i][0], centroids[i][1]);
-		p.size = centroids[i][2];
-		p.octave = centroids[i][3];
-		p.angle = centroids[i][4];
-		p.class_id = centroids[i][5];
+		if (centroids[i].size() > 2) {
+			p.size = centroids[i][2];
+			p.octave = centroids[i][3];
+			p.angle = centroids[i][4];
+			p.class_id = centroids[i][5];
+		}
 		std::vector<cv::KeyPoint> keypoints = { p };
 		cv::Scalar color(weight);
 		cv::Mat outputImg;

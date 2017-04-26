@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KAIST_HOI round 0"</name_0>
+<name_1>"KAIST_HOI round 1"</name_1>
+<name_2>"KAIST_HOI round 2"</name_2>
+<name_3>"KAIST_HOI round 3"</name_3>
+<valueShifts>
+  4. 3.79999995e+00 1.79999995e+00 2.79999995e+00</valueShifts>
+<classifierHitCount>
+  964793 108150 11551 1783344</classifierHitCount>
+</opencv_storage>

@@ -1789,3 +1789,1433 @@ Chosen 8.800000 as decision boundary shift to attain TPR of 0.951387
 Evaluation with sliding window complete after 2208451ms for HOG(RGB)+SDDG(Thermal)
 Started training evaluation with sliding window of HOG(RGB)+HOI
 Started training of HOG(RGB)+SDDG(Thermal), round 2
+Training round 2 complete after 4142638ms for HOG(RGB)+HOG(Thermal)
+Started evaluation of HOG(RGB)+HOG(Thermal)
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 9268
+Evaluation complete after 133560ms for HOG(RGB)+HOG(Thermal)
+Training round 2 complete after 3737184ms for CoOccurrence(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)
+Chosen 6.200000 as decision boundary shift to attain TPR of 0.950913
+Evaluation with sliding window complete after 531058ms for HOG(RGB)+HOI
+Started training evaluation with sliding window of HOG(RGB)+HOG(Thermal)
+Started training of HOG(RGB)+HOI, round 3
+Evaluation complete after 57225ms for CoOccurrence(RGB)+HOG(RGB)
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 7560
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.951862
+Evaluation with sliding window complete after 480015ms for HOG(RGB)+HOG(Thermal)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)
+Started training of HOG(RGB)+HOG(Thermal), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 7560
+Chosen 5.000000 as decision boundary shift to attain TPR of 0.950320
+Evaluation with sliding window complete after 1068161ms for CoOccurrence(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 11972
+Training round 3 complete after 3649166ms for HOG(RGB)+HOI
+Started evaluation of HOG(RGB)+HOI
+Evaluation complete after 35053ms for HOG(RGB)+HOI
+Started training evaluation with sliding window of HOG(RGB)+HOI
+Training round 2 complete after 4448774ms for HOG(RGB)+SDDG(Thermal)
+Started evaluation of HOG(RGB)+SDDG(Thermal)
+Evaluation complete after 117512ms for HOG(RGB)+SDDG(Thermal)
+Chosen 6.200000 as decision boundary shift to attain TPR of 0.952454
+Evaluation with sliding window complete after 470672ms for HOG(RGB)+HOI
+Started training evaluation with sliding window of HOG(RGB)+SDDG(Thermal)
+Training round 3 complete after 5388610ms for HOG(RGB)+HOG(Thermal)
+Started evaluation of HOG(RGB)+HOG(Thermal)
+Evaluation complete after 56818ms for HOG(RGB)+HOG(Thermal)
+Training round 3 complete after 4536520ms for CoOccurrence(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)
+Evaluation complete after 38268ms for CoOccurrence(RGB)+HOG(RGB)
+Chosen 7.400000 as decision boundary shift to attain TPR of 0.954233
+Evaluation with sliding window complete after 2122189ms for HOG(RGB)+SDDG(Thermal)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+HOI
+Started training of HOG(RGB)+SDDG(Thermal), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 9268
+Evaluation with sliding window and NMS complete after 721665ms for HOG(RGB)+HOI
+Started training evaluation with sliding window of HOG(RGB)+HOG(Thermal)
+Starting job HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 28356
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.955656
+Evaluation with sliding window complete after 454681ms for HOG(RGB)+HOG(Thermal)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)
+Chosen 5.200000 as decision boundary shift to attain TPR of 0.953047
+Evaluation with sliding window complete after 687101ms for CoOccurrence(RGB)+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+HOG(Thermal)
+Evaluation with sliding window and NMS complete after 742196ms for HOG(RGB)+HOG(Thermal)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(RGB)
+Starting job HOG(RGB)+RAW(LUV)
+Started training of HOG(RGB)+RAW(LUV), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 28356
+Evaluation with sliding window and NMS complete after 1020834ms for CoOccurrence(RGB)+HOG(RGB)
+Starting job HOG(RGB)+LBP(RGB)
+Started training of HOG(RGB)+LBP(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 6340
+Training round 0 complete after 3061280ms for HOG(RGB)+RAW(RGB)
+Started evaluation of HOG(RGB)+RAW(RGB)
+Evaluation complete after 20587ms for HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(RGB)
+Chosen 4.800000 as decision boundary shift to attain TPR of 0.952573
+Evaluation with sliding window complete after 483664ms for HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 1
+Training round 0 complete after 666867ms for HOG(RGB)+LBP(RGB)
+Started evaluation of HOG(RGB)+LBP(RGB)
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 28356
+Evaluation complete after 23047ms for HOG(RGB)+LBP(RGB)
+Started training evaluation with sliding window of HOG(RGB)+LBP(RGB)
+Chosen 4.600000 as decision boundary shift to attain TPR of 0.950557
+Evaluation with sliding window complete after 507039ms for HOG(RGB)+LBP(RGB)
+Started training of HOG(RGB)+LBP(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 6340
+Training round 0 complete after 3317816ms for HOG(RGB)+RAW(LUV)
+Started evaluation of HOG(RGB)+RAW(LUV)
+Evaluation complete after 22016ms for HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of HOG(RGB)+RAW(LUV)
+Training round 3 complete after 6296507ms for HOG(RGB)+SDDG(Thermal)
+Started evaluation of HOG(RGB)+SDDG(Thermal)
+Training round 1 complete after 1579401ms for HOG(RGB)+LBP(RGB)
+Started evaluation of HOG(RGB)+LBP(RGB)
+Evaluation complete after 145594ms for HOG(RGB)+SDDG(Thermal)
+Evaluation complete after 46335ms for HOG(RGB)+LBP(RGB)
+Chosen 5.000000 as decision boundary shift to attain TPR of 0.953640
+Evaluation with sliding window complete after 591487ms for HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of HOG(RGB)+SDDG(Thermal)
+Started training of HOG(RGB)+RAW(LUV), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 28356
+Chosen 7.600000 as decision boundary shift to attain TPR of 0.950913
+Evaluation with sliding window complete after 2159105ms for HOG(RGB)+SDDG(Thermal)
+Started training evaluation with sliding window of HOG(RGB)+LBP(RGB)
+Chosen 5.600000 as decision boundary shift to attain TPR of 0.954351
+Evaluation with sliding window complete after 480749ms for HOG(RGB)+LBP(RGB)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+SDDG(Thermal)
+Started training of HOG(RGB)+LBP(RGB), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 6340
+Evaluation with sliding window and NMS complete after 2727055ms for HOG(RGB)+SDDG(Thermal)
+Starting job HOG(RGB)+S2HOG(RGB)
+Started training of HOG(RGB)+S2HOG(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3885
+Training round 0 complete after 347421ms for HOG(RGB)+S2HOG(RGB)
+Started evaluation of HOG(RGB)+S2HOG(RGB)
+Evaluation complete after 22651ms for HOG(RGB)+S2HOG(RGB)
+Started training evaluation with sliding window of HOG(RGB)+S2HOG(RGB)
+Training round 2 complete after 3147445ms for HOG(RGB)+LBP(RGB)
+Started evaluation of HOG(RGB)+LBP(RGB)
+Training round 1 complete after 8092842ms for HOG(RGB)+RAW(RGB)
+Started evaluation of HOG(RGB)+RAW(RGB)
+Evaluation complete after 71527ms for HOG(RGB)+LBP(RGB)
+Evaluation complete after 49747ms for HOG(RGB)+RAW(RGB)
+Chosen 6.000000 as decision boundary shift to attain TPR of 0.953640
+Evaluation with sliding window complete after 403399ms for HOG(RGB)+S2HOG(RGB)
+Started training evaluation with sliding window of HOG(RGB)+LBP(RGB)
+Started training of HOG(RGB)+S2HOG(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3885
+Chosen 3.400000 as decision boundary shift to attain TPR of 0.952217
+Evaluation with sliding window complete after 466787ms for HOG(RGB)+LBP(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+LBP(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 6340
+Chosen 4.800000 as decision boundary shift to attain TPR of 0.951506
+Evaluation with sliding window complete after 640296ms for HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 28356
+Training round 1 complete after 1596063ms for HOG(RGB)+S2HOG(RGB)
+Started evaluation of HOG(RGB)+S2HOG(RGB)
+Evaluation complete after 28486ms for HOG(RGB)+S2HOG(RGB)
+Started training evaluation with sliding window of HOG(RGB)+S2HOG(RGB)
+Chosen 4.800000 as decision boundary shift to attain TPR of 0.958383
+Evaluation with sliding window complete after 447088ms for HOG(RGB)+S2HOG(RGB)
+Started training of HOG(RGB)+S2HOG(RGB), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3885
+Training round 3 complete after 3404858ms for HOG(RGB)+LBP(RGB)
+Started evaluation of HOG(RGB)+LBP(RGB)
+Training round 2 complete after 1820514ms for HOG(RGB)+S2HOG(RGB)
+Started evaluation of HOG(RGB)+S2HOG(RGB)
+Evaluation complete after 35182ms for HOG(RGB)+LBP(RGB)
+Started training evaluation with sliding window of HOG(RGB)+LBP(RGB)
+Evaluation complete after 58968ms for HOG(RGB)+S2HOG(RGB)
+Chosen 4.200000 as decision boundary shift to attain TPR of 0.960991
+Evaluation with sliding window complete after 505401ms for HOG(RGB)+LBP(RGB)
+Started training evaluation with sliding window of HOG(RGB)+S2HOG(RGB)
+Chosen 4.400000 as decision boundary shift to attain TPR of 0.953877
+Evaluation with sliding window complete after 440819ms for HOG(RGB)+S2HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+LBP(RGB)
+Started training of HOG(RGB)+S2HOG(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 3885
+Training round 3 complete after 595150ms for HOG(RGB)+S2HOG(RGB)
+Started evaluation of HOG(RGB)+S2HOG(RGB)
+Training round 1 complete after 11671893ms for HOG(RGB)+RAW(LUV)
+Started evaluation of HOG(RGB)+RAW(LUV)
+Evaluation complete after 80215ms for HOG(RGB)+S2HOG(RGB)
+Evaluation complete after 38102ms for HOG(RGB)+RAW(LUV)
+Evaluation with sliding window and NMS complete after 889873ms for HOG(RGB)+LBP(RGB)
+Started training evaluation with sliding window of HOG(RGB)+S2HOG(RGB)
+Starting job HOG(RGB)
+Started training of HOG(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3780
+Chosen 7.800000 as decision boundary shift to attain TPR of 0.986128
+Evaluation with sliding window complete after 423731ms for HOG(RGB)+S2HOG(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(LUV)
+Training round 0 complete after 697723ms for HOG(RGB)
+Started evaluation of HOG(RGB)
+Evaluation complete after 32259ms for HOG(RGB)
+Chosen 5.200000 as decision boundary shift to attain TPR of 0.955300
+Evaluation with sliding window complete after 558987ms for HOG(RGB)+RAW(LUV)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+S2HOG(RGB)
+Started training of HOG(RGB)+RAW(LUV), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 28356
+Evaluation with sliding window and NMS complete after 881641ms for HOG(RGB)+S2HOG(RGB)
+Started training evaluation with sliding window of HOG(RGB)
+Starting job S2HOG(RGB)
+Started training of S2HOG(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 105
+Training round 0 complete after 77561ms for S2HOG(RGB)
+Started evaluation of S2HOG(RGB)
+Evaluation complete after 47269ms for S2HOG(RGB)
+Chosen 5.600000 as decision boundary shift to attain TPR of 0.953996
+Evaluation with sliding window complete after 228600ms for HOG(RGB)
+Started training evaluation with sliding window of S2HOG(RGB)
+Started training of HOG(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3780
+Training round 1 complete after 120682ms for HOG(RGB)
+Started evaluation of HOG(RGB)
+Evaluation complete after 50969ms for HOG(RGB)
+Chosen 6.600000 as decision boundary shift to attain TPR of 0.951980
+Evaluation with sliding window complete after 224879ms for S2HOG(RGB)
+Started training evaluation with sliding window of HOG(RGB)
+Started training of S2HOG(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 105
+Training round 1 complete after 114125ms for S2HOG(RGB)
+Started evaluation of S2HOG(RGB)
+Evaluation complete after 54812ms for S2HOG(RGB)
+Chosen 1.400000 as decision boundary shift to attain TPR of 0.951624
+Evaluation with sliding window complete after 249478ms for HOG(RGB)
+Started training evaluation with sliding window of S2HOG(RGB)
+Started training of HOG(RGB), round 2
+Training boost classifier on 8657 samples (2156 TP, 6501 TN), feature size 3780
+Training round 2 complete after 119650ms for HOG(RGB)
+Started evaluation of HOG(RGB)
+Evaluation complete after 47757ms for HOG(RGB)
+Chosen 2.400000 as decision boundary shift to attain TPR of 0.960161
+Evaluation with sliding window complete after 226921ms for S2HOG(RGB)
+Started training evaluation with sliding window of HOG(RGB)
+Started training of S2HOG(RGB), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 105
+Training round 2 complete after 121941ms for S2HOG(RGB)
+Started evaluation of S2HOG(RGB)
+Evaluation complete after 60975ms for S2HOG(RGB)
+Chosen 0.800000 as decision boundary shift to attain TPR of 0.962295
+Evaluation with sliding window complete after 244907ms for HOG(RGB)
+Started training evaluation with sliding window of S2HOG(RGB)
+Started training of HOG(RGB), round 3
+Training boost classifier on 8722 samples (2156 TP, 6566 TN), feature size 3780
+Training round 3 complete after 125120ms for HOG(RGB)
+Started evaluation of HOG(RGB)
+Evaluation complete after 50253ms for HOG(RGB)
+Chosen 6.000000 as decision boundary shift to attain TPR of 0.952573
+Evaluation with sliding window complete after 227039ms for S2HOG(RGB)
+Started training evaluation with sliding window of HOG(RGB)
+Started training of S2HOG(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 105
+Training round 3 complete after 180323ms for S2HOG(RGB)
+Started evaluation of S2HOG(RGB)
+Evaluation complete after 56289ms for S2HOG(RGB)
+Chosen 0.800000 as decision boundary shift to attain TPR of 0.962295
+Evaluation with sliding window complete after 262319ms for HOG(RGB)
+Started training evaluation with sliding window of S2HOG(RGB)
+Chosen 5.600000 as decision boundary shift to attain TPR of 0.952217
+Evaluation with sliding window complete after 218472ms for S2HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)
+Evaluation with sliding window and NMS complete after 811222ms for HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of S2HOG(RGB)
+Starting job CoOccurrence(RGB)
+Started training of CoOccurrence(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 8192
+Evaluation with sliding window and NMS complete after 633497ms for S2HOG(RGB)
+Starting job LBP(RGB)
+Started training of LBP(RGB), round 0
+Training round 0 complete after 648114ms for CoOccurrence(RGB)
+Started evaluation of CoOccurrence(RGB)
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 2560
+Evaluation complete after 19077ms for CoOccurrence(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)
+Training round 0 complete after 292058ms for LBP(RGB)
+Started evaluation of LBP(RGB)
+Evaluation complete after 46190ms for LBP(RGB)
+Chosen 0.400000 as decision boundary shift to attain TPR of 0.986483
+Evaluation with sliding window complete after 418320ms for CoOccurrence(RGB)
+Started training evaluation with sliding window of LBP(RGB)
+Started training of CoOccurrence(RGB), round 1
+Training boost classifier on 4560 samples (2156 TP, 2404 TN), feature size 8192
+Training round 1 complete after 112292ms for CoOccurrence(RGB)
+Started evaluation of CoOccurrence(RGB)
+Evaluation complete after 45387ms for CoOccurrence(RGB)
+Chosen 8.000000 as decision boundary shift to attain TPR of 1.000000
+Evaluation with sliding window complete after 266071ms for LBP(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)
+Started training of LBP(RGB), round 1
+Training boost classifier on 4541 samples (2156 TP, 2385 TN), feature size 2560
+Training round 1 complete after 359614ms for LBP(RGB)
+Started evaluation of LBP(RGB)
+Evaluation complete after 26371ms for LBP(RGB)
+Chosen -0.800000 as decision boundary shift to attain TPR of 0.957553
+Evaluation with sliding window complete after 425373ms for CoOccurrence(RGB)
+Started training evaluation with sliding window of LBP(RGB)
+Started training of CoOccurrence(RGB), round 2
+Training boost classifier on 4563 samples (2156 TP, 2407 TN), feature size 8192
+Training round 2 complete after 106508ms for CoOccurrence(RGB)
+Started evaluation of CoOccurrence(RGB)
+Evaluation complete after 45335ms for CoOccurrence(RGB)
+Chosen 8.000000 as decision boundary shift to attain TPR of 1.000000
+Evaluation with sliding window complete after 273254ms for LBP(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)
+Started training of LBP(RGB), round 2
+Training boost classifier on 4542 samples (2156 TP, 2386 TN), feature size 2560
+Training round 2 complete after 375410ms for LBP(RGB)
+Started evaluation of LBP(RGB)
+Evaluation complete after 22571ms for LBP(RGB)
+Chosen -0.800000 as decision boundary shift to attain TPR of 0.957553
+Evaluation with sliding window complete after 436807ms for CoOccurrence(RGB)
+Started training evaluation with sliding window of LBP(RGB)
+Started training of CoOccurrence(RGB), round 3
+Training boost classifier on 4566 samples (2156 TP, 2410 TN), feature size 8192
+Training round 3 complete after 111526ms for CoOccurrence(RGB)
+Started evaluation of CoOccurrence(RGB)
+Evaluation complete after 46629ms for CoOccurrence(RGB)
+Chosen 10.000000 as decision boundary shift to attain TPR of 1.000000
+Evaluation with sliding window complete after 282478ms for LBP(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)
+Started training of LBP(RGB), round 3
+Training boost classifier on 4543 samples (2156 TP, 2387 TN), feature size 2560
+Training round 3 complete after 331098ms for LBP(RGB)
+Started evaluation of LBP(RGB)
+Evaluation complete after 43593ms for LBP(RGB)
+Chosen -0.800000 as decision boundary shift to attain TPR of 0.957553
+Evaluation with sliding window complete after 452798ms for CoOccurrence(RGB)
+Started training evaluation with sliding window of LBP(RGB)
+Chosen 7.600000 as decision boundary shift to attain TPR of 1.000000
+Evaluation with sliding window complete after 271180ms for LBP(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)
+Training round 2 complete after 12944879ms for HOG(RGB)+RAW(RGB)
+Started evaluation of HOG(RGB)+RAW(RGB)
+Evaluation complete after 44355ms for HOG(RGB)+RAW(RGB)
+Evaluation with sliding window and NMS complete after 986284ms for CoOccurrence(RGB)
+Started final evaluation on test set with sliding window and NMS of LBP(RGB)
+Starting job RAW(RGB)
+Started training of RAW(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 24576
+Evaluation with sliding window and NMS complete after 940709ms for LBP(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(RGB)
+Starting job RAW(LUV)
+Started training of RAW(LUV), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 24576
+Chosen 4.800000 as decision boundary shift to attain TPR of 0.950320
+Evaluation with sliding window complete after 589455ms for HOG(RGB)+RAW(RGB)
+Started training of HOG(RGB)+RAW(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 28356
+Training round 0 complete after 3283298ms for RAW(RGB)
+Started evaluation of RAW(RGB)
+Evaluation complete after 18300ms for RAW(RGB)
+Started training evaluation with sliding window of RAW(RGB)
+Chosen 3.800000 as decision boundary shift to attain TPR of 0.954470
+Evaluation with sliding window complete after 175812ms for RAW(RGB)
+Started training of RAW(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 24576
+Training round 0 complete after 3847195ms for RAW(LUV)
+Started evaluation of RAW(LUV)
+Evaluation complete after 18591ms for RAW(LUV)
+Started training evaluation with sliding window of RAW(LUV)
+Chosen 3.600000 as decision boundary shift to attain TPR of 0.952810
+Evaluation with sliding window complete after 256445ms for RAW(LUV)
+Started training of RAW(LUV), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 24576
+Training round 1 complete after 4698646ms for RAW(RGB)
+Started evaluation of RAW(RGB)
+Evaluation complete after 19617ms for RAW(RGB)
+Started training evaluation with sliding window of RAW(RGB)
+Chosen 4.000000 as decision boundary shift to attain TPR of 0.951624
+Evaluation with sliding window complete after 208106ms for RAW(RGB)
+Started training of RAW(RGB), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 24576
+Training round 2 complete after 16807930ms for HOG(RGB)+RAW(LUV)
+Started evaluation of HOG(RGB)+RAW(LUV)
+Evaluation complete after 32761ms for HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of HOG(RGB)+RAW(LUV)
+Chosen 5.000000 as decision boundary shift to attain TPR of 0.955181
+Evaluation with sliding window complete after 670954ms for HOG(RGB)+RAW(LUV)
+Started training of HOG(RGB)+RAW(LUV), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 28356
+Training round 1 complete after 8082908ms for RAW(LUV)
+Started evaluation of RAW(LUV)
+Evaluation complete after 21447ms for RAW(LUV)
+Started training evaluation with sliding window of RAW(LUV)
+Chosen 1.400000 as decision boundary shift to attain TPR of 0.958146
+Evaluation with sliding window complete after 331123ms for RAW(LUV)
+Started training of RAW(LUV), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 24576
+Training round 3 complete after 12942548ms for HOG(RGB)+RAW(RGB)
+Started evaluation of HOG(RGB)+RAW(RGB)
+Evaluation complete after 36980ms for HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(RGB)
+Chosen 5.000000 as decision boundary shift to attain TPR of 0.954351
+Evaluation with sliding window complete after 591580ms for HOG(RGB)+RAW(RGB)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+RAW(RGB)
+Evaluation with sliding window and NMS complete after 879190ms for HOG(RGB)+RAW(RGB)
+Starting job HDD
+Can't evaluate the feature set HDD against the data set KAIST, requirements not met
+Starting job HONV
+Can't evaluate the feature set HONV against the data set KAIST, requirements not met
+Starting job HOG(Depth)
+Can't evaluate the feature set HOG(Depth) against the data set KAIST, requirements not met
+Starting job SDDG(Depth)
+Can't evaluate the feature set SDDG(Depth) against the data set KAIST, requirements not met
+Starting job Histogram(Depth)
+Can't evaluate the feature set Histogram(Depth) against the data set KAIST, requirements not met
+Starting job HOG(Thermal)
+Started training of HOG(Thermal), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3780
+Training round 0 complete after 239370ms for HOG(Thermal)
+Started evaluation of HOG(Thermal)
+Evaluation complete after 20321ms for HOG(Thermal)
+Started training evaluation with sliding window of HOG(Thermal)
+Chosen 8.200000 as decision boundary shift to attain TPR of 0.950320
+Evaluation with sliding window complete after 226861ms for HOG(Thermal)
+Started training of HOG(Thermal), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3780
+Training round 1 complete after 940865ms for HOG(Thermal)
+Started evaluation of HOG(Thermal)
+Evaluation complete after 23203ms for HOG(Thermal)
+Started training evaluation with sliding window of HOG(Thermal)
+Chosen 6.000000 as decision boundary shift to attain TPR of 0.956723
+Evaluation with sliding window complete after 232889ms for HOG(Thermal)
+Started training of HOG(Thermal), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3780
+Training round 2 complete after 10634462ms for RAW(RGB)
+Started evaluation of RAW(RGB)
+Evaluation complete after 21439ms for RAW(RGB)
+Started training evaluation with sliding window of RAW(RGB)
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job Corner(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job Corner(Depth)+HOG(RGB) is already processed and will be skipped
+Job Corner(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Starting job Corner(Depth)
+Error: Unknown exception
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(LUV)
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Starting job RAW(RGB)
+Starting job RAW(LUV)
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Starting job HOG(Thermal)
+Started training of HOG(Thermal), round 2
+Started training of RAW(LUV), round 2
+Skipped training of RAW(RGB), loading from existing model instead
+Skipped evaluation of RAW(RGB), evaluation was already done.
+Started training evaluation with sliding window of RAW(RGB)
+Started training of HOG(RGB)+RAW(LUV), round 3
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3780
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 24576
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 28356
+Chosen 2.400000 as decision boundary shift to attain TPR of 0.954351
+Evaluation with sliding window complete after 400722ms for RAW(RGB)
+Started training of RAW(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 24576
+Training round 3 complete after 358729ms for RAW(RGB)
+Started evaluation of RAW(RGB)
+Evaluation complete after 21690ms for RAW(RGB)
+Started training evaluation with sliding window of RAW(RGB)
+Chosen 2.400000 as decision boundary shift to attain TPR of 0.951743
+Evaluation with sliding window complete after 320494ms for RAW(RGB)
+Started final evaluation on test set with sliding window and NMS of RAW(RGB)
+Evaluation with sliding window and NMS complete after 925340ms for RAW(RGB)
+Starting job HOI
+Started training of HOI, round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3780
+Training round 2 complete after 2174540ms for HOG(Thermal)
+Started evaluation of HOG(Thermal)
+Training round 0 complete after 168280ms for HOI
+Started evaluation of HOI
+Evaluation complete after 25071ms for HOG(Thermal)
+Started training evaluation with sliding window of HOG(Thermal)
+Evaluation complete after 38501ms for HOI
+Chosen 5.600000 as decision boundary shift to attain TPR of 0.952336
+Evaluation with sliding window complete after 226010ms for HOG(Thermal)
+Started training evaluation with sliding window of HOI
+Started training of HOG(Thermal), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 3780
+Chosen 4.000000 as decision boundary shift to attain TPR of 0.951150
+Evaluation with sliding window complete after 200823ms for HOI
+Started training of HOI, round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3780
+Training round 1 complete after 394395ms for HOI
+Started evaluation of HOI
+Evaluation complete after 21863ms for HOI
+Started training evaluation with sliding window of HOI
+Chosen 3.800000 as decision boundary shift to attain TPR of 0.953284
+Evaluation with sliding window complete after 3223535ms for HOI
+Started training of HOI, round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3780
+Training round 2 complete after 64414ms for HOI
+Started evaluation of HOI
+Evaluation complete after 28160ms for HOI
+Started training evaluation with sliding window of HOI
+Chosen 1.800000 as decision boundary shift to attain TPR of 0.952810
+Evaluation with sliding window complete after 221656ms for HOI
+Started training of HOI, round 3
+Training boost classifier on 13353 samples (2156 TP, 11197 TN), feature size 3780
+Training round 3 complete after 1000783ms for HOI
+Started evaluation of HOI
+Evaluation complete after 28305ms for HOI
+Started training evaluation with sliding window of HOI
+Chosen 2.800000 as decision boundary shift to attain TPR of 0.983163
+Evaluation with sliding window complete after 228562ms for HOI
+Started final evaluation on test set with sliding window and NMS of HOI
+Training round 3 complete after 5849603ms for HOG(Thermal)
+Started evaluation of HOG(Thermal)
+Evaluation complete after 56902ms for HOG(Thermal)
+Evaluation with sliding window and NMS complete after 714277ms for HOI
+Started training evaluation with sliding window of HOG(Thermal)
+Starting job SDDG(Thermal)
+Started training of SDDG(Thermal), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 5488
+Chosen 5.800000 as decision boundary shift to attain TPR of 0.959687
+Evaluation with sliding window complete after 243545ms for HOG(Thermal)
+Started final evaluation on test set with sliding window and NMS of HOG(Thermal)
+Training round 0 complete after 714238ms for SDDG(Thermal)
+Started evaluation of SDDG(Thermal)
+Evaluation complete after 43058ms for SDDG(Thermal)
+Evaluation with sliding window and NMS complete after 627188ms for HOG(Thermal)
+Started training evaluation with sliding window of SDDG(Thermal)
+Starting job HOG(RGB)+SURF(RGB)
+Started training of HOG(RGB)+SURF(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3860
+Training round 0 complete after 1055479ms for HOG(RGB)+SURF(RGB)
+Started evaluation of HOG(RGB)+SURF(RGB)
+Evaluation complete after 121942ms for HOG(RGB)+SURF(RGB)
+Chosen 6.000000 as decision boundary shift to attain TPR of 0.950794
+Evaluation with sliding window complete after 2004841ms for SDDG(Thermal)
+Started training evaluation with sliding window of HOG(RGB)+SURF(RGB)
+Started training of SDDG(Thermal), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 5488
+Training round 1 complete after 2075348ms for SDDG(Thermal)
+Started evaluation of SDDG(Thermal)
+Evaluation complete after 61150ms for SDDG(Thermal)
+Chosen 5.600000 as decision boundary shift to attain TPR of 0.950439
+Evaluation with sliding window complete after 2810152ms for HOG(RGB)+SURF(RGB)
+Started training evaluation with sliding window of SDDG(Thermal)
+Started training of HOG(RGB)+SURF(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3860
+Training round 1 complete after 2227473ms for HOG(RGB)+SURF(RGB)
+Started evaluation of HOG(RGB)+SURF(RGB)
+Evaluation complete after 43797ms for HOG(RGB)+SURF(RGB)
+Chosen 7.800000 as decision boundary shift to attain TPR of 0.955656
+Evaluation with sliding window complete after 2359416ms for SDDG(Thermal)
+Started training evaluation with sliding window of HOG(RGB)+SURF(RGB)
+Started training of SDDG(Thermal), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 5488
+Chosen 5.000000 as decision boundary shift to attain TPR of 0.952336
+Evaluation with sliding window complete after 3260668ms for HOG(RGB)+SURF(RGB)
+Started training of HOG(RGB)+SURF(RGB), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3860
+Training round 2 complete after 3381154ms for SDDG(Thermal)
+Started evaluation of SDDG(Thermal)
+Evaluation complete after 50160ms for SDDG(Thermal)
+Started training evaluation with sliding window of SDDG(Thermal)
+Chosen 7.000000 as decision boundary shift to attain TPR of 0.955656
+Evaluation with sliding window complete after 2433435ms for SDDG(Thermal)
+Started training of SDDG(Thermal), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 5488
+Training round 2 complete after 2990154ms for HOG(RGB)+SURF(RGB)
+Started evaluation of HOG(RGB)+SURF(RGB)
+Evaluation complete after 57819ms for HOG(RGB)+SURF(RGB)
+Started training evaluation with sliding window of HOG(RGB)+SURF(RGB)
+Chosen 4.600000 as decision boundary shift to attain TPR of 0.952454
+Evaluation with sliding window complete after 2856960ms for HOG(RGB)+SURF(RGB)
+Started training of HOG(RGB)+SURF(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 3860
+Training round 2 complete after 26291192ms for RAW(LUV)
+Started evaluation of RAW(LUV)
+Evaluation complete after 33450ms for RAW(LUV)
+Started training evaluation with sliding window of RAW(LUV)
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job Corner(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job Corner(Depth)+HOG(RGB) is already processed and will be skipped
+Job Corner(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Starting job Corner(Depth)
+Error: Unknown exception
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+RAW(LUV)
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Starting job RAW(LUV)
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Starting job SDDG(Thermal)
+Starting job HOG(RGB)+SURF(RGB)
+Started training of HOG(RGB)+SURF(RGB), round 3
+Started training of SDDG(Thermal), round 3
+Skipped training of RAW(LUV), loading from existing model instead
+Skipped evaluation of RAW(LUV), evaluation was already done.
+Started training evaluation with sliding window of RAW(LUV)
+Started training of HOG(RGB)+RAW(LUV), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 28356
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 5488
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 3860
+Chosen 3.600000 as decision boundary shift to attain TPR of 0.950676
+Evaluation with sliding window complete after 545073ms for RAW(LUV)
+Started training of RAW(LUV), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 24576
+Training round 3 complete after 2842177ms for HOG(RGB)+SURF(RGB)
+Started evaluation of HOG(RGB)+SURF(RGB)
+Evaluation complete after 57012ms for HOG(RGB)+SURF(RGB)
+Started training evaluation with sliding window of HOG(RGB)+SURF(RGB)
+Training round 3 complete after 3551365ms for SDDG(Thermal)
+Started evaluation of SDDG(Thermal)
+Evaluation complete after 108065ms for SDDG(Thermal)
+Chosen 4.800000 as decision boundary shift to attain TPR of 0.953877
+Evaluation with sliding window complete after 2168252ms for HOG(RGB)+SURF(RGB)
+Started training evaluation with sliding window of SDDG(Thermal)
+Chosen 7.000000 as decision boundary shift to attain TPR of 0.951980
+Evaluation with sliding window complete after 2333191ms for SDDG(Thermal)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+SURF(RGB)
+Evaluation with sliding window and NMS complete after 5147619ms for HOG(RGB)+SURF(RGB)
+Started final evaluation on test set with sliding window and NMS of SDDG(Thermal)
+Starting job Corner(RGB)+HOG(RGB)
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Started training of Corner(RGB)+HOG(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3860
+Training round 0 complete after 802854ms for Corner(RGB)+HOG(RGB)
+Started evaluation of Corner(RGB)+HOG(RGB)
+Evaluation complete after 45194ms for Corner(RGB)+HOG(RGB)
+Evaluation with sliding window and NMS complete after 2327751ms for SDDG(Thermal)
+Started training evaluation with sliding window of Corner(RGB)+HOG(RGB)
+Starting job HOG(RGB)+ORB(RGB)
+Started training of HOG(RGB)+ORB(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3870
+Chosen 5.600000 as decision boundary shift to attain TPR of 0.954470
+Evaluation with sliding window complete after 602267ms for Corner(RGB)+HOG(RGB)
+Started training of Corner(RGB)+HOG(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3860
+Training round 0 complete after 657322ms for HOG(RGB)+ORB(RGB)
+Started evaluation of HOG(RGB)+ORB(RGB)
+Evaluation complete after 22699ms for HOG(RGB)+ORB(RGB)
+Started training evaluation with sliding window of HOG(RGB)+ORB(RGB)
+Chosen 5.400000 as decision boundary shift to attain TPR of 0.953047
+Evaluation with sliding window complete after 586187ms for HOG(RGB)+ORB(RGB)
+Started training of HOG(RGB)+ORB(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3870
+Training round 1 complete after 1338527ms for Corner(RGB)+HOG(RGB)
+Started evaluation of Corner(RGB)+HOG(RGB)
+Evaluation complete after 27675ms for Corner(RGB)+HOG(RGB)
+Started training evaluation with sliding window of Corner(RGB)+HOG(RGB)
+Chosen 4.800000 as decision boundary shift to attain TPR of 0.958383
+Evaluation with sliding window complete after 609072ms for Corner(RGB)+HOG(RGB)
+Started training of Corner(RGB)+HOG(RGB), round 2
+Training round 1 complete after 1323843ms for HOG(RGB)+ORB(RGB)
+Started evaluation of HOG(RGB)+ORB(RGB)
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3860
+Evaluation complete after 27829ms for HOG(RGB)+ORB(RGB)
+Started training evaluation with sliding window of HOG(RGB)+ORB(RGB)
+Chosen 4.800000 as decision boundary shift to attain TPR of 0.954707
+Evaluation with sliding window complete after 582360ms for HOG(RGB)+ORB(RGB)
+Started training of HOG(RGB)+ORB(RGB), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3870
+Training round 2 complete after 1992067ms for Corner(RGB)+HOG(RGB)
+Started evaluation of Corner(RGB)+HOG(RGB)
+Evaluation complete after 32735ms for Corner(RGB)+HOG(RGB)
+Started training evaluation with sliding window of Corner(RGB)+HOG(RGB)
+Chosen 5.000000 as decision boundary shift to attain TPR of 0.960517
+Evaluation with sliding window complete after 608856ms for Corner(RGB)+HOG(RGB)
+Started training of Corner(RGB)+HOG(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 3860
+Training round 2 complete after 2219790ms for HOG(RGB)+ORB(RGB)
+Started evaluation of HOG(RGB)+ORB(RGB)
+Evaluation complete after 31869ms for HOG(RGB)+ORB(RGB)
+Started training evaluation with sliding window of HOG(RGB)+ORB(RGB)
+Chosen 2.000000 as decision boundary shift to attain TPR of 0.964904
+Evaluation with sliding window complete after 594142ms for HOG(RGB)+ORB(RGB)
+Started training of HOG(RGB)+ORB(RGB), round 3
+Training boost classifier on 14611 samples (2156 TP, 12455 TN), feature size 3870
+Training round 3 complete after 91781ms for HOG(RGB)+ORB(RGB)
+Started evaluation of HOG(RGB)+ORB(RGB)
+Evaluation complete after 33808ms for HOG(RGB)+ORB(RGB)
+Started training evaluation with sliding window of HOG(RGB)+ORB(RGB)
+Chosen 2.200000 as decision boundary shift to attain TPR of 0.967394
+Evaluation with sliding window complete after 594311ms for HOG(RGB)+ORB(RGB)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+ORB(RGB)
+Evaluation with sliding window and NMS complete after 1042427ms for HOG(RGB)+ORB(RGB)
+Starting job CenSurE(RGB)+HOG(RGB)
+Started training of CenSurE(RGB)+HOG(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3810
+Training round 0 complete after 386208ms for CenSurE(RGB)+HOG(RGB)
+Started evaluation of CenSurE(RGB)+HOG(RGB)
+Evaluation complete after 22297ms for CenSurE(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)+HOG(RGB)
+Chosen 5.600000 as decision boundary shift to attain TPR of 0.954233
+Evaluation with sliding window complete after 481867ms for CenSurE(RGB)+HOG(RGB)
+Started training of CenSurE(RGB)+HOG(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3810
+Training round 3 complete after 3555601ms for Corner(RGB)+HOG(RGB)
+Started evaluation of Corner(RGB)+HOG(RGB)
+Evaluation complete after 36598ms for Corner(RGB)+HOG(RGB)
+Started training evaluation with sliding window of Corner(RGB)+HOG(RGB)
+Chosen 5.000000 as decision boundary shift to attain TPR of 0.951506
+Evaluation with sliding window complete after 620398ms for Corner(RGB)+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of Corner(RGB)+HOG(RGB)
+Evaluation with sliding window and NMS complete after 971204ms for Corner(RGB)+HOG(RGB)
+Error: Unknown exception
+Starting job FAST(RGB)+HOG(RGB)
+Started training of FAST(RGB)+HOG(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 3870
+Training round 1 complete after 1780005ms for CenSurE(RGB)+HOG(RGB)
+Started evaluation of CenSurE(RGB)+HOG(RGB)
+Evaluation complete after 25753ms for CenSurE(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)+HOG(RGB)
+Training round 0 complete after 596741ms for FAST(RGB)+HOG(RGB)
+Started evaluation of FAST(RGB)+HOG(RGB)
+Chosen 1.600000 as decision boundary shift to attain TPR of 0.980911
+Evaluation with sliding window complete after 487920ms for CenSurE(RGB)+HOG(RGB)
+Started training of CenSurE(RGB)+HOG(RGB), round 2
+Evaluation complete after 21832ms for FAST(RGB)+HOG(RGB)
+Started training evaluation with sliding window of FAST(RGB)+HOG(RGB)
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3810
+Chosen 5.400000 as decision boundary shift to attain TPR of 0.953403
+Evaluation with sliding window complete after 325134ms for FAST(RGB)+HOG(RGB)
+Started training of FAST(RGB)+HOG(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 3870
+Training round 1 complete after 1043595ms for FAST(RGB)+HOG(RGB)
+Started evaluation of FAST(RGB)+HOG(RGB)
+Evaluation complete after 24637ms for FAST(RGB)+HOG(RGB)
+Started training evaluation with sliding window of FAST(RGB)+HOG(RGB)
+Chosen 4.600000 as decision boundary shift to attain TPR of 0.956011
+Evaluation with sliding window complete after 347381ms for FAST(RGB)+HOG(RGB)
+Started training of FAST(RGB)+HOG(RGB), round 2
+Training boost classifier on 12540 samples (2156 TP, 10384 TN), feature size 3870
+Training round 2 complete after 1842916ms for CenSurE(RGB)+HOG(RGB)
+Started evaluation of CenSurE(RGB)+HOG(RGB)
+Evaluation complete after 30114ms for CenSurE(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)+HOG(RGB)
+Training round 3 complete after 27432986ms for RAW(LUV)
+Started evaluation of RAW(LUV)
+Evaluation complete after 67113ms for RAW(LUV)
+Chosen 5.400000 as decision boundary shift to attain TPR of 0.956130
+Evaluation with sliding window complete after 473199ms for CenSurE(RGB)+HOG(RGB)
+Started training evaluation with sliding window of RAW(LUV)
+Started training of CenSurE(RGB)+HOG(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 3810
+Chosen 4.200000 as decision boundary shift to attain TPR of 0.952099
+Evaluation with sliding window complete after 396242ms for RAW(LUV)
+Started final evaluation on test set with sliding window and NMS of RAW(LUV)
+Evaluation with sliding window and NMS complete after 789962ms for RAW(LUV)
+Starting job Corner(Depth)+HOG(RGB)
+Can't evaluate the feature set Corner(Depth)+HOG(RGB) against the data set KAIST, requirements not met
+Starting job Corner(RGB)
+Started training of Corner(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 80
+Training round 0 complete after 29754ms for Corner(RGB)
+Started evaluation of Corner(RGB)
+Evaluation complete after 19881ms for Corner(RGB)
+Started training evaluation with sliding window of Corner(RGB)
+Chosen 2.000000 as decision boundary shift to attain TPR of 0.951862
+Evaluation with sliding window complete after 383421ms for Corner(RGB)
+Started training of Corner(RGB), round 1
+Training boost classifier on 8540 samples (2156 TP, 6384 TN), feature size 80
+Training round 1 complete after 33013ms for Corner(RGB)
+Started evaluation of Corner(RGB)
+Evaluation complete after 21060ms for Corner(RGB)
+Started training evaluation with sliding window of Corner(RGB)
+Training round 3 complete after 30088683ms for HOG(RGB)+RAW(LUV)
+Started evaluation of HOG(RGB)+RAW(LUV)
+Evaluation complete after 71808ms for HOG(RGB)+RAW(LUV)
+Training round 2 complete after 2535456ms for FAST(RGB)+HOG(RGB)
+Started evaluation of FAST(RGB)+HOG(RGB)
+Evaluation complete after 37691ms for FAST(RGB)+HOG(RGB)
+Chosen 2.000000 as decision boundary shift to attain TPR of 0.953403
+Evaluation with sliding window complete after 344805ms for Corner(RGB)
+Started training evaluation with sliding window of HOG(RGB)+RAW(LUV)
+Started training of Corner(RGB), round 2
+Training boost classifier on 12304 samples (2156 TP, 10148 TN), feature size 80
+Training round 2 complete after 78871ms for Corner(RGB)
+Started evaluation of Corner(RGB)
+Evaluation complete after 51014ms for Corner(RGB)
+Chosen 5.200000 as decision boundary shift to attain TPR of 0.953877
+Evaluation with sliding window complete after 566274ms for HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of FAST(RGB)+HOG(RGB)
+Chosen 5.000000 as decision boundary shift to attain TPR of 0.954707
+Evaluation with sliding window complete after 283428ms for FAST(RGB)+HOG(RGB)
+Started training evaluation with sliding window of Corner(RGB)
+Started training of FAST(RGB)+HOG(RGB), round 3
+Training boost classifier on 16540 samples (2156 TP, 14384 TN), feature size 3870
+Chosen 3.000000 as decision boundary shift to attain TPR of 0.951980
+Evaluation with sliding window complete after 336636ms for Corner(RGB)
+Started final evaluation on test set with sliding window and NMS of HOG(RGB)+RAW(LUV)
+Started training of Corner(RGB), round 3
+Training boost classifier on 16304 samples (2156 TP, 14148 TN), feature size 80
+Training round 3 complete after 130954ms for Corner(RGB)
+Started evaluation of Corner(RGB)
+Evaluation complete after 65117ms for Corner(RGB)
+Training round 3 complete after 3722235ms for CenSurE(RGB)+HOG(RGB)
+Started evaluation of CenSurE(RGB)+HOG(RGB)
+Evaluation complete after 62948ms for CenSurE(RGB)+HOG(RGB)
+Evaluation with sliding window and NMS complete after 899939ms for HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of Corner(RGB)
+Starting job ORB(RGB)
+Started training of ORB(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 90
+Training round 0 complete after 41849ms for ORB(RGB)
+Started evaluation of ORB(RGB)
+Evaluation complete after 41098ms for ORB(RGB)
+Chosen 2.800000 as decision boundary shift to attain TPR of 0.965141
+Evaluation with sliding window complete after 318447ms for Corner(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)+HOG(RGB)
+Chosen 5.200000 as decision boundary shift to attain TPR of 0.956486
+Evaluation with sliding window complete after 414713ms for CenSurE(RGB)+HOG(RGB)
+Started training evaluation with sliding window of ORB(RGB)
+Chosen 5.400000 as decision boundary shift to attain TPR of 0.999881
+Evaluation with sliding window complete after 294458ms for ORB(RGB)
+Started final evaluation on test set with sliding window and NMS of Corner(RGB)
+Started training of ORB(RGB), round 1
+Training boost classifier on 4542 samples (2156 TP, 2386 TN), feature size 90
+Training round 1 complete after 43690ms for ORB(RGB)
+Started evaluation of ORB(RGB)
+Evaluation complete after 39360ms for ORB(RGB)
+Evaluation with sliding window and NMS complete after 671284ms for Corner(RGB)
+Started final evaluation on test set with sliding window and NMS of CenSurE(RGB)+HOG(RGB)
+Starting job CenSurE(RGB)
+Started training of CenSurE(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 30
+Training round 0 complete after 43302ms for CenSurE(RGB)
+Started evaluation of CenSurE(RGB)
+Evaluation complete after 40214ms for CenSurE(RGB)
+Evaluation with sliding window and NMS complete after 742666ms for CenSurE(RGB)+HOG(RGB)
+Started training evaluation with sliding window of ORB(RGB)
+Starting job FAST(RGB)
+Started training of FAST(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 90
+Training round 0 complete after 50460ms for FAST(RGB)
+Started evaluation of FAST(RGB)
+Evaluation complete after 39954ms for FAST(RGB)
+Training round 3 complete after 3953037ms for FAST(RGB)+HOG(RGB)
+Started evaluation of FAST(RGB)+HOG(RGB)
+Evaluation complete after 36200ms for FAST(RGB)+HOG(RGB)
+Chosen 5.400000 as decision boundary shift to attain TPR of 0.998814
+Evaluation with sliding window complete after 324193ms for ORB(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)
+Started training of ORB(RGB), round 2
+Training boost classifier on 4544 samples (2156 TP, 2388 TN), feature size 90
+Training round 2 complete after 36019ms for ORB(RGB)
+Started evaluation of ORB(RGB)
+Evaluation complete after 37718ms for ORB(RGB)
+Chosen 0.600000 as decision boundary shift to attain TPR of 0.976879
+Evaluation with sliding window complete after 200827ms for CenSurE(RGB)
+Started training evaluation with sliding window of FAST(RGB)
+Started training of CenSurE(RGB), round 1
+Training boost classifier on 4758 samples (2156 TP, 2602 TN), feature size 30
+Training round 1 complete after 40121ms for CenSurE(RGB)
+Started evaluation of CenSurE(RGB)
+Evaluation complete after 31804ms for CenSurE(RGB)
+Chosen 0.600000 as decision boundary shift to attain TPR of 0.999763
+Evaluation with sliding window complete after 97207ms for FAST(RGB)
+Started training evaluation with sliding window of FAST(RGB)+HOG(RGB)
+Started training of FAST(RGB), round 1
+Training boost classifier on 4549 samples (2156 TP, 2393 TN), feature size 90
+Training round 1 complete after 39225ms for FAST(RGB)
+Started evaluation of FAST(RGB)
+Evaluation complete after 30494ms for FAST(RGB)
+Chosen 3.000000 as decision boundary shift to attain TPR of 0.956011
+Evaluation with sliding window complete after 265331ms for FAST(RGB)+HOG(RGB)
+Started training evaluation with sliding window of ORB(RGB)
+Chosen 5.400000 as decision boundary shift to attain TPR of 1.000000
+Evaluation with sliding window complete after 279810ms for ORB(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)
+Started training of ORB(RGB), round 3
+Training boost classifier on 4546 samples (2156 TP, 2390 TN), feature size 90
+Training round 3 complete after 35573ms for ORB(RGB)
+Started evaluation of ORB(RGB)
+Evaluation complete after 35736ms for ORB(RGB)
+Chosen 0.600000 as decision boundary shift to attain TPR of 0.998221
+Evaluation with sliding window complete after 195426ms for CenSurE(RGB)
+Started training of CenSurE(RGB), round 2
+Started training evaluation with sliding window of FAST(RGB)
+Training boost classifier on 4789 samples (2156 TP, 2633 TN), feature size 30
+Training round 2 complete after 39430ms for CenSurE(RGB)
+Started evaluation of CenSurE(RGB)
+Evaluation complete after 29400ms for CenSurE(RGB)
+Chosen 0.600000 as decision boundary shift to attain TPR of 0.999289
+Evaluation with sliding window complete after 98758ms for FAST(RGB)
+Started final evaluation on test set with sliding window and NMS of FAST(RGB)+HOG(RGB)
+Started training of FAST(RGB), round 2
+Training boost classifier on 4561 samples (2156 TP, 2405 TN), feature size 90
+Training round 2 complete after 38232ms for FAST(RGB)
+Started evaluation of FAST(RGB)
+Evaluation complete after 30582ms for FAST(RGB)
+Evaluation with sliding window and NMS complete after 582106ms for FAST(RGB)+HOG(RGB)
+Started training evaluation with sliding window of ORB(RGB)
+Starting job SURF(RGB)
+Started training of SURF(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 80
+Training round 0 complete after 80656ms for SURF(RGB)
+Started evaluation of SURF(RGB)
+Evaluation complete after 60758ms for SURF(RGB)
+Chosen 5.600000 as decision boundary shift to attain TPR of 1.000000
+Evaluation with sliding window complete after 290223ms for ORB(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)
+Chosen 0.400000 as decision boundary shift to attain TPR of 0.957316
+Evaluation with sliding window complete after 193157ms for CenSurE(RGB)
+Started training evaluation with sliding window of FAST(RGB)
+Started training of CenSurE(RGB), round 3
+Training boost classifier on 4800 samples (2156 TP, 2644 TN), feature size 30
+Training round 3 complete after 42445ms for CenSurE(RGB)
+Started evaluation of CenSurE(RGB)
+Evaluation complete after 32290ms for CenSurE(RGB)
+Chosen 1.200000 as decision boundary shift to attain TPR of 0.952454
+Evaluation with sliding window complete after 95814ms for FAST(RGB)
+Started training evaluation with sliding window of SURF(RGB)
+Started training of FAST(RGB), round 3
+Training boost classifier on 8561 samples (2156 TP, 6405 TN), feature size 90
+Training round 3 complete after 37812ms for FAST(RGB)
+Started evaluation of FAST(RGB)
+Evaluation complete after 26813ms for FAST(RGB)
+Chosen 4.600000 as decision boundary shift to attain TPR of 0.996324
+Evaluation with sliding window complete after 1764589ms for SURF(RGB)
+Started final evaluation on test set with sliding window and NMS of ORB(RGB)
+Started training of SURF(RGB), round 1
+Training boost classifier on 4550 samples (2156 TP, 2394 TN), feature size 80
+Training round 1 complete after 81803ms for SURF(RGB)
+Started evaluation of SURF(RGB)
+Evaluation complete after 73397ms for SURF(RGB)
+Evaluation with sliding window and NMS complete after 925745ms for ORB(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)
+Starting job Corner(Depth)
+Can't evaluate the feature set Corner(Depth) against the data set KAIST, requirements not met
+Chosen 0.400000 as decision boundary shift to attain TPR of 0.996917
+Evaluation with sliding window complete after 189840ms for CenSurE(RGB)
+Started training evaluation with sliding window of FAST(RGB)
+Chosen 0.800000 as decision boundary shift to attain TPR of 0.954826
+Evaluation with sliding window complete after 100158ms for FAST(RGB)
+Started training evaluation with sliding window of SURF(RGB)
+Chosen 1.000000 as decision boundary shift to attain TPR of 0.954707
+Evaluation with sliding window complete after 1728448ms for SURF(RGB)
+Started final evaluation on test set with sliding window and NMS of CenSurE(RGB)
+Started training of SURF(RGB), round 2
+Training boost classifier on 8550 samples (2156 TP, 6394 TN), feature size 80
+Training round 2 complete after 111629ms for SURF(RGB)
+Started evaluation of SURF(RGB)
+Evaluation complete after 80540ms for SURF(RGB)
+Evaluation with sliding window and NMS complete after 714280ms for CenSurE(RGB)
+Started final evaluation on test set with sliding window and NMS of FAST(RGB)
+Evaluation with sliding window and NMS complete after 625872ms for FAST(RGB)
+Started training evaluation with sliding window of SURF(RGB)
+Chosen 1.600000 as decision boundary shift to attain TPR of 0.990277
+Evaluation with sliding window complete after 1714184ms for SURF(RGB)
+Started training of SURF(RGB), round 3
+Training boost classifier on 12550 samples (2156 TP, 10394 TN), feature size 80
+Training round 3 complete after 43643ms for SURF(RGB)
+Started evaluation of SURF(RGB)
+Evaluation complete after 42149ms for SURF(RGB)
+Started training evaluation with sliding window of SURF(RGB)
+Chosen 0.800000 as decision boundary shift to attain TPR of 0.950794
+Evaluation with sliding window complete after 1740517ms for SURF(RGB)
+Started final evaluation on test set with sliding window and NMS of SURF(RGB)
+Evaluation with sliding window and NMS complete after 2118677ms for SURF(RGB)
+--------------------- New console session -----------------------
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job Corner(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job Corner(Depth)+HOG(RGB) is already processed and will be skipped
+Job Corner(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Starting job Corner(Depth)
+Error: Unknown exception
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Starting job Corner(RGB)+HOG(RGB)
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job Corner(Depth)+HOG(RGB) is already processed and will be skipped
+Job Corner(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Job Corner(Depth) is already processed and will be skipped
+Error: Unknown exception
+--------------------- New console session -----------------------
+Starting job CoOccurrence(RGB)+HDD+HOG(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+HONV
+Starting job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started training of CoOccurrence(RGB)+HDD+HOG(RGB), round 0
+Started training of CoOccurrence(RGB)+HOG(RGB)+HONV, round 0
+Started training of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB), round 0
+Started training of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth), round 0
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 15752
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 15752
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 17460
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 22340
+Training round 0 complete after 476969ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+HONV
+Training round 0 complete after 491028ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Training round 0 complete after 493962ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HDD+HOG(RGB)
+Evaluation complete after 62985ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+HONV
+Evaluation complete after 67627ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Evaluation complete after 71455ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Training round 0 complete after 593337ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Evaluation complete after 145217ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Chosen 9.800000 as decision boundary shift to attain TPR of 0.952138
+Evaluation with sliding window complete after 7169140ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+HONV, round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 22340
+Chosen 12.600000 as decision boundary shift to attain TPR of 0.950547
+Evaluation with sliding window complete after 2576191ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HDD+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 15752
+Training round 1 complete after 457817ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Evaluation complete after 144399ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Training round 1 complete after 3736675ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+HONV
+Evaluation complete after 136018ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Chosen 8.800000 as decision boundary shift to attain TPR of 0.951608
+Evaluation with sliding window complete after 2361258ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started training of CoOccurrence(RGB)+HDD+HOG(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 15752
+Training round 1 complete after 3369027ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HDD+HOG(RGB)
+Evaluation complete after 113938ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Chosen 14.400000 as decision boundary shift to attain TPR of 0.950228
+Evaluation with sliding window complete after 7521587ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 17460
+Chosen 2.200000 as decision boundary shift to attain TPR of 0.962538
+Evaluation with sliding window complete after 2616063ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+HONV
+Started training of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB), round 2
+Training boost classifier on 11696 samples (2262 TP, 9434 TN), feature size 15752
+Training round 1 complete after 6061803ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Evaluation complete after 226335ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Training round 2 complete after 4585936ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Evaluation complete after 133704ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Chosen 7.200000 as decision boundary shift to attain TPR of 0.952457
+Evaluation with sliding window complete after 5903072ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started training evaluation with sliding window of CoOccurrence(RGB)+HDD+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+HONV, round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 22340
+Chosen 6.600000 as decision boundary shift to attain TPR of 0.951820
+Evaluation with sliding window complete after 2629176ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started training of CoOccurrence(RGB)+HDD+HOG(RGB), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 15752
+Training round 2 complete after 6007109ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+HONV
+Evaluation complete after 170918ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Training round 2 complete after 5569741ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HDD+HOG(RGB)
+Evaluation complete after 165543ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Chosen 7.800000 as decision boundary shift to attain TPR of 0.953200
+Evaluation with sliding window complete after 9288094ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 17460
+Chosen 9.000000 as decision boundary shift to attain TPR of 0.950122
+Evaluation with sliding window complete after 6345180ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+HONV
+Started training of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB), round 3
+Training boost classifier on 15696 samples (2262 TP, 13434 TN), feature size 15752
+Chosen 8.000000 as decision boundary shift to attain TPR of 0.953836
+Evaluation with sliding window complete after 4824829ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started training evaluation with sliding window of CoOccurrence(RGB)+HDD+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+HONV, round 3
+Training round 2 complete after 11499564ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 22340
+Evaluation complete after 269286ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Training round 3 complete after 6590273ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Evaluation complete after 187267ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Chosen 6.600000 as decision boundary shift to attain TPR of 0.951926
+Evaluation with sliding window complete after 3108046ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started training of CoOccurrence(RGB)+HDD+HOG(RGB), round 3
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 15752
+Training round 3 complete after 8281082ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+HONV
+Evaluation complete after 215785ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Training round 3 complete after 7527395ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+HDD+HOG(RGB)
+Evaluation complete after 141635ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Chosen 7.800000 as decision boundary shift to attain TPR of 0.952032
+Evaluation with sliding window complete after 7976293ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth), round 3
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 17460
+Chosen 8.400000 as decision boundary shift to attain TPR of 0.954261
+Evaluation with sliding window complete after 3089426ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+HONV
+Chosen 7.400000 as decision boundary shift to attain TPR of 0.952987
+Evaluation with sliding window complete after 3900041ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started training evaluation with sliding window of CoOccurrence(RGB)+HDD+HOG(RGB)
+Chosen 7.000000 as decision boundary shift to attain TPR of 0.954367
+Evaluation with sliding window complete after 2395424ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Training round 3 complete after 9601380ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Evaluation complete after 214058ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Evaluation with sliding window and NMS complete after 2864694ms for CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(RGB)+HONV
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 0
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 36548
+Training round 0 complete after 2822876ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Evaluation complete after 94390ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Evaluation with sliding window and NMS complete after 4563910ms for CoOccurrence(RGB)+HOG(RGB)+HONV
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HDD+HOG(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), round 0
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 36548
+Evaluation with sliding window and NMS complete after 3252234ms for CoOccurrence(RGB)+HDD+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), round 0
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 12052
+Training round 0 complete after 3614310ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Evaluation complete after 113972ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Training round 0 complete after 966503ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Evaluation complete after 145055ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Chosen 8.200000 as decision boundary shift to attain TPR of 0.952563
+Evaluation with sliding window complete after 7142010ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Chosen 9.200000 as decision boundary shift to attain TPR of 0.951926
+Evaluation with sliding window complete after 4720261ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 36548
+Job CoOccurrence(RGB)+HDD+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HONV is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), loading from existing model instead
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), loading from existing model instead
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), evaluation was already done.
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), evaluation was already done.
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 1
+Job CoOccurrence(RGB)+HDD+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HONV is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), loading from existing model instead
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), loading from existing model instead
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), evaluation was already done.
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), evaluation was already done.
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 1
+Job CoOccurrence(RGB)+HDD+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HONV is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), loading from existing model instead
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), loading from existing model instead
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), evaluation was already done.
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), evaluation was already done.
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 1
+Job CoOccurrence(RGB)+HDD+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HONV is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), loading from existing model instead
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), evaluation was already done.
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 1
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), loading from existing model instead
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), evaluation was already done.
+Job CoOccurrence(RGB)+HDD+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HONV is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job Corner(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job Corner(Depth)+HOG(RGB) is already processed and will be skipped
+Job Corner(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Starting job Corner(Depth)
+Error: Unknown exception
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Evaluation with sliding window and NMS complete after 7116487ms for CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Starting job CoOccurrence(RGB)+HDD+HOG(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+HONV
+Starting job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth)
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Can't evaluate the feature set CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth) against the data set KAIST, requirements not met
+Starting job Corner(RGB)+HOG(RGB)
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job Corner(Depth)+HOG(RGB) is already processed and will be skipped
+Job Corner(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Job Corner(Depth) is already processed and will be skipped
+Can't evaluate the feature set CoOccurrence(RGB)+HDD+HOG(RGB) against the data set KAIST, requirements not met
+Can't evaluate the feature set CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) against the data set KAIST, requirements not met
+Can't evaluate the feature set CoOccurrence(RGB)+HOG(RGB)+HONV against the data set KAIST, requirements not met
+Error: Unknown exception
+--------------------- New console session -----------------------

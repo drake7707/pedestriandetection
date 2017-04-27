@@ -24,17 +24,17 @@ namespace hog {
 	/// <summary>
 	/// Explains the 2D HOG feature by building a heat map of their occurrence
 	/// </summary>
-	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize);
+	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize);
 
 	/// <summary>
 	/// Explains the HOG features by building a heat map of their occurrence
 	/// </summary>
-	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize);
+	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize);
 
 	/// <summary>
 	/// Returns the 2D HOG-like features for given weights and binning values
 	/// </summary>
-	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize);
+	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage);
 
 	/// <summary>
 	/// Returns the HOG-like result for given weights and binning values. For example, for HOG the weights will be the magnitudes, whereas the binning values will be

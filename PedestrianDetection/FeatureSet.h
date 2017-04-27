@@ -57,7 +57,7 @@ public:
 	/// <summary>
 	/// Explains the various features from the trained models, usually in the form of a heat map
 	/// </summary>
-	std::vector<cv::Mat> explainFeatures(std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const;
+	std::vector<cv::Mat> explainFeatures(std::vector<float>& weightPerFeature, int refWidth, int refHeight) const;
 
 	/// <summary>
 	/// Returns the combination of requirements for all the feature descriptors to match against the data set RGB/Depth/Thermal

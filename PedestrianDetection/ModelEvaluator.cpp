@@ -192,18 +192,16 @@ std::vector<cv::Mat> ModelEvaluator::explainModel(const std::unique_ptr<FeatureS
 	auto& splits = model.boost->getSplits();
 
 	std::vector<float> weightPerFeature(set->getNumberOfFeatures(), 0);
-	std::vector<float> occurrencePerFeature(set->getNumberOfFeatures(), 0);
 	for (auto& r : roots) {
 
 		if (nodes[r].split != -1) {
 			int varIdx = splits[nodes[r].split].varIdx;
 			float quality = splits[nodes[r].split].quality;
-			weightPerFeature[varIdx] += quality;
-			occurrencePerFeature[varIdx]++;
+			weightPerFeature[varIdx] += 1;// exp(quality);
 		}
 	}
 
-	return set->explainFeatures(weightPerFeature, occurrencePerFeature, refWidth, refHeight);
+	return set->explainFeatures(weightPerFeature, refWidth, refHeight);
 }
 
 void ModelEvaluator::saveModel(std::string& path) {

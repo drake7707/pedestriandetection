@@ -53,7 +53,7 @@ FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat
 	return v;
 }
 
-cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
 	int nrOfCellsWidth = refWidth / patchSize;
 	int nrOfCellsHeight = refHeight / patchSize;
 
@@ -71,7 +71,7 @@ cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector
 			{
 				for (int k = 0; k < binSize; k++)
 				{
-					histogram[y][x] += occurrencePerFeature[offset + idx];
+					histogram[y][x] += weightPerFeature[offset + idx];
 					idx++;
 				}
 			}

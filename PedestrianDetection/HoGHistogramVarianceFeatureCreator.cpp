@@ -31,7 +31,7 @@ FeatureVector HOGHistogramVarianceFeatureCreator::getFeatures(cv::Mat& rgb, cv::
 }
 
 
-cv::Mat HOGHistogramVarianceFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+cv::Mat HOGHistogramVarianceFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
 	int nrOfCellsWidth = refWidth / patchSize;
 	int nrOfCellsHeight = refHeight / patchSize;
 
@@ -43,7 +43,7 @@ cv::Mat HOGHistogramVarianceFeatureCreator::explainFeatures(int offset, std::vec
 	std::function<void(int, int, int)> func = [&](int featureIndex, int patchX, int patchY) -> void {
 		int x = patchX * patchSize;
 		int y = patchY * patchSize;
-		double weight = occurrencePerFeature[offset + featureIndex];
+		double weight = weightPerFeature[offset + featureIndex];
 		cv::rectangle(explanation, cv::Rect(x, y, patchSize, patchSize), cv::Scalar(weight), -1);
 	};
 

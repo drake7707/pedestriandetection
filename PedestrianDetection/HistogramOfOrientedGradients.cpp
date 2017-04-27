@@ -60,7 +60,7 @@ namespace hog {
 			return (nrOfCellsHeight) * (nrOfCellsWidth)* binSize;
 	}
 
-	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize) {
+	cv::Mat explainHOGFeature(int offset, std::vector<float>& weightPerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool full360, bool l2normalize) {
 
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
@@ -80,25 +80,25 @@ namespace hog {
 
 					for (int k = 0; k < binSize; k++) {
 
-						histogram[y][x] += occurrencePerFeature[offset + idx];
+						histogram[y][x] += weightPerFeature[offset + idx];
 						idx++;
 					}
 
 					for (int k = 0; k < binSize; k++) {
 
-						histogram[y][x + 1] += occurrencePerFeature[offset + idx];
+						histogram[y][x + 1] += weightPerFeature[offset + idx];
 						idx++;
 					}
 
 					for (int k = 0; k < binSize; k++) {
 
-						histogram[y + 1][x] += occurrencePerFeature[offset + idx];
+						histogram[y + 1][x] += weightPerFeature[offset + idx];
 						idx++;
 					}
 
 					for (int k = 0; k < binSize; k++) {
 
-						histogram[y + 1][x + 1] += occurrencePerFeature[offset + idx];
+						histogram[y + 1][x + 1] += weightPerFeature[offset + idx];
 						idx++;
 					}
 				}
@@ -109,7 +109,7 @@ namespace hog {
 				for (int x = 0; x < nrOfCellsWidth; x++) {
 
 					for (int k = 0; k < binSize; k++) {
-						histogram[y][x] += occurrencePerFeature[offset + idx];
+						histogram[y][x] += weightPerFeature[offset + idx];
 						idx++;
 					}
 
@@ -281,7 +281,7 @@ namespace hog {
 	}
 
 
-	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize) {
+	cv::Mat explain2DHOGFeature(int offset, std::vector<float>& weightPerFeature, int imgWidth, int imgHeight, int patchSize, int binSize, bool l2normalize) {
 
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
@@ -301,7 +301,7 @@ namespace hog {
 				for (int k = 0; k < binSize; k++) {
 					for (int l = 0; l < binSize; l++) {
 
-						histogram[y][x] += occurrencePerFeature[offset + idx];
+						histogram[y][x] += weightPerFeature[offset + idx];
 						idx++;
 					}
 				}
@@ -323,7 +323,7 @@ namespace hog {
 	}
 
 
-	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize) {
+	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage) {
 
 
 		double max = 1;
@@ -359,12 +359,7 @@ namespace hog {
 						int bin1y = floor(valBins[1]);
 						int bin2y = (bin1y + 1) % binSize;
 
-						// (t - t_begin) / (t_end - t_begin)
-						// 15 - 0 / (20-0) = 0.75
-						// (t_end - t) / (t_end - t_begin)
-						// 20 - 15 / (20-0) = 0.25
-						// yay for computergraphics triangular scheme
-
+						// linearly interpolate
 						float tBeginX = bin1x == 0 ? 0 : bin1x * max / binSize;
 						float tEndX = bin2x == 0 ? max : bin2x * max / binSize;
 
@@ -379,7 +374,6 @@ namespace hog {
 						histogram[bin2x][bin1y] += weight * (1 - u) * (v);
 						histogram[bin1x][bin2y] += weight * u * (1 - v);
 						histogram[bin2x][bin2y] += weight * (1 - u) * (1 - v);
-						//histogram[bin2] += weight * (anglePixel[0] - tBeginX) / (tEndX - tBeginX);
 					}
 				}
 			}
@@ -390,8 +384,6 @@ namespace hog {
 				flattenedCells[y][x] = cells[y][x].flatten();
 			}
 		}
-
-		//	std::vector<std::vector<Histogram>> newcells = getL2NormalizationOverLargerPatch(flattenedCells, nrOfCellsWidth, nrOfCellsHeight, binSize, l2normalize);
 
 		cv::Mat hog;
 		if (createImage) {

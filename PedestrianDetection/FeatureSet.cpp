@@ -58,7 +58,7 @@ int FeatureSet::getNumberOfFeatures() const {
 	return nrOfFeatures;
 }
 
-std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFeature, std::vector<float>& occurrencePerFeature, int refWidth, int refHeight) const {
+std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
 	int from = 0;
 
 	std::vector<cv::Mat> explainImages(size());
@@ -68,7 +68,7 @@ std::vector<cv::Mat> FeatureSet::explainFeatures(std::vector<float>& weightPerFe
 		int nrOfFeatures = c->getNumberOfFeatures();
 		int to = from + nrOfFeatures;
 
-		cv::Mat img = c->explainFeatures(from, weightPerFeature, occurrencePerFeature, refWidth, refHeight);
+		cv::Mat img = c->explainFeatures(from, weightPerFeature, refWidth, refHeight);
 		explainImages[i] = img;
 
 		from += nrOfFeatures;

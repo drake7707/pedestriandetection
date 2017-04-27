@@ -1430,6 +1430,93 @@ void printFeatureVectorSize(FeatureTester& tester) {
 	}
 }
 
+void createAverageGradient(EvaluationSettings& settings) {
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
+
+	cv::Mat averageGradient(settings.refHeight, settings.refWidth, CV_32FC1, cv::Scalar(0));
+
+	VideoWriter vAvg;
+	int videoType = CV_FOURCC('X', 'V', 'I', 'D');//(int)cap.get(CV_CAP_PROP_FORMAT);
+	vAvg.open("avgGradient.avi", videoType, 30, Size(settings.refWidth, settings.refHeight), true);
+
+	bool showProgress = true;
+
+	auto labelsPerNumber = dataSet.getLabelsPerNumber();
+	for (int i = 0; i < labelsPerNumber.size(); i++)
+	{
+		bool hasTP = false;
+
+		for (auto& l : labelsPerNumber[i]) {
+			if (!l.isDontCareArea()) {
+				hasTP = true;
+			}
+		}
+		if (hasTP) {
+			auto imgs = dataSet.getImagesForNumber(i);
+
+			cv::Mat& src = imgs[0];
+			for (auto& l : labelsPerNumber[i]) {
+				if (!l.isDontCareArea() && l.getBbox().x + l.getBbox().width < imgs[0].cols && l.getBbox().y + l.getBbox().height < imgs[0].rows) {
+					cv::Mat regionRGB;
+					if (src.cols > 0 && src.rows > 0)
+						regionRGB = src(l.getBbox());
+
+					cv::Mat magRGBRegion;
+					cv::resize(regionRGB, magRGBRegion, cv::Size(settings.refWidth, settings.refHeight));
+
+					if (magRGBRegion.channels() > 1)
+						cv::cvtColor(magRGBRegion, magRGBRegion, cv::COLOR_RGB2GRAY);
+
+					cv::Mat gx, gy;
+					cv::Sobel(magRGBRegion, gx, CV_32F, 1, 0, 1);
+					cv::Sobel(magRGBRegion, gy, CV_32F, 0, 1, 1);
+
+					cv::Mat magnitude = cv::Mat(magRGBRegion.size(), CV_32FC1, cv::Scalar(0));
+					cv::Mat angle = cv::Mat(magRGBRegion.size(), CV_32FC1, cv::Scalar(0));
+
+					for (int j = 0; j < magRGBRegion.rows; j++)
+					{
+						for (int i = 0; i < magRGBRegion.cols; i++)
+						{
+							float sx = gx.at<float>(j, i);
+							float sy = gy.at<float>(j, i);
+							magnitude.at<float>(j, i) = sqrt(sx * sx + sy*sy);
+						}
+					}
+
+					cv::normalize(magnitude, magnitude, 0, 1, cv::NormTypes::NORM_MINMAX);
+					
+
+					averageGradient += magnitude;
+					
+
+					cv::Mat tmp;
+					cv::normalize(averageGradient, tmp, 0, 1, cv::NormTypes::NORM_MINMAX);
+
+					if (showProgress)
+						cv::imshow("Average gradient", tmp);
+
+					
+					tmp.convertTo(tmp, CV_8UC1, 255);
+					cv::cvtColor(tmp, tmp, CV_GRAY2BGR);
+					vAvg.write(tmp);
+
+					if (showProgress) {
+						cv::Mat input = imgs[0].clone();
+						cv::rectangle(input, l.getBbox(), cv::Scalar(0, 255, 0), 2);
+						cv::imshow("Input", input);
+						cv::waitKey(10);
+					}
+				}
+			}
+		}
+	}
+	cv::normalize(averageGradient, averageGradient, 0, 1, cv::NormTypes::NORM_MINMAX);
+	cv::imshow("Average gradient", averageGradient);
+	cv::waitKey(0);
+
+}
+
 int main(int argc, char** argv)
 {
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
@@ -1477,11 +1564,12 @@ int main(int argc, char** argv)
 	wnd->run();
 
 	//testKAISTROI(settings);
-	
-	explainModel(tester, settings, { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, std::string("KITTI"));
-	
+
+	createAverageGradient(settings);
+	//explainModel(tester, settings, { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, std::string("KITTI"));
+
 	//testClassifier(tester, settings, std::string("KITTI"), { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, -7.85);
-	
+
 	//testSlidingWindow(settings, std::string("KITTI"));
 
 	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
@@ -1497,7 +1585,7 @@ int main(int argc, char** argv)
 	//std::ofstream str("heightdepthvaluesTN.csv");
 	//printHeightVerticalAvgDepthRelation(std::string("trainingsets\\train0.txt"), str);
 
-	
+
 
 
 	if (settings.kittiDataSetPath != "") {

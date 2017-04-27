@@ -140,4 +140,9 @@ void testSpeed(FeatureTester& tester, EvaluationSettings& settings);
 /// </summary>
 void printFeatureVectorSize(FeatureTester& tester);
 
+/// <summary>
+/// Creates an average gradient of all the true positives in the dataset
+/// </summary>
+void createAverageGradient(EvaluationSettings& settings);
+
 int main(int argc, char** argv);

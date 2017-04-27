@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KITTI_GoodFts(Depth) round 0"</name_0>
+<name_1>"KITTI_GoodFts(Depth) round 1"</name_1>
+<name_2>"KITTI_GoodFts(Depth) round 2"</name_2>
+<name_3>"KITTI_GoodFts(Depth) round 3"</name_3>
+<valueShifts>
+  2. 2. 2. 2.40000010e+00</valueShifts>
+<classifierHitCount>
+  2019920 26857 489419 6621403</classifierHitCount>
+</opencv_storage>

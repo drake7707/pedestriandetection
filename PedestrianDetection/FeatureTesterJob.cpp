@@ -387,6 +387,15 @@ void FeatureTesterJob::generateFeatureImportanceImage(EvaluatorCascade& cascade,
 		}
 	}
 
+	cv::Mat mergeTotalImg = totalImgs[0].clone();
+	for (int i = 1; i < imgs.size(); i++) {
+		cv::normalize(totalImgs[i], totalImgs[i], 0, 1, cv::NormTypes::NORM_MINMAX);
+		mergeTotalImg += totalImgs[i];
+	}
+	std::string featureImportanceTotalFilename = std::string("results") + PATH_SEPARATOR + dataSet->getName() + "_" + featureSetName + "_Total_featureimportance.png";
+	cv::normalize(mergeTotalImg, mergeTotalImg, 0, 1, cv::NormTypes::NORM_MINMAX);
+	cv::imwrite(featureImportanceTotalFilename, heatmap::toHeatMap(mergeTotalImg));
+
 
 	auto it = set.begin();
 	for (int i = 0; i < imgs.size(); i++) {

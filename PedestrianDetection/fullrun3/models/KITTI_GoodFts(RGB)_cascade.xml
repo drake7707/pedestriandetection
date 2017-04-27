@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KITTI_GoodFts(RGB) round 0"</name_0>
+<name_1>"KITTI_GoodFts(RGB) round 1"</name_1>
+<name_2>"KITTI_GoodFts(RGB) round 2"</name_2>
+<name_3>"KITTI_GoodFts(RGB) round 3"</name_3>
+<valueShifts>
+  1.79999995e+00 1.60000002e+00 2.79999995e+00 6.00000024e-01</valueShifts>
+<classifierHitCount>
+  1176033 334815 1903025 5743726</classifierHitCount>
+</opencv_storage>

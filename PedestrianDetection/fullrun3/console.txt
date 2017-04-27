@@ -3219,3 +3219,125 @@ Can't evaluate the feature set CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) against the
 Can't evaluate the feature set CoOccurrence(RGB)+HOG(RGB)+HONV against the data set KAIST, requirements not met
 Error: Unknown exception
 --------------------- New console session -----------------------
+Job CoOccurrence(RGB)+HDD+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HONV is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Starting job CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), loading from existing model instead
+Skipped training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), loading from existing model instead
+Started training of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB), round 0
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), evaluation was already done.
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 1
+Skipped evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), evaluation was already done.
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 12052
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 36548
+Training round 0 complete after 840712ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Evaluation complete after 90291ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Chosen 9.600000 as decision boundary shift to attain TPR of 0.950653
+Evaluation with sliding window complete after 7714701ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 12052
+Training round 1 complete after 9684755ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Evaluation complete after 139845ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Training round 1 complete after 3500753ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Evaluation complete after 192041ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Chosen 9.400000 as decision boundary shift to attain TPR of 0.951608
+Evaluation with sliding window complete after 5839436ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 36548
+Chosen 9.400000 as decision boundary shift to attain TPR of 0.951289
+Evaluation with sliding window complete after 4063583ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 12052
+Training round 1 complete after 3528845ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Evaluation complete after 150186ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Chosen 6.800000 as decision boundary shift to attain TPR of 0.953093
+Evaluation with sliding window complete after 4124545ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 36548
+Training round 1 complete after 13624390ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Evaluation complete after 113279ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Chosen 6.800000 as decision boundary shift to attain TPR of 0.951608
+Evaluation with sliding window complete after 8287935ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 12052
+Chosen 7.000000 as decision boundary shift to attain TPR of 0.954155
+Evaluation with sliding window complete after 4250805ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 12052
+Training round 2 complete after 5227568ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Evaluation complete after 252222ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Training round 2 complete after 17424298ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Evaluation complete after 121991ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Chosen 7.200000 as decision boundary shift to attain TPR of 0.954367
+Evaluation with sliding window complete after 5093514ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 36548
+Training round 2 complete after 5275852ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Evaluation complete after 125438ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Chosen 6.600000 as decision boundary shift to attain TPR of 0.955747
+Evaluation with sliding window complete after 7185700ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), round 3
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 12052
+Chosen 6.200000 as decision boundary shift to attain TPR of 0.958824
+Evaluation with sliding window complete after 4878791ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 3
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 36548
+Training round 3 complete after 7548507ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Evaluation complete after 297705ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Chosen 6.600000 as decision boundary shift to attain TPR of 0.955428
+Evaluation with sliding window complete after 4476746ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB), round 3
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 12052
+Training round 3 complete after 6738422ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Evaluation complete after 157916ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Training round 2 complete after 23834826ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Evaluation complete after 126144ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.955853
+Evaluation with sliding window complete after 9668521ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Chosen 6.200000 as decision boundary shift to attain TPR of 0.955747
+Evaluation with sliding window complete after 3727188ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.955747
+Evaluation with sliding window complete after 18767232ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), round 3
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 36548
+Training round 3 complete after 37610234ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Evaluation complete after 140430ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Evaluation with sliding window and NMS complete after 10369717ms for CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Evaluation with sliding window and NMS complete after 3715885ms for CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB), round 0
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 12062

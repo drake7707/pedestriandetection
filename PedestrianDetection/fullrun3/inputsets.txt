@@ -10,15 +10,14 @@ HOG(RGB)+CoOccurrence(RGB)+HDD
 HOG(RGB)+CoOccurrence(RGB)+HONV
 HOG(RGB)+CoOccurrence(RGB)+HOG(Depth)
 HOG(RGB)+CoOccurrence(RGB)+SDDG(Depth)
-#HOG(RGB)+CoOccurrence(RGB)+RAW(RGB)
-#HOG(RGB)+CoOccurrence(RGB)+RAW(LUV)
-#HOG(RGB)+CoOccurrence(RGB)+SURF(RGB)
-#HOG(RGB)+CoOccurrence(RGB)+Corner(RGB)
-#HOG(RGB)+CoOccurrence(RGB)+SURF(RGB)
-#HOG(RGB)+CoOccurrence(RGB)+ORB(RGB)
-#HOG(RGB)+CoOccurrence(RGB)+CenSurE(RGB)
-#HOG(RGB)+CoOccurrence(RGB)+FAST(RGB)
-#HOG(RGB)+CoOccurrence(RGB)+Corner(Depth)
+HOG(RGB)+CoOccurrence(RGB)+RAW(RGB)
+HOG(RGB)+CoOccurrence(RGB)+RAW(LUV)
+HOG(RGB)+CoOccurrence(RGB)+SURF(RGB)
+HOG(RGB)+CoOccurrence(RGB)+Corner(RGB)
+HOG(RGB)+CoOccurrence(RGB)+SURF(RGB)
+HOG(RGB)+CoOccurrence(RGB)+ORB(RGB)
+HOG(RGB)+CoOccurrence(RGB)+CenSurE(RGB)
+HOG(RGB)+CoOccurrence(RGB)+FAST(RGB)
 
 
 ################################
@@ -32,8 +31,6 @@ HOG(RGB)+HONV
 HOG(RGB)+HOG(Depth)
 HOG(RGB)+Histogram(Depth)
 HOG(RGB)+SDDG(Depth)
-
-#HOG(RGB)+Corner(Depth)
 
 
 # In combination with Thermal
@@ -114,5 +111,3 @@ CenSurE(RGB)
 FAST(RGB)
 #MSD(RGB)
 SURF(RGB)
-
-Corner(Depth)

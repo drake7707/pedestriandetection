@@ -86,3 +86,5 @@ KAIST_CoOccurrence(RGB)+HOG(Depth)+HOG(RGB)
 KAIST_CoOccurrence(RGB)+HOG(RGB)+HONV
 KITTI_Corner(Depth)
 KAIST_Corner(RGB)+HOG(RGB)
+KITTI_CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+KITTI_CoOccurrence(RGB)+Corner(RGB)+HOG(RGB)

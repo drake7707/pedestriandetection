@@ -3341,3 +3341,332 @@ Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RA
 Starting job CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
 Started training of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB), round 0
 Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 12062
+Training round 0 complete after 1027547ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Evaluation complete after 114271ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.950547
+Evaluation with sliding window complete after 5802256ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Starting job CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started training of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB), round 0
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 12002
+Training round 0 complete after 895998ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started evaluation of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Evaluation complete after 99585ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Chosen 9.200000 as decision boundary shift to attain TPR of 0.952245
+Evaluation with sliding window complete after 4113037ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 12062
+Training round 1 complete after 3026530ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Evaluation complete after 129782ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Training round 3 complete after 27880066ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Evaluation with sliding window and NMS complete after 3966420ms for CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Starting job CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB), round 0
+Evaluation complete after 104204ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 12062
+Training round 0 complete after 850351ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Evaluation complete after 101669ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Chosen 9.400000 as decision boundary shift to attain TPR of 0.953836
+Evaluation with sliding window complete after 4887283ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started training of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 12002
+Training round 1 complete after 2757318ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started evaluation of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Evaluation complete after 123337ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Chosen 7.200000 as decision boundary shift to attain TPR of 0.951183
+Evaluation with sliding window complete after 4013568ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 12062
+Training round 2 complete after 4439769ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Evaluation complete after 176782ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Chosen 6.600000 as decision boundary shift to attain TPR of 0.956065
+Evaluation with sliding window complete after 5913997ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Chosen 9.400000 as decision boundary shift to attain TPR of 0.950016
+Evaluation with sliding window complete after 2659162ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 12062
+Training round 1 complete after 2522818ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Evaluation complete after 104189ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Chosen 7.000000 as decision boundary shift to attain TPR of 0.953200
+Evaluation with sliding window complete after 3646830ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started training of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 12002
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.953093
+Evaluation with sliding window complete after 3973929ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB), round 3
+Training round 2 complete after 4331991ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started evaluation of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 12062
+Evaluation complete after 181247ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Evaluation with sliding window and NMS complete after 4221841ms for CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Started training evaluation with sliding window of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Starting job CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job Corner(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job Corner(Depth)+HOG(RGB) is already processed and will be skipped
+Job Corner(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Job Corner(Depth) is already processed and will be skipped
+Started training of CoOccurrence(RGB)+Corner(Depth)+HOG(RGB), round 0
+Training boost classifier on 6004 samples (2262 TP, 3742 TN), feature size 12052
+Training round 0 complete after 920617ms for CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Evaluation complete after 112959ms for CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Training round 3 complete after 5674859ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started evaluation of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Evaluation complete after 170431ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Chosen 7.000000 as decision boundary shift to attain TPR of 0.954685
+Evaluation with sliding window complete after 3108753ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 12062
+Training round 2 complete after 4111705ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Evaluation complete after 134215ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Chosen 6.200000 as decision boundary shift to attain TPR of 0.954367
+Evaluation with sliding window complete after 4404174ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Started training of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB), round 3
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 12002
+Chosen 9.600000 as decision boundary shift to attain TPR of 0.952881
+Evaluation with sliding window complete after 5747714ms for CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started training of CoOccurrence(RGB)+Corner(Depth)+HOG(RGB), round 1
+Training boost classifier on 10004 samples (2262 TP, 7742 TN), feature size 12052
+Training round 3 complete after 6153297ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started evaluation of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Evaluation complete after 154763ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Training round 1 complete after 3024027ms for CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Evaluation complete after 121724ms for CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.957551
+Evaluation with sliding window complete after 3970466ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.950334
+Evaluation with sliding window complete after 2334394ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB), round 3
+Training boost classifier on 18004 samples (2262 TP, 15742 TN), feature size 12062
+Chosen 6.400000 as decision boundary shift to attain TPR of 0.954367
+Evaluation with sliding window complete after 3975367ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started training evaluation with sliding window of CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Training round 3 complete after 5895103ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started evaluation of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Evaluation complete after 150285ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Chosen 7.200000 as decision boundary shift to attain TPR of 0.950865
+Evaluation with sliding window complete after 3426098ms for CoOccurrence(RGB)+Corner(Depth)+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started training of CoOccurrence(RGB)+Corner(Depth)+HOG(RGB), round 2
+Training boost classifier on 14004 samples (2262 TP, 11742 TN), feature size 12052
+--------------------- New console session -----------------------
+Job CoOccurrence(RGB)+HDD+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HONV is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+GoodFts(RGB)+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Starting job CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Starting job CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Starting job HOG(RGB)+HOG(Thermal)+HOI
+Can't evaluate the feature set HOG(RGB)+HOG(Thermal)+HOI against the data set KITTI, requirements not met
+Starting job HOG(RGB)+HOG(Thermal)+SDDG(Thermal)
+Skipped training of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB), loading from existing model instead
+Can't evaluate the feature set HOG(RGB)+HOG(Thermal)+SDDG(Thermal) against the data set KITTI, requirements not met
+Starting job CoOccurrence(RGB)+HOG(RGB)+HOG(Thermal)
+Skipped evaluation of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB), evaluation was already done.
+Started training evaluation with sliding window of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Can't evaluate the feature set CoOccurrence(RGB)+HOG(RGB)+HOG(Thermal) against the data set KITTI, requirements not met
+Starting job HOG(RGB)+HOG(Thermal)+RAW(RGB)
+Can't evaluate the feature set HOG(RGB)+HOG(Thermal)+RAW(RGB) against the data set KITTI, requirements not met
+Starting job HOG(RGB)+HOG(Thermal)+RAW(LUV)
+Can't evaluate the feature set HOG(RGB)+HOG(Thermal)+RAW(LUV) against the data set KITTI, requirements not met
+Starting job HOG(RGB)+HOG(Thermal)+LBP(RGB)
+Can't evaluate the feature set HOG(RGB)+HOG(Thermal)+LBP(RGB) against the data set KITTI, requirements not met
+Starting job HOG(RGB)+HOG(Thermal)+SURF(RGB)
+Can't evaluate the feature set HOG(RGB)+HOG(Thermal)+SURF(RGB) against the data set KITTI, requirements not met
+Starting job GoodFts(RGB)+HOG(RGB)+HOG(Thermal)
+Job HOG(RGB)+HOG(Thermal)+SURF(RGB) is already processed and will be skipped
+Can't evaluate the feature set GoodFts(RGB)+HOG(RGB)+HOG(Thermal) against the data set KITTI, requirements not met
+Starting job HOG(RGB)+HOG(Thermal)+ORB(RGB)
+Can't evaluate the feature set HOG(RGB)+HOG(Thermal)+ORB(RGB) against the data set KITTI, requirements not met
+Starting job CenSurE(RGB)+HOG(RGB)+HOG(Thermal)
+Can't evaluate the feature set CenSurE(RGB)+HOG(RGB)+HOG(Thermal) against the data set KITTI, requirements not met
+Starting job FAST(RGB)+HOG(RGB)+HOG(Thermal)
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job GoodFts(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job GoodFts(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Can't evaluate the feature set FAST(RGB)+HOG(RGB)+HOG(Thermal) against the data set KITTI, requirements not met
+Chosen 6.200000 as decision boundary shift to attain TPR of 0.954685
+Evaluation with sliding window complete after 1829599ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Evaluation with sliding window and NMS complete after 3480912ms for CoOccurrence(RGB)+HOG(RGB)+ORB(RGB)
+Started final evaluation on test set with sliding window and NMS of CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Evaluation with sliding window and NMS complete after 3368093ms for CenSurE(RGB)+CoOccurrence(RGB)+HOG(RGB)
+Started final evaluation on test set with sliding window and NMS of CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Evaluation with sliding window and NMS complete after 2872219ms for CoOccurrence(RGB)+FAST(RGB)+HOG(RGB)
+Job CoOccurrence(RGB)+HDD+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HONV is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(RGB)
+Starting job CoOccurrence(RGB)+HOG(RGB)+RAW(LUV)
+Starting job CoOccurrence(RGB)+HOG(RGB)+SURF(RGB)
+Starting job CoOccurrence(RGB)+GoodFts(RGB)+HOG(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(LUV), round 0
+Started training of CoOccurrence(RGB)+HOG(RGB)+SURF(RGB), round 0
+Started training of CoOccurrence(RGB)+HOG(RGB)+RAW(RGB), round 0
+Started training of CoOccurrence(RGB)+GoodFts(RGB)+HOG(RGB), round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 12052
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 36548
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 36548
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 12052
+--------------------- New console session -----------------------
+Job HOG(RGB)+HOG(Thermal)+HOI is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal)+SDDG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal)+SURF(RGB) is already processed and will be skipped
+Job GoodFts(RGB)+HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job HDD+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+HONV is already processed and will be skipped
+Job HOG(Depth)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+Histogram(Depth) is already processed and will be skipped
+Job HOG(RGB)+SDDG(Depth) is already processed and will be skipped
+Job HOG(RGB)+HOI is already processed and will be skipped
+Job HOG(RGB)+SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+HOG(Thermal) is already processed and will be skipped
+Job CoOccurrence(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(RGB) is already processed and will be skipped
+Job HOG(RGB)+RAW(LUV) is already processed and will be skipped
+Job HOG(RGB)+LBP(RGB) is already processed and will be skipped
+Job HOG(RGB)+S2HOG(RGB) is already processed and will be skipped
+Job HOG(RGB) is already processed and will be skipped
+Job S2HOG(RGB) is already processed and will be skipped
+Job CoOccurrence(RGB) is already processed and will be skipped
+Job LBP(RGB) is already processed and will be skipped
+Job RAW(RGB) is already processed and will be skipped
+Job RAW(LUV) is already processed and will be skipped
+Job HDD is already processed and will be skipped
+Job HONV is already processed and will be skipped
+Job HOG(Depth) is already processed and will be skipped
+Job SDDG(Depth) is already processed and will be skipped
+Job Histogram(Depth) is already processed and will be skipped
+Job HOG(Thermal) is already processed and will be skipped
+Job HOI is already processed and will be skipped
+Job SDDG(Thermal) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job GoodFts(RGB)+HOG(RGB) is already processed and will be skipped
+Job HOG(RGB)+SURF(RGB) is already processed and will be skipped
+Job HOG(RGB)+ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB)+HOG(RGB) is already processed and will be skipped
+Job FAST(RGB)+HOG(RGB) is already processed and will be skipped
+Job GoodFts(RGB) is already processed and will be skipped
+Job ORB(RGB) is already processed and will be skipped
+Job CenSurE(RGB) is already processed and will be skipped
+Job FAST(RGB) is already processed and will be skipped
+Job SURF(RGB) is already processed and will be skipped
+Starting job HOG(RGB)+HOG(Thermal)+HOI
+Starting job HOG(RGB)+HOG(Thermal)+SDDG(Thermal)
+Starting job CoOccurrence(RGB)+HOG(RGB)+HOG(Thermal)
+Starting job HOG(RGB)+HOG(Thermal)+RAW(RGB)
+Started training of CoOccurrence(RGB)+HOG(RGB)+HOG(Thermal), round 0
+Started training of HOG(RGB)+HOG(Thermal)+RAW(RGB), round 0
+Started training of HOG(RGB)+HOG(Thermal)+SDDG(Thermal), round 0
+Started training of HOG(RGB)+HOG(Thermal)+HOI, round 0
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 11340
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 32136
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 15752
+Training boost classifier on 4540 samples (2156 TP, 2384 TN), feature size 13048

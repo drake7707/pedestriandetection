@@ -1,4 +1,4 @@
-#include "IntegralImage.h"
+#include "IntegralHistogram.h"
 
 void IntegralHistogram::create(int width, int height, int binSize, std::function<void(int x, int y, std::vector<cv::Mat>& ihist)> setBinValues) {
 	ihist = std::vector<cv::Mat>();

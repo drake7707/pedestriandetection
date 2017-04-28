@@ -2,7 +2,7 @@
 #include <vector>
 #include "opencv2/opencv.hpp"
 #include <functional>
-#include "IntegralImage.h"
+#include "IntegralHistogram.h"
 class ROIManager
 {
 

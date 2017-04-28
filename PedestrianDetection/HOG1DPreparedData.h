@@ -1,6 +1,6 @@
 #pragma once
 #include "IPreparedData.h"
-#include "IntegralImage.h"
+#include "IntegralHistogram.h"
 
 /// <summary>
 /// HOG and derivatives can use integral histograms to calculate the sum of each bin at every pixel

@@ -186,7 +186,8 @@
     <ClInclude Include="IFeatureCreator.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
-    <ClInclude Include="IntegralImage.h" />
+    <ClInclude Include="IntegralHistogram.h" />
+    <ClInclude Include="IntegralHistogram2D.h" />
     <ClInclude Include="IPreparedData.h" />
     <ClInclude Include="JetHeatMap.h" />
     <ClInclude Include="KAISTDataSet.h" />
@@ -242,7 +243,8 @@
     <ClCompile Include="IFeatureCreator.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
-    <ClCompile Include="IntegralImage.cpp" />
+    <ClCompile Include="IntegralHistogram.cpp" />
+    <ClCompile Include="IntegralHistogram2D.cpp" />
     <ClCompile Include="IPreparedData.cpp" />
     <ClCompile Include="JetHeatMap.cpp" />
     <ClCompile Include="KAISTDataSet.cpp" />

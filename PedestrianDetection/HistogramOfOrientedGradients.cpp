@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include "HOG1DPreparedData.h"
-#include "IntegralImage.h"
+#include "IntegralHistogram.h"
 
 namespace hog {
 	std::vector<std::vector<Histogram>> getL2NormalizationOverLargerPatch(const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, bool l2normalize) {

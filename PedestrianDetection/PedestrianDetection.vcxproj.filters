@@ -192,9 +192,6 @@
     <ClInclude Include="HOG1DPreparedData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IntegralImage.h">
-      <Filter>Header Files\Algorithms</Filter>
-    </ClInclude>
     <ClInclude Include="MarchingSquares.h">
       <Filter>Header Files\Algorithms</Filter>
     </ClInclude>
@@ -212,6 +209,12 @@
     </ClInclude>
     <ClInclude Include="PedestrianDetection.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntegralHistogram.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="IntegralHistogram2D.h">
+      <Filter>Header Files\Algorithms</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -362,9 +365,6 @@
     <ClCompile Include="HOG1DPreparedData.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IntegralImage.cpp">
-      <Filter>Resource Files\Source Files\Algorithms</Filter>
-    </ClCompile>
     <ClCompile Include="MarchingSquares.cpp">
       <Filter>Resource Files\Source Files\Algorithms</Filter>
     </ClCompile>
@@ -376,6 +376,12 @@
     </ClCompile>
     <ClCompile Include="RAWLUVFeatureCreator.cpp">
       <Filter>Resource Files\Source Files\FeatureCreators</Filter>
+    </ClCompile>
+    <ClCompile Include="IntegralHistogram.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="IntegralHistogram2D.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1517,6 +1517,53 @@ void createAverageGradient(EvaluationSettings& settings) {
 
 }
 
+void browseThroughMisses(EvaluationSettings& settings) {
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
+
+	auto labelsPerNumber = dataSet.getLabelsPerNumber();
+
+	std::ifstream str("kitti_misses.txt");
+
+	while (!str.eof()) {
+
+		int imgNr;
+		cv::Rect bbox;
+
+		int nrMissed;
+		int nrDetected;
+		std::string detectedBy;
+
+		//3437 973 148 81 203 21 17
+
+		str >> imgNr;
+		str >> bbox.x;
+		str >> bbox.y;
+		str >> bbox.width;
+		str >> bbox.height;
+		str >> nrMissed;
+		str >> nrDetected;
+		str >> detectedBy;
+		auto imgs = dataSet.getImagesForNumber(imgNr);
+
+		cv::Mat rgb = imgs[0];
+
+		
+		cv::rectangle(rgb, cv::Rect(0, 0, rgb.cols, 20), cv::Scalar(255, 255, 255), -1);
+		std::string str = "Image " + std::to_string(imgNr) + " missed/detected: " + std::to_string(nrMissed) + "/" + std::to_string(nrDetected) + " detected by: " + detectedBy;
+		cv::putText(rgb, str, cv::Point(10, 10), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(0, 0, 0), 1, CV_AA);
+
+		for (auto& l : labelsPerNumber[imgNr]) {
+			if(l.isDontCareArea())
+				cv::rectangle(rgb, l.getBbox(), cv::Scalar(192, 192, 192), -1);
+		}
+		
+		cv::rectangle(rgb, bbox, cv::Scalar(255, 255, 0), 2);
+
+		cv::imshow("Misses", rgb);
+		cv::waitKey(0);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	std::cout << "--------------------- New console session -----------------------" << std::endl;
@@ -1562,6 +1609,8 @@ int main(int argc, char** argv)
 	// show progress window
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
+
+	browseThroughMisses(settings);
 
 	//testKAISTROI(settings);
 

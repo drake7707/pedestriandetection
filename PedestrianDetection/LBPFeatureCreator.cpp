@@ -23,11 +23,14 @@ std::unique_ptr<IPreparedData> LBPFeatureCreator::buildPreparedDataForFeatures(c
 
 	cv::Mat weights;
 	cv::Mat binningValues;
-	buildWeightAndBinningValues(rgbScale, weights, binningValues);
 
+	cv::Mat img;
+	cv::cvtColor(rgbScale, img, CV_BGR2GRAY);
+
+	buildWeightAndBinningValues(img, weights, binningValues);
 
 	IntegralHistogram hist = hog::prepareDataForHistogramsOfX(weights, binningValues, binSize);
-	HOG1DPreparedData* data = new HOG1DPreparedData();
+	IntHistPreparedData* data = new IntHistPreparedData();
 	data->integralHistogram = hist;
 	return std::unique_ptr<IPreparedData>(data);
 }
@@ -43,7 +46,9 @@ void LBPFeatureCreator::buildWeightAndBinningValues(cv::Mat& img, cv::Mat& weigh
 	int padding = 1;
 	padded.create(img.rows, img.cols, lbp.type());
 	padded.setTo(cv::Scalar::all(0));
-	lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
+
+	cv::Mat& roi = padded(Rect(padding, padding, lbp.cols, lbp.rows));
+	lbp.copyTo(roi);
 
 	weights = cv::Mat(img.size(), CV_32FC1, cv::Scalar(1));
 	binningValues = padded;
@@ -58,11 +63,16 @@ FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::M
 	cv::Mat weights;
 	cv::Mat binningValues;
 
-	const HOG1DPreparedData* hogData = static_cast<const HOG1DPreparedData*>(preparedData);
+	hog::HistogramResult result;
+
+	const IntHistPreparedData* hogData = static_cast<const IntHistPreparedData*>(preparedData);
 	if (hogData == nullptr) {
 		buildWeightAndBinningValues(img, weights, binningValues);
+		cv::Rect paddedROI(roi.x + 1, roi.y + 1, roi.width - 1, roi.height - 1);
+		result = hog::getHistogramsOfX(weights, binningValues, patchSize, binSize, false, false, roi, nullptr, refWidth, refHeight);
 	}
-	auto& result = hog::getHistogramsOfX(weights, binningValues, patchSize, binSize, false, false, roi, hogData == nullptr ? nullptr : &(hogData->integralHistogram), refWidth, refHeight);
+	else
+		result = hog::getHistogramsOfX(weights, binningValues, patchSize, binSize, false, false, roi, &(hogData->integralHistogram), refWidth, refHeight);
 
 
 	return result.getFeatureArray();

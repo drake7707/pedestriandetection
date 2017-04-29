@@ -3,7 +3,7 @@
 void IntegralHistogram::create(int width, int height, int binSize, std::function<void(int x, int y, std::vector<cv::Mat>& ihist)> setBinValues) {
 	ihist = std::vector<cv::Mat>();
 	for (int bin = 0; bin < binSize; bin++)
-		ihist.push_back(cv::Mat(height, width, CV_32FC1, cv::Scalar(0)));
+		ihist.push_back(cv::Mat(height, width, CV_64FC1, cv::Scalar(0)));
 
 	this->binSize = binSize;
 
@@ -14,10 +14,10 @@ void IntegralHistogram::create(int width, int height, int binSize, std::function
 
 			// copy over
 			for (int bin = 0; bin < binSize; bin++) {
-				ihist[bin].at<float>(j, i) =
-					(i - 1 < 0 ? 0 : ihist[bin].at<float>(j, i - 1))
-					+ (j - 1 < 0 ? 0 : ihist[bin].at<float>(j - 1, i))
-					- ((i - 1 < 0 || j - 1 < 0) ? 0 : ihist[bin].at<float>(j - 1, i - 1));
+				ihist[bin].at<double>(j, i) =
+					(i - 1 < 0 ? 0 : ihist[bin].at<double>(j, i - 1))
+					+ (j - 1 < 0 ? 0 : ihist[bin].at<double>(j - 1, i))
+					- ((i - 1 < 0 || j - 1 < 0) ? 0 : ihist[bin].at<double>(j - 1, i - 1));
 			}
 
 			// set specific bin values for pixel i,j
@@ -38,10 +38,10 @@ void IntegralHistogram::calculateHistogramIntegral(int x, int y, int w, int h, H
 		//   A + D - B - C
 		// determine integral histogram values of bin at [i][j]
 
-		float A = (minx > 0 && miny > 0) ? ihist[bin].at<float>(miny, minx) : 0;
-		float B = (miny > 0) ? ihist[bin].at<float>(miny, maxx) : 0;
-		float C = (minx > 0) ? ihist[bin].at<float>(maxy, minx) : 0;
-		float D = ihist[bin].at<float>(maxy, maxx);
+		float A = (minx > 0 && miny > 0) ? ihist[bin].at<double>(miny, minx) : 0;
+		float B = (miny > 0) ? ihist[bin].at<double>(miny, maxx) : 0;
+		float C = (minx > 0) ? ihist[bin].at<double>(maxy, minx) : 0;
+		float D = ihist[bin].at<double>(maxy, maxx);
 
 		float value = A + D - C - B;
 		hist[bin] = value;

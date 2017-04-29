@@ -56,7 +56,7 @@ hog::HistogramResult HDDFeatureCreator::getHistogramsOfDepthDifferences(cv::Mat&
 	cv::Mat magnitude;
 	cv::Mat angle;
 
-	const HOG1DPreparedData* hogData = static_cast<const HOG1DPreparedData*>(preparedData);
+	const IntHistPreparedData* hogData = static_cast<const IntHistPreparedData*>(preparedData);
 	if (hogData == nullptr) {
 		buildMagnitudeAndAngle(img, magnitude, angle);
 	}
@@ -70,7 +70,7 @@ std::unique_ptr<IPreparedData> HDDFeatureCreator::buildPreparedDataForFeatures(c
 
 	buildMagnitudeAndAngle(depthScale, magnitude, angle);
 	IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
-	HOG1DPreparedData* data = new HOG1DPreparedData();
+	IntHistPreparedData* data = new IntHistPreparedData();
 	data->integralHistogram = hist;
 	return std::unique_ptr<IPreparedData>(data);
 }

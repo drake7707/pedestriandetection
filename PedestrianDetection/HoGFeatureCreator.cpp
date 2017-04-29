@@ -58,7 +58,7 @@ hog::HistogramResult HOGFeatureCreator::getHistogramsOfOrientedGradient(cv::Mat&
 	cv::Mat magnitude;
 	cv::Mat angle;
 
-	const HOG1DPreparedData* hogData = dynamic_cast<const HOG1DPreparedData*>(preparedData);
+	const IntHistPreparedData* hogData = dynamic_cast<const IntHistPreparedData*>(preparedData);
 	if (hogData == nullptr) {
 		buildMagnitudeAndAngle(img, magnitude, angle);
 	}
@@ -81,7 +81,7 @@ std::unique_ptr<IPreparedData> HOGFeatureCreator::buildPreparedDataForFeatures(c
 	}
 
 	IntegralHistogram hist = hog::prepareDataForHistogramsOfX(magnitude, angle, binSize);
-	HOG1DPreparedData* data = new HOG1DPreparedData();
+	IntHistPreparedData* data = new IntHistPreparedData();
 	data->integralHistogram = hist;
 	return std::unique_ptr<IPreparedData>(data);
 }

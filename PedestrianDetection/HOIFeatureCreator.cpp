@@ -20,7 +20,7 @@ int HOIFeatureCreator::getNumberOfFeatures() const {
 std::unique_ptr<IPreparedData> HOIFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
 
 	IntegralHistogram hist = hog::prepareDataForHistogramsOfX(cv::Mat(thermalScale.rows, thermalScale.cols, CV_32FC1, cv::Scalar(1)), thermalScale, binSize);
-	HOG1DPreparedData* data = new HOG1DPreparedData();
+	IntHistPreparedData* data = new IntHistPreparedData();
 	data->integralHistogram = hist;
 
 	return std::unique_ptr<IPreparedData>(data);
@@ -30,7 +30,7 @@ std::unique_ptr<IPreparedData> HOIFeatureCreator::buildPreparedDataForFeatures(c
 FeatureVector HOIFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 
 
-	const HOG1DPreparedData* hogData = static_cast<const HOG1DPreparedData*>(preparedData);
+	const IntHistPreparedData* hogData = static_cast<const IntHistPreparedData*>(preparedData);
 
 	auto hogResult = hog::getHistogramsOfX(cv::Mat(thermal.rows, thermal.cols, CV_32FC1, cv::Scalar(1)), thermal, patchSize, binSize, false, true, roi, hogData == nullptr ? nullptr : &(hogData->integralHistogram), refWidth, refHeight);
 

@@ -1,7 +1,7 @@
 #include "HistogramOfOrientedGradients.h"
 #include <vector>
 #include <iostream>
-#include "HOG1DPreparedData.h"
+#include "IntHistPreparedData.h"
 #include "IntegralHistogram.h"
 
 namespace hog {
@@ -182,7 +182,7 @@ namespace hog {
 
 		hist.create(weights.cols, weights.rows, binSize, [&](int x, int y, std::vector<cv::Mat>& ihist) -> void {
 
-			float anglePixel = normalizedBinningValues.at<float>(y, x);
+			double anglePixel = normalizedBinningValues.at<float>(y, x);
 			if (anglePixel < 0) anglePixel = 0; // this can only happen when either no normalization was done, or a rounding error in float
 
 			double weight = weights.at<float>(y, x);
@@ -195,13 +195,13 @@ namespace hog {
 			int bin1 = floor(valBins);
 			int bin2 = (bin1 + 1) % binSize;
 
-			float tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
-			float tEnd = bin2 == 0 ? max : bin2 * max / binSize;
+			double tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
+			double tEnd = bin2 == 0 ? max : bin2 * max / binSize;
 
-			float u = (tEnd - anglePixel) / (tEnd - tBegin);
+			double u = (tEnd - anglePixel) / (tEnd - tBegin);
 
-			ihist[bin1].at<float>(y, x) += weight * u;
-			ihist[bin2].at<float>(y, x) += weight * (1-u);
+			ihist[bin1].at<double>(y, x) += (weight * u);
+			ihist[bin2].at<double>(y, x) += (weight * (1-u));
 			/*histogram[bin1] += weight * u;
 			histogram[bin2] += weight * (1 - u);*/
 		});
@@ -215,7 +215,7 @@ namespace hog {
 
 		int nrOfCellsWidth = refWidth / patchSize;
 		int nrOfCellsHeight = refHeight / patchSize;
-
+		
 		std::vector<std::vector<Histogram>> cells(nrOfCellsHeight, std::vector<Histogram>(nrOfCellsWidth, Histogram(binSize, 0)));
 
 		for (int y = 0; y < nrOfCellsHeight; y++) {
@@ -228,7 +228,7 @@ namespace hog {
 					for (int l = 0; l < patchSize; l++) {
 						for (int k = 0; k < patchSize; k++) {
 
-							float anglePixel = normalizedBinningValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+							double anglePixel = normalizedBinningValues.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
 							if (anglePixel < 0) anglePixel = 0; // this can only happen when either no normalization was done, or a rounding error in float
 
 							double weight = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
@@ -247,12 +247,12 @@ namespace hog {
 							// 20 - 15 / (20-0) = 0.25
 							// yay for computergraphics triangular scheme
 
-							float tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
-							float tEnd = bin2 == 0 ? max : bin2 * max / binSize;
+							double tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
+							double tEnd = bin2 == 0 ? max : bin2 * max / binSize;
 
-							float u = (tEnd - anglePixel) / (tEnd - tBegin);
-							histogram[bin1] += weight * u;
-							histogram[bin2] += weight * (1 - u);
+							double u = (tEnd - anglePixel) / (tEnd - tBegin);
+							histogram[bin1] += (weight * u);
+							histogram[bin2] += (weight * (1 - u));
 						}
 					}
 				}

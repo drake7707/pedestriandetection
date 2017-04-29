@@ -7,7 +7,7 @@
 #include "HistogramResult.h"
 #include <memory>
 #include "IPreparedData.h"
-#include "HOG1DPreparedData.h"
+#include "IntHistPreparedData.h"
 
 namespace hog {
 

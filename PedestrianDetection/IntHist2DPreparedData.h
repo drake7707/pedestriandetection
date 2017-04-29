@@ -1,19 +1,19 @@
 #pragma once
 #include "IPreparedData.h"
-#include "IntegralHistogram.h"
+#include "IntegralHistogram2D.h"
 
 /// <summary>
 /// HOG and derivatives can use integral histograms to calculate the sum of each bin at every pixel
 /// to easily obtain the histogram for any region, massively speeding up sliding window evaluation
 /// </summary>
-class HOG1DPreparedData :
+class IntHist2DPreparedData :
 	public IPreparedData
 {
 public:
 
-	IntegralHistogram integralHistogram;
+	IntegralHistogram2D integralHistogram;
 
-	HOG1DPreparedData();
-	virtual ~HOG1DPreparedData();
+	IntHist2DPreparedData();
+	virtual ~IntHist2DPreparedData();
 };
 

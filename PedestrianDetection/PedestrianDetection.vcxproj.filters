@@ -189,9 +189,6 @@
     <ClInclude Include="IPreparedData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HOG1DPreparedData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MarchingSquares.h">
       <Filter>Header Files\Algorithms</Filter>
     </ClInclude>
@@ -214,6 +211,12 @@
       <Filter>Header Files\Algorithms</Filter>
     </ClInclude>
     <ClInclude Include="IntegralHistogram2D.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="IntHist2DPreparedData.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="IntHistPreparedData.h">
       <Filter>Header Files\Algorithms</Filter>
     </ClInclude>
   </ItemGroup>
@@ -362,9 +365,6 @@
     <ClCompile Include="IPreparedData.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HOG1DPreparedData.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MarchingSquares.cpp">
       <Filter>Resource Files\Source Files\Algorithms</Filter>
     </ClCompile>
@@ -381,6 +381,12 @@
       <Filter>Resource Files\Source Files\Algorithms</Filter>
     </ClCompile>
     <ClCompile Include="IntegralHistogram2D.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="IntHist2DPreparedData.cpp">
+      <Filter>Resource Files\Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="IntHistPreparedData.cpp">
       <Filter>Resource Files\Source Files\Algorithms</Filter>
     </ClCompile>
   </ItemGroup>

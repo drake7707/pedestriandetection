@@ -1141,6 +1141,93 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings, std::set<
 }
 
 
+void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tester, EvaluationSettings& settings) {
+
+	KITTIDataSet dataSet(settings.kittiDataSetPath);
+
+	auto imgs = dataSet.getImagesForNumber(0);
+	cv::Mat rgbScale = imgs[0];
+	cv::Mat depthScale = imgs[1];
+	cv::Mat thermalScale = depthScale; // temporarily just to evaluate speed on a same size image
+
+	cv::Rect bbox(0, 0, 64, 128);
+
+	cv::Mat regionRGB;
+	if (rgbScale.cols > 0 && rgbScale.rows > 0)
+		regionRGB = rgbScale(bbox);
+
+	cv::Mat regionDepth;
+	if (depthScale.cols > 0 && depthScale.rows > 0)
+		regionDepth = depthScale(bbox);
+
+	cv::Mat regionThermal = regionDepth; // temporarily just to evaluate speed
+										 /*if (thermalScale.cols > 0 && thermalScale.rows > 0)
+										 regionThermal = thermalScale(bbox);*/
+
+
+	//int nr = 100;
+	//IntegralHistogram hst;
+	//hst.create(100, 100, 10, [&](int x, int y, std::vector<cv::Mat>& ihst) -> void {
+
+	//	double val = sqrt(x / (float)nr * x / (float)nr + y / (float)nr * y / (float)nr);
+	//	int curbin = floor(val * 10);
+	//	if (curbin >= 0 && curbin < 10)
+	//	ihst[curbin].at<float>(y, x) += 1;
+	//});
+
+	//auto result = hst.calculateHistogramIntegral(8, 8, 64, 64);
+
+	if (fileExists("inputsets.txt")) {
+		std::ifstream istr("inputsets.txt");
+		std::string line;
+		while (std::getline(istr, line)) {
+
+			if (line.length() > 0 && line[0] != '#') {
+				std::set<std::string> set;
+				auto parts = splitString(line, '+');
+				for (auto& p : parts)
+					set.emplace(p);
+
+				auto fset = tester.getFeatureSet(set);
+
+				std::vector<std::unique_ptr<IPreparedData>> preparedData;
+
+				preparedData = fset->buildPreparedDataForFeatures(rgbScale, depthScale, thermalScale);
+
+				auto fVector2 = fset->getFeatures(regionRGB, regionDepth, regionThermal, bbox, std::vector<std::unique_ptr<IPreparedData>>());
+				auto fVector = fset->getFeatures(regionRGB, regionDepth, regionThermal, bbox, preparedData);
+
+
+				if (fVector.size() != fVector2.size()) {
+					std::cout << fset->getFeatureSetName() << " has mismatched feature vector sizes" << std::endl;
+				}
+				else {
+
+					int mismatches = 0;
+					for (int i = 0; i < fVector.size(); i++)
+					{
+						double diff = abs(fVector[i] - fVector2[i]);
+						if (diff > 0.1) { // due to floating point rounding errors that accumulate during sums there can be quite a bit of difference, but it shouldn't deviate THAT much
+							mismatches++;
+						}
+					}
+					if (mismatches > 0) {
+						std::cout << fset->getFeatureSetName() << " has " << mismatches << " mismatches in the feature vector" << std::endl;
+					}
+					else {
+						std::cout << fset->getFeatureSetName() << " feature vector matches" << std::endl;
+					}
+				}
+			}
+		}
+		istr.close();
+	}
+	else {
+		std::cout << "Input sets file does not exist" << std::endl;
+	}
+}
+
+
 void testSpeed(FeatureTester& tester, EvaluationSettings& settings) {
 
 	KITTIDataSet dataSet(settings.kittiDataSetPath);
@@ -1485,10 +1572,10 @@ void createAverageGradient(EvaluationSettings& settings) {
 					}
 
 					cv::normalize(magnitude, magnitude, 0, 1, cv::NormTypes::NORM_MINMAX);
-					
+
 
 					averageGradient += magnitude;
-					
+
 
 					cv::Mat tmp;
 					cv::normalize(averageGradient, tmp, 0, 1, cv::NormTypes::NORM_MINMAX);
@@ -1496,7 +1583,7 @@ void createAverageGradient(EvaluationSettings& settings) {
 					if (showProgress)
 						cv::imshow("Average gradient", tmp);
 
-					
+
 					tmp.convertTo(tmp, CV_8UC1, 255);
 					cv::cvtColor(tmp, tmp, CV_GRAY2BGR);
 					vAvg.write(tmp);
@@ -1547,16 +1634,16 @@ void browseThroughMisses(EvaluationSettings& settings) {
 
 		cv::Mat rgb = imgs[0];
 
-		
+
 		cv::rectangle(rgb, cv::Rect(0, 0, rgb.cols, 20), cv::Scalar(255, 255, 255), -1);
 		std::string str = "Image " + std::to_string(imgNr) + " missed/detected: " + std::to_string(nrMissed) + "/" + std::to_string(nrDetected) + " detected by: " + detectedBy;
 		cv::putText(rgb, str, cv::Point(10, 10), cv::HersheyFonts::FONT_HERSHEY_COMPLEX_SMALL, 0.5, cv::Scalar(0, 0, 0), 1, CV_AA);
 
 		for (auto& l : labelsPerNumber[imgNr]) {
-			if(l.isDontCareArea())
+			if (l.isDontCareArea())
 				cv::rectangle(rgb, l.getBbox(), cv::Scalar(192, 192, 192), -1);
 		}
-		
+
 		cv::rectangle(rgb, bbox, cv::Scalar(255, 255, 0), 2);
 
 		cv::imshow("Misses", rgb);
@@ -1610,7 +1697,9 @@ int main(int argc, char** argv)
 	ProgressWindow* wnd = ProgressWindow::getInstance();
 	wnd->run();
 
-	browseThroughMisses(settings);
+	//browseThroughMisses(settings);
+
+	verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
 
 	//testKAISTROI(settings);
 

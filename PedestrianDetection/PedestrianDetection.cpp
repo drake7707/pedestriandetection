@@ -1078,11 +1078,6 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings, std::set<
 	for (int i = 0; i < set.size(); i++)
 		totalImgs.push_back(cv::Mat(cv::Size(settings.refWidth, settings.refHeight), CV_32FC1, cv::Scalar(0)));
 
-	cv::Mat rgb(128, 64, CV_8UC3, cv::Scalar(0));
-	cv::Mat depth(128, 64, CV_32FC1, cv::Scalar(0));
-
-
-
 	for (int i = 0; i < rounds; i++)
 	{
 		ModelEvaluator model = cascade.getModelEvaluator(i);
@@ -1150,7 +1145,7 @@ void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tes
 	cv::Mat depthScale = imgs[1];
 	cv::Mat thermalScale = depthScale; // temporarily just to evaluate speed on a same size image
 
-	cv::Rect bbox(0, 0, 64, 128);
+	cv::Rect bbox(64, 128, 64, 128);
 
 	cv::Mat regionRGB;
 	if (rgbScale.cols > 0 && rgbScale.rows > 0)
@@ -1207,7 +1202,7 @@ void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tes
 					for (int i = 0; i < fVector.size(); i++)
 					{
 						double diff = abs(fVector[i] - fVector2[i]);
-						if (diff > 0.1) { // due to floating point rounding errors that accumulate during sums there can be quite a bit of difference, but it shouldn't deviate THAT much
+						if (diff > 1) { // due to floating point rounding errors that accumulate during sums there can be quite a bit of difference, but it shouldn't deviate THAT much
 							mismatches++;
 						}
 					}
@@ -1699,7 +1694,7 @@ int main(int argc, char** argv)
 
 	//browseThroughMisses(settings);
 
-	verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
+	//verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
 
 	//testKAISTROI(settings);
 

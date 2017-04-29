@@ -145,4 +145,10 @@ void printFeatureVectorSize(FeatureTester& tester);
 /// </summary>
 void createAverageGradient(EvaluationSettings& settings);
 
+/// <summary>
+/// Verifies the input set to test if the feature vectors with and without integral histograms are more or less the same
+/// Multiple issues can cause them to deviate: borders are handled differently, floating point error accumulation, ...
+/// </summary>
+void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tester, EvaluationSettings& settings);
+
 int main(int argc, char** argv);

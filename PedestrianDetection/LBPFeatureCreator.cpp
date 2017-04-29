@@ -68,12 +68,11 @@ FeatureVector LBPFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::M
 	const IntHistPreparedData* hogData = static_cast<const IntHistPreparedData*>(preparedData);
 	if (hogData == nullptr) {
 		buildWeightAndBinningValues(img, weights, binningValues);
-		cv::Rect paddedROI(roi.x + 1, roi.y + 1, roi.width - 1, roi.height - 1);
 		result = hog::getHistogramsOfX(weights, binningValues, patchSize, binSize, false, false, roi, nullptr, refWidth, refHeight);
 	}
-	else
+	else {
 		result = hog::getHistogramsOfX(weights, binningValues, patchSize, binSize, false, false, roi, &(hogData->integralHistogram), refWidth, refHeight);
-
+	}
 
 	return result.getFeatureArray();
 }

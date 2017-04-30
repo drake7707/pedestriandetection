@@ -12,6 +12,7 @@
 #HOG(RGB)+CoOccurrence(RGB)+SDDG(Depth)
 #HOG(RGB)+CoOccurrence(RGB)+RAW(RGB)
 #HOG(RGB)+CoOccurrence(RGB)+RAW(LUV)
+HOG(RGB)+CoOccurrence(RGB)+LBP(RGB)
 #HOG(RGB)+CoOccurrence(RGB)+SURF(RGB)
 #HOG(RGB)+CoOccurrence(RGB)+GoodFts(RGB)
 #HOG(RGB)+CoOccurrence(RGB)+SURF(RGB)

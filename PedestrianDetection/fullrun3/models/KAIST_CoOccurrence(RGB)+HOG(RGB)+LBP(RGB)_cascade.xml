@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <opencv_storage>
-<trainingRound>3</trainingRound>
-<name_count>3</name_count>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
 <name_0>"KAIST_CoOccurrence(RGB)+HOG(RGB)+LBP(RGB) round 0"</name_0>
 <name_1>"KAIST_CoOccurrence(RGB)+HOG(RGB)+LBP(RGB) round 1"</name_1>
 <name_2>"KAIST_CoOccurrence(RGB)+HOG(RGB)+LBP(RGB) round 2"</name_2>
+<name_3>"KAIST_CoOccurrence(RGB)+HOG(RGB)+LBP(RGB) round 3"</name_3>
 <valueShifts>
-  7.19999981e+00 6.80000019e+00 6.40000010e+00</valueShifts>
+  7.19999981e+00 6.80000019e+00 6.40000010e+00 6.40000010e+00</valueShifts>
 <classifierHitCount>
-  0 0 0</classifierHitCount>
+  376393 83437 108639 482818</classifierHitCount>
 </opencv_storage>

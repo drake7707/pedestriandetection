@@ -3,6 +3,23 @@
 ############################################################################################################
 
 ################################
+# And even more combinations   #
+################################
+
+HOG(RGB)+CoOccurrence(RGB)+HDD+HONV
+HOG(RGB)+CoOccurrence(RGB)+HDD+HOG(Depth)
+HOG(RGB)+CoOccurrence(RGB)+HDD+SDDG(Depth)
+HOG(RGB)+CoOccurrence(RGB)+HDD+RAW(RGB)
+HOG(RGB)+CoOccurrence(RGB)+HDD+RAW(LUV)
+HOG(RGB)+CoOccurrence(RGB)+HDD+LBP(RGB)
+HOG(RGB)+CoOccurrence(RGB)+HDD+SURF(RGB)
+HOG(RGB)+CoOccurrence(RGB)+HDD+GoodFts(RGB)
+HOG(RGB)+CoOccurrence(RGB)+HDD+SURF(RGB)
+HOG(RGB)+CoOccurrence(RGB)+HDD+ORB(RGB)
+HOG(RGB)+CoOccurrence(RGB)+HDD+CenSurE(RGB)
+HOG(RGB)+CoOccurrence(RGB)+HDD+FAST(RGB)
+
+################################
 # Even more combinations       #
 ################################
 
@@ -12,7 +29,7 @@
 #HOG(RGB)+CoOccurrence(RGB)+SDDG(Depth)
 #HOG(RGB)+CoOccurrence(RGB)+RAW(RGB)
 #HOG(RGB)+CoOccurrence(RGB)+RAW(LUV)
-HOG(RGB)+CoOccurrence(RGB)+LBP(RGB)
+#HOG(RGB)+CoOccurrence(RGB)+LBP(RGB)
 #HOG(RGB)+CoOccurrence(RGB)+SURF(RGB)
 #HOG(RGB)+CoOccurrence(RGB)+GoodFts(RGB)
 #HOG(RGB)+CoOccurrence(RGB)+SURF(RGB)

@@ -1,5 +1,8 @@
 #pragma once
 #include "IFeatureCreator.h"
+#include "IntegralHistogram2D.h"
+#include "IntHist2DPreparedData.h"
+#include "CoOccurenceMatrix.h"
 
 class CoOccurenceMatrixFeatureCreator : public IFeatureCreator
 {
@@ -23,6 +26,8 @@ public:
 	/// Creates a heat map of the occurrences of the features
 	/// </summary>
 	cv::Mat CoOccurenceMatrixFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const;
+
+	std::unique_ptr<IPreparedData> CoOccurenceMatrixFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const;
 
 	/// <summary>
 	/// Creates a feature vector of the given input data

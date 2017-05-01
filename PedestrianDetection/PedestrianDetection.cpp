@@ -1694,7 +1694,7 @@ int main(int argc, char** argv)
 
 	//browseThroughMisses(settings);
 
-	//verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
+	verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
 
 	//testKAISTROI(settings);
 

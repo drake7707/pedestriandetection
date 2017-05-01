@@ -1,6 +1,4 @@
 #include "CoOccurenceMatrixFeatureCreator.h"
-#include "CoOccurenceMatrix.h"
-
 
 CoOccurenceMatrixFeatureCreator::CoOccurenceMatrixFeatureCreator(std::string& name, int patchSize, int binSize, int refWidth, int refHeight)
 	: IFeatureCreator(name), patchSize(patchSize), binSize(binSize), refWidth(refWidth), refHeight(refHeight)
@@ -20,19 +18,48 @@ int CoOccurenceMatrixFeatureCreator::getNumberOfFeatures() const {
 	return nrOfCellsWidth * nrOfCellsHeight * binSize*binSize;
 }
 
-FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
-	int nrOfCellsWidth = rgb.cols / patchSize;
-	int nrOfCellsHeight = rgb.rows / patchSize;
 
-	cv::Mat img = rgb.clone();
+std::unique_ptr<IPreparedData> CoOccurenceMatrixFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
+	
+	cv::Mat img = rgbScale.clone();
 	cv::cvtColor(img, img, CV_BGR2HLS);
 	img.convertTo(img, CV_32FC1, 1.0);
 	cv::Mat hsl[3];
 	cv::split(img, hsl);
 
 	cv::Mat hue = hsl[0] / 180;
-	auto cells = getCoOccurenceMatrix(hue, patchSize, binSize);
 
+	IntegralHistogram2D hist = coocc::prepareData(hue, binSize);
+
+	IntHist2DPreparedData* data = new IntHist2DPreparedData();
+	data->integralHistogram = hist;
+	return std::unique_ptr<IPreparedData>(data);
+}
+
+
+FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
+
+	int nrOfCellsWidth = rgb.cols / patchSize;
+	int nrOfCellsHeight = rgb.rows / patchSize;
+
+	std::vector<std::vector<coocc::CoOccurrenceMatrix>> cells;
+	
+	if (preparedData == nullptr) {
+
+		cv::Mat img = rgb.clone();
+		cv::cvtColor(img, img, CV_BGR2HLS);
+		img.convertTo(img, CV_32FC1, 1.0);
+		cv::Mat hsl[3];
+		cv::split(img, hsl);
+
+		cv::Mat hue = hsl[0] / 180;
+		cells = coocc::getCoOccurenceMatrix(hue, hue.cols, hue.rows, patchSize, binSize, roi, nullptr);
+	}
+	else {
+		cv::Mat hue;
+		const IntHist2DPreparedData* intHistPreparedData = static_cast<const IntHist2DPreparedData*>(preparedData);
+		cells = coocc::getCoOccurenceMatrix(hue, rgb.cols, rgb.rows, patchSize, binSize, roi, &(intHistPreparedData->integralHistogram));
+	}
 	FeatureVector v;
 	v.reserve(nrOfCellsWidth * nrOfCellsHeight * binSize*binSize);
 

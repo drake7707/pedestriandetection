@@ -1,14 +1,12 @@
 #include "IntegralHistogram2D.h"
 
 void IntegralHistogram2D::create(int width, int height, int binSize, std::function<void(int x, int y, std::vector<std::vector<cv::Mat>>& ihist)> setBinValues) {
-	ihist = std::vector<std::vector<cv::Mat>>();
-	for (int binX = 0; binX < binSize; binX++) {
+	ihist = std::vector<std::vector<cv::Mat>>(binSize, std::vector<cv::Mat>());
+	for (int binX = 0; binX < binSize; binX++) {		
 		for (int binY = 0; binY < binSize; binY++)
 		{
-			ihist.push_back(cv::Mat(height, width, CV_32FC1, cv::Scalar(0)));
+			ihist[binX].push_back(cv::Mat(height, width, CV_32FC1, cv::Scalar(0)));
 		}
-
-
 	}
 
 	this->binSize = binSize;

@@ -1145,7 +1145,7 @@ void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tes
 	cv::Mat depthScale = imgs[1];
 	cv::Mat thermalScale = depthScale; // temporarily just to evaluate speed on a same size image
 
-	cv::Rect bbox(64, 128, 64, 128);
+	cv::Rect bbox(640, 128, 64, 128);
 
 	cv::Mat regionRGB;
 	if (rgbScale.cols > 0 && rgbScale.rows > 0)
@@ -1160,17 +1160,17 @@ void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tes
 										 regionThermal = thermalScale(bbox);*/
 
 
-	//int nr = 100;
-	//IntegralHistogram hst;
-	//hst.create(100, 100, 10, [&](int x, int y, std::vector<cv::Mat>& ihst) -> void {
+										 //int nr = 100;
+										 //IntegralHistogram hst;
+										 //hst.create(100, 100, 10, [&](int x, int y, std::vector<cv::Mat>& ihst) -> void {
 
-	//	double val = sqrt(x / (float)nr * x / (float)nr + y / (float)nr * y / (float)nr);
-	//	int curbin = floor(val * 10);
-	//	if (curbin >= 0 && curbin < 10)
-	//	ihst[curbin].at<float>(y, x) += 1;
-	//});
+										 //	double val = sqrt(x / (float)nr * x / (float)nr + y / (float)nr * y / (float)nr);
+										 //	int curbin = floor(val * 10);
+										 //	if (curbin >= 0 && curbin < 10)
+										 //	ihst[curbin].at<float>(y, x) += 1;
+										 //});
 
-	//auto result = hst.calculateHistogramIntegral(8, 8, 64, 64);
+										 //auto result = hst.calculateHistogramIntegral(8, 8, 64, 64);
 
 	if (fileExists("inputsets.txt")) {
 		std::ifstream istr("inputsets.txt");
@@ -1282,10 +1282,18 @@ void testSpeed(FeatureTester& tester, EvaluationSettings& settings) {
 					}
 				});
 
-				double avgEvaluationTime = 1.0 * evaluationTime / n;
+				long evaluationTimeWithoutPreparation = measure<std::chrono::milliseconds>::execution([&]() -> void {
+					for (int i = 0; i < n; i++)
+					{
+						fset->getFeatures(regionRGB, regionDepth, regionThermal, bbox, std::vector<std::unique_ptr<IPreparedData>>());
+					}
+				});
 
-				str << fset->getFeatureSetName() << ";" << avgPreparationTime << ";" << avgEvaluationTime << std::endl;
-				std::cout << fset->getFeatureSetName() << ": prep time: " << avgPreparationTime << "ms, window eval time: " << avgEvaluationTime << "ms" << std::endl;
+				double avgEvaluationTime = 1.0 * evaluationTime / n;
+				double avgEvaluationTimeWithoutPreparation = 1.0 * evaluationTimeWithoutPreparation / n;
+
+				str << fset->getFeatureSetName() << ";" << avgPreparationTime << ";" << avgEvaluationTime << ";" << avgEvaluationTimeWithoutPreparation << std::endl;
+				std::cout << fset->getFeatureSetName() << ": prep time: " << avgPreparationTime << "ms, window eval time: " << avgEvaluationTime << "ms" << " " << "window eval time without prep : " << avgEvaluationTimeWithoutPreparation << "ms" << std::endl;
 			}
 		}
 		istr.close();
@@ -1694,7 +1702,7 @@ int main(int argc, char** argv)
 
 	//browseThroughMisses(settings);
 
-	verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
+	//verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
 
 	//testKAISTROI(settings);
 

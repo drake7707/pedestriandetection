@@ -8,6 +8,10 @@
 #include <memory>
 #include "IPreparedData.h"
 #include "IntHistPreparedData.h"
+#include <vector>
+#include <iostream>
+#include "IntegralHistogram.h"
+#include "IntegralHistogram2D.h"
 
 namespace hog {
 
@@ -34,7 +38,7 @@ namespace hog {
 	/// <summary>
 	/// Returns the 2D HOG-like features for given weights and binning values
 	/// </summary>
-	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage);
+	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, cv::Rect& iHistRoi, const IntegralHistogram2D* preparedData, int refWidth, int refHeight);
 
 	/// <summary>
 	/// Returns the HOG-like result for given weights and binning values. For example, for HOG the weights will be the magnitudes, whereas the binning values will be
@@ -47,5 +51,7 @@ namespace hog {
 	/// Prepares the HOG-like feature evaluation by calculating an integral histogram
 	/// </summary>
 	IntegralHistogram prepareDataForHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int binSize);
+
+	IntegralHistogram2D prepare2DDataForHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int binSize);
 
 }

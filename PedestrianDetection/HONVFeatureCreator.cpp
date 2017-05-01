@@ -20,8 +20,8 @@ int HONVFeatureCreator::getNumberOfFeatures() const {
 	return nrOfCellsWidth * nrOfCellsHeight * (binSize * binSize);
 }
 
-FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 
+cv::Mat HONVFeatureCreator::buildAngleMat(cv::Mat depth) const {
 	cv::Mat angleMat(depth.rows, depth.cols, CV_32FC2, cv::Scalar(0));
 
 	//depth = depth * 255;
@@ -57,8 +57,33 @@ FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::
 			//normals.at<Vec3f>(y, x) = n;
 		}
 	}
+	return angleMat;
+}
 
-	auto& result = hog::get2DHistogramsOfX(cv::Mat(depth.rows, depth.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, binSize, false);
+std::unique_ptr<IPreparedData> HONVFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
+
+	cv::Mat angle = buildAngleMat(depthScale);
+	IntegralHistogram2D hist = hog::prepare2DDataForHistogramsOfX(cv::Mat(depthScale.rows, depthScale.cols, CV_32FC1, cv::Scalar(1)), angle, binSize);
+	IntHist2DPreparedData* data = new IntHist2DPreparedData();
+	data->integralHistogram = hist;
+	return std::unique_ptr<IPreparedData>(data);
+}
+
+FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
+
+	cv::Mat angleMat;
+
+
+	const IntHist2DPreparedData* hogData = static_cast<const IntHist2DPreparedData*>(preparedData);
+
+	hog::HistogramResult result;
+	if (hogData == nullptr) {
+		angleMat = buildAngleMat(depth);
+		result = hog::get2DHistogramsOfX(cv::Mat(depth.rows, depth.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, binSize, false, roi, nullptr, refWidth, refHeight);
+	}
+	else {
+		result = hog::get2DHistogramsOfX(cv::Mat(depth.rows, depth.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, binSize, false, roi, &(hogData->integralHistogram), refWidth, refHeight);
+	}
 
 	return result.getFeatureArray();
 }

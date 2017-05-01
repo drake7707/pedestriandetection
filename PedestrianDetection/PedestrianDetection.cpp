@@ -1145,7 +1145,7 @@ void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tes
 	cv::Mat depthScale = imgs[1];
 	cv::Mat thermalScale = depthScale; // temporarily just to evaluate speed on a same size image
 
-	cv::Rect bbox(640, 128, 64, 128);
+	cv::Rect bbox(64, 128, 64, 128);
 
 	cv::Mat regionRGB;
 	if (rgbScale.cols > 0 && rgbScale.rows > 0)
@@ -1702,7 +1702,7 @@ int main(int argc, char** argv)
 
 	//browseThroughMisses(settings);
 
-	//verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
+	verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(tester, settings);
 
 	//testKAISTROI(settings);
 
@@ -1720,7 +1720,7 @@ int main(int argc, char** argv)
 	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
 	//browseThroughTrainingSet(std::string("trainingsets\\KITTI_HDD+HOG(RGB)_train1.txt"), &kittiDataSet);
 
-	//testSpeed(tester, settings);
+//	testSpeed(tester, settings);
 
 	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\HOG(RGB)_train3.txt"), std::string("tptnsimilarity_hog_train3.csv"));
 

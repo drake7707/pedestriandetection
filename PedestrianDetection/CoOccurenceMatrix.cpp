@@ -13,26 +13,30 @@ namespace coocc {
 			float valBottom = floor(img.at<float>(y + 1, x + 0) * (binSize - 1));
 
 			// increment
-			ihist[valRight][val].at<float>(y, x) = ihist[valRight][val].at<float>(y, x) + 1;
-			ihist[valBottom][val].at<float>(y, x) = ihist[valBottom][val].at<float>(y, x) + 1;
+			ihist[valRight][val].at<double>(y, x) = ihist[valRight][val].at<double>(y, x) + 1;
+			ihist[valBottom][val].at<double>(y, x) = ihist[valBottom][val].at<double>(y, x) + 1;
 		});
 
 		return hist;
 	}
 
-	std::vector<std::vector<CoOccurrenceMatrix>> getCoOccurenceMatrix(cv::Mat& img, int imgWidth, int imgHeight, int patchSize, int binSize, cv::Rect& iHistROI, const IntegralHistogram2D* iHist) {
+	cv::Mat getCoOccurenceMatrix(cv::Mat& img, int imgWidth, int imgHeight, int patchSize, int binSize, cv::Rect& iHistROI, const IntegralHistogram2D* iHist) {
 		int nrOfCellsWidth = imgWidth / patchSize;
 		int nrOfCellsHeight = imgHeight / patchSize;
-		
-		std::vector<std::vector<CoOccurrenceMatrix>> cells(nrOfCellsHeight, std::vector<CoOccurrenceMatrix>(nrOfCellsWidth, CoOccurrenceMatrix(binSize, std::vector<float>(binSize, 0))));
+
+		cv::Mat cooccurrence(nrOfCellsHeight * binSize, nrOfCellsWidth * binSize, CV_32FC1, cv::Scalar(0));
+
+
+		//std::vector<std::vector<CoOccurrenceMatrix>> cells(nrOfCellsHeight, std::vector<CoOccurrenceMatrix>(nrOfCellsWidth, CoOccurrenceMatrix(binSize, std::vector<float>(binSize, 0))));
 
 		if (iHist == nullptr) {
 			for (int y = 0; y < nrOfCellsHeight; y++) {
 
 				for (int x = 0; x < nrOfCellsWidth; x++) {
 
+					cv::Mat coOccurrenceOfPatch = cooccurrence(cv::Rect(x * binSize, y * binSize, binSize, binSize));
 					cv::Mat patch = img(cv::Rect(x * patchSize, y * patchSize, patchSize, patchSize));
-					cells[y][x] = getCoOccurenceMatrixOfPatch(patch, binSize);
+					getCoOccurenceMatrixOfPatch(patch, binSize, coOccurrenceOfPatch);
 				}
 			}
 		}
@@ -40,16 +44,18 @@ namespace coocc {
 			for (int y = 0; y < nrOfCellsHeight; y++) {
 				for (int x = 0; x < nrOfCellsWidth; x++) {
 					// width & height are -1 because that's the upper bounds (see getCoOccurenceMatrixOfPatch for loops)
-					cells[y][x] = iHist->calculateHistogramIntegral(iHistROI.x  + x  * patchSize, iHistROI.y + y * patchSize, patchSize - 1, patchSize - 1);
+					//cells[y][x] = iHist->calculateHistogramIntegral(iHistROI.x + x  * patchSize, iHistROI.y + y * patchSize, patchSize - 1, patchSize - 1);
+					cv::Mat coOccurrenceOfPatch = cooccurrence(cv::Rect(x * binSize, y * binSize, binSize, binSize));
+					iHist->calculateHistogramIntegral(iHistROI.x + x  * patchSize, iHistROI.y + y * patchSize, patchSize - 1, patchSize - 1, coOccurrenceOfPatch);
 				}
 			}
 		}
-		return cells;
+		return cooccurrence;
 	}
 
-	CoOccurrenceMatrix getCoOccurenceMatrixOfPatch(cv::Mat& img, int binSize) {
+	void getCoOccurenceMatrixOfPatch(cv::Mat& img, int binSize, cv::Mat& coOccurrenceOfPatch) {
 		// combined C0,1 and C1,0 2D histogram
-		CoOccurrenceMatrix coOccurrenceMatrix(binSize, std::vector<float>(binSize, 0));
+		//CoOccurrenceMatrix coOccurrenceMatrix(binSize, std::vector<float>(binSize, 0));
 
 		/*for (int l = 0; l < binSize; l++)
 		{
@@ -65,16 +71,18 @@ namespace coocc {
 				float valBottom = floor(img.at<float>(j + 1, i + 0) * (binSize - 1));
 
 				//if (val == k && valRight == l)
-				coOccurrenceMatrix[valRight][val]++;
+				coOccurrenceOfPatch.at<float>(val, valRight) = coOccurrenceOfPatch.at<float>(val, valRight) + 1;
+				//coOccurrenceMatrix[valRight][val]++;
 
 				//if (val == k && valBottom == l)
-				coOccurrenceMatrix[valBottom][val]++;
+				coOccurrenceOfPatch.at<float>(val, valBottom) = coOccurrenceOfPatch.at<float>(val, valBottom) + 1;
+				//coOccurrenceMatrix[valBottom][val]++;
 			}
 		}
 		/*}
 	}*/
 
-		return coOccurrenceMatrix;
+		//return coOccurrenceMatrix;
 	}
 
 	cv::Mat getCoOccurenceMatrixImage(int width, int height, CoOccurrenceMatrix& matrix) {

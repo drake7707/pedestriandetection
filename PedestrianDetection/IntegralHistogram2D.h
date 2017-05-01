@@ -21,6 +21,9 @@ public:
 	/// </summary>
 	void calculateHistogramIntegral(int x, int y, int w, int h, Histogram2D& outHist) const;
 
+	void calculateHistogramIntegral(int x, int y, int w, int h, cv::Mat& hist) const;
+
+
 	/// <summary>
 	/// Calculates the histogram for a specific region from the integral histogram
 	/// </summary>

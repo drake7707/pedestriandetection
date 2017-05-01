@@ -60,6 +60,33 @@ void IntegralHistogram2D::calculateHistogramIntegral(int x, int y, int w, int h,
 	}
 }
 
+
+void IntegralHistogram2D::calculateHistogramIntegral(int x, int y, int w, int h, cv::Mat& hist) const {
+	int minx = x - 1;
+	int miny = y - 1;
+	int maxx = x + w - 1;
+	int maxy = y + h - 1;
+	for (int binX = 0; binX < binSize; binX++) {
+		for (int binY = 0; binY < binSize; binY++)
+		{
+			// A - B
+			// |   |
+			// C - D
+			//   A + D - B - C
+			// determine integral histogram values of bin at [i][j]
+
+			auto& cell = ihist[binX][binY];
+			double A = (minx > 0 && miny > 0) ? cell.at<double>(miny, minx) : 0;
+			double B = (miny > 0) ? cell.at<double>(miny, maxx) : 0;
+			double C = (minx > 0) ? cell.at<double>(maxy, minx) : 0;
+			double D = cell.at<double>(maxy, maxx);
+
+			double value = A + D - C - B;
+			hist.at<float>(binY, binX) = value;
+		}
+	}
+}
+
 Histogram2D IntegralHistogram2D::calculateHistogramIntegral(int x, int y, int w, int h) const {
 	Histogram2D hist(binSize, 0);
 	calculateHistogramIntegral(x, y, w, h, hist);

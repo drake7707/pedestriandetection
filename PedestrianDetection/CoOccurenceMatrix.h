@@ -14,12 +14,12 @@ namespace coocc {
 	/// <summary>
 	/// Creates a 2D array of co-occurrence matrices, each corresponding to a patch
 	/// </summary>
-	std::vector<std::vector<CoOccurrenceMatrix>> getCoOccurenceMatrix(cv::Mat& img, int imgWidth, int imgHeight, int patchSize, int binSize, cv::Rect& iHistROI, const IntegralHistogram2D* iHist);
+	cv::Mat getCoOccurenceMatrix(cv::Mat& img, int imgWidth, int imgHeight, int patchSize, int binSize, cv::Rect& iHistROI, const IntegralHistogram2D* iHist);
 
 	/// <summary>
 	/// Creates a cooccurrence of the given image (which will be the truncated to the patch)
 	/// </summary>
-	CoOccurrenceMatrix getCoOccurenceMatrixOfPatch(cv::Mat& img, int binSize);
+	void getCoOccurenceMatrixOfPatch(cv::Mat& img, int binSize, cv::Mat& coOccurrenceOfPatch);
 
 	/// <summary>
 	/// Creates a visual representation (heat map-like) of a co-occurrence matrix

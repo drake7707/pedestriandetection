@@ -1,14 +1,12 @@
 #include "IntegralHistogram2D.h"
 
 void IntegralHistogram2D::create(int width, int height, int binSize, std::function<void(int x, int y, std::vector<std::vector<cv::Mat>>& ihist)> setBinValues) {
-	ihist = std::vector<std::vector<cv::Mat>>();
-	for (int binX = 0; binX < binSize; binX++) {
+	ihist = std::vector<std::vector<cv::Mat>>(binSize, std::vector<cv::Mat>());
+	for (int binX = 0; binX < binSize; binX++) {		
 		for (int binY = 0; binY < binSize; binY++)
 		{
-			ihist.push_back(cv::Mat(height, width, CV_32FC1, cv::Scalar(0)));
+			ihist[binX].push_back(cv::Mat(height, width, CV_64FC1, cv::Scalar(0)));
 		}
-
-
 	}
 
 	this->binSize = binSize;
@@ -23,10 +21,10 @@ void IntegralHistogram2D::create(int width, int height, int binSize, std::functi
 				for (int binY = 0; binY < binSize; binY++)
 				{
 					auto&  cell = ihist[binX][binY];
-					cell.at<float>(j, i) =
-						(i - 1 < 0 ? 0 : cell.at<float>(j, i - 1))
-						+ (j - 1 < 0 ? 0 : cell.at<float>(j - 1, i))
-						- ((i - 1 < 0 || j - 1 < 0) ? 0 : cell.at<float>(j - 1, i - 1));
+					cell.at<double>(j, i) =
+						(i - 1 < 0 ? 0 : cell.at<double>(j, i - 1))
+						+ (j - 1 < 0 ? 0 : cell.at<double>(j - 1, i))
+						- ((i - 1 < 0 || j - 1 < 0) ? 0 : cell.at<double>(j - 1, i - 1));
 				}
 			}
 
@@ -51,13 +49,40 @@ void IntegralHistogram2D::calculateHistogramIntegral(int x, int y, int w, int h,
 			// determine integral histogram values of bin at [i][j]
 
 			auto& cell = ihist[binX][binY];
-			float A = (minx > 0 && miny > 0) ? cell.at<float>(miny, minx) : 0;
-			float B = (miny > 0) ? cell.at<float>(miny, maxx) : 0;
-			float C = (minx > 0) ? cell.at<float>(maxy, minx) : 0;
-			float D = cell.at<float>(maxy, maxx);
+			double A = (minx > 0 && miny > 0) ? cell.at<double>(miny, minx) : 0;
+			double B = (miny > 0) ? cell.at<double>(miny, maxx) : 0;
+			double C = (minx > 0) ? cell.at<double>(maxy, minx) : 0;
+			double D = cell.at<double>(maxy, maxx);
 
-			float value = A + D - C - B;
+			double value = A + D - C - B;
 			hist[binX][binY] = value;
+		}
+	}
+}
+
+
+void IntegralHistogram2D::calculateHistogramIntegral(int x, int y, int w, int h, cv::Mat& hist) const {
+	int minx = x - 1;
+	int miny = y - 1;
+	int maxx = x + w - 1;
+	int maxy = y + h - 1;
+	for (int binX = 0; binX < binSize; binX++) {
+		for (int binY = 0; binY < binSize; binY++)
+		{
+			// A - B
+			// |   |
+			// C - D
+			//   A + D - B - C
+			// determine integral histogram values of bin at [i][j]
+
+			auto& cell = ihist[binX][binY];
+			double A = (minx > 0 && miny > 0) ? cell.at<double>(miny, minx) : 0;
+			double B = (miny > 0) ? cell.at<double>(miny, maxx) : 0;
+			double C = (minx > 0) ? cell.at<double>(maxy, minx) : 0;
+			double D = cell.at<double>(maxy, maxx);
+
+			double value = A + D - C - B;
+			hist.at<float>(binY, binX) = value;
 		}
 	}
 }

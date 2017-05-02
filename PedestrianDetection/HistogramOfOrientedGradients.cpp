@@ -1,8 +1,5 @@
 #include "HistogramOfOrientedGradients.h"
-#include <vector>
-#include <iostream>
-#include "IntHistPreparedData.h"
-#include "IntegralHistogram.h"
+
 
 namespace hog {
 	std::vector<std::vector<Histogram>> getL2NormalizationOverLargerPatch(const std::vector<std::vector<Histogram>>& cells, int nrOfCellsWidth, int nrOfCellsHeight, int binSize, bool l2normalize) {
@@ -174,6 +171,7 @@ namespace hog {
 	}
 
 
+
 	IntegralHistogram prepareDataForHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int binSize) {
 
 		IntegralHistogram hist;
@@ -201,7 +199,7 @@ namespace hog {
 			double u = (tEnd - anglePixel) / (tEnd - tBegin);
 
 			ihist[bin1].at<double>(y, x) += (weight * u);
-			ihist[bin2].at<double>(y, x) += (weight * (1-u));
+			ihist[bin2].at<double>(y, x) += (weight * (1 - u));
 			/*histogram[bin1] += weight * u;
 			histogram[bin2] += weight * (1 - u);*/
 		});
@@ -209,13 +207,13 @@ namespace hog {
 		return hist;
 	}
 
-	HistogramResult getHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize, 
+	HistogramResult getHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, bool l2normalize,
 		cv::Rect& iHistRoi, const IntegralHistogram* preparedData, int refWidth, int refHeight) {
 		double max = 1.0;
 
 		int nrOfCellsWidth = refWidth / patchSize;
 		int nrOfCellsHeight = refHeight / patchSize;
-		
+
 		std::vector<std::vector<Histogram>> cells(nrOfCellsHeight, std::vector<Histogram>(nrOfCellsWidth, Histogram(binSize, 0)));
 
 		for (int y = 0; y < nrOfCellsHeight; y++) {
@@ -322,66 +320,141 @@ namespace hog {
 		return explanation;
 	}
 
+	IntegralHistogram2D prepare2DDataForHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int binSize) {
 
-	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage) {
+		IntegralHistogram2D hist;
+		double max = 1.0;
+
+
+		hist.create(weights.cols, weights.rows, binSize, [&](int x, int y, std::vector<std::vector<cv::Mat>>& ihist) -> void {
+
+			cv::Vec2f anglePixel = normalizedBinningValues.at<cv::Vec2f>(y, x);
+
+			double weight = weights.at<float>(y, x);
+
+			// distribute based on angle
+			// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
+			cv::Vec2f valBins = anglePixel / max * binSize;
+			if (valBins[0] >= binSize) valBins[0] = binSize - 1;
+			if (valBins[1] >= binSize) valBins[1] = binSize - 1;
+			if (valBins[0] < 0) valBins[0] = 0; // watch out for rounding errors
+			if (valBins[1] < 0) valBins[1] = 0;
+
+			int bin1x = floor(valBins[0]);
+			int bin2x = (bin1x + 1) % binSize;
+
+			int bin1y = floor(valBins[1]);
+			int bin2y = (bin1y + 1) % binSize;
+
+			// linearly interpolate
+			float tBeginX = bin1x == 0 ? 0 : bin1x * max / binSize;
+			float tEndX = bin2x == 0 ? max : bin2x * max / binSize;
+
+			float tBeginY = bin1y == 0 ? 0 : bin1y * max / binSize;
+			float tEndY = bin2y == 0 ? max : bin2y * max / binSize;
+
+			double u = (tEndX - anglePixel[0]) / (tEndX - tBeginX);
+			double v = (tEndY - anglePixel[1]) / (tEndY - tBeginY);
+
+
+			ihist[bin1x][bin1y].at<double>(y, x) += weight * u * (v);
+			ihist[bin2x][bin1y].at<double>(y, x) += weight * (1 - u) * (v);
+			ihist[bin1x][bin2y].at<double>(y, x) += weight * u * (1 - v);
+			ihist[bin2x][bin2y].at<double>(y, x) += weight * (1 - u) * (1 - v);
+		});
+
+		return hist;
+	}
+
+
+	HistogramResult get2DHistogramsOfX(cv::Mat& weights, cv::Mat& normalizedBinningValues, int patchSize, int binSize, bool createImage, cv::Rect& iHistRoi, const IntegralHistogram2D* preparedData, int refWidth, int refHeight) {
 
 
 		double max = 1;
 
-		int nrOfCellsWidth = weights.cols / patchSize;
-		int nrOfCellsHeight = weights.rows / patchSize;
+		int nrOfCellsWidth = refWidth / patchSize;
+		int nrOfCellsHeight = refHeight / patchSize;
 
-		std::vector<std::vector<Histogram2D>> cells(nrOfCellsHeight, std::vector<Histogram2D>(nrOfCellsWidth, Histogram2D(binSize, 0)));
+		//std::vector<std::vector<Histogram2D>> cells(nrOfCellsHeight, std::vector<Histogram2D>(nrOfCellsWidth, Histogram2D(binSize, 0)));
+		cv::Mat fullhistogram(nrOfCellsHeight * binSize, nrOfCellsWidth * binSize, CV_32FC1, cv::Scalar(0));
+
 
 		for (int y = 0; y < nrOfCellsHeight; y++) {
 
 			for (int x = 0; x < nrOfCellsWidth; x++) {
 
-				Histogram2D& histogram = cells[y][x];
+				//Histogram2D& histogram = cells[y][x];
+				cv::Mat histogram = fullhistogram(cv::Rect(x * binSize, y * binSize, binSize, binSize));
 
-				for (int l = 0; l < patchSize; l++) {
-					for (int k = 0; k < patchSize; k++) {
+				if (preparedData == nullptr) {
+					for (int l = 0; l < patchSize; l++) {
+						for (int k = 0; k < patchSize; k++) {
 
-						cv::Vec2f anglePixel = normalizedBinningValues.at<cv::Vec2f>(cv::Point(x * patchSize + k, y * patchSize + l));
-					
-						double weight = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
+							cv::Vec2f anglePixel = normalizedBinningValues.at<cv::Vec2f>(cv::Point(x * patchSize + k, y * patchSize + l));
 
-
-						// distribute based on angle
-						// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
-						cv::Vec2f valBins = anglePixel / max * binSize;
-						if (valBins[0] >= binSize) valBins[0] = binSize - 1;
-						if (valBins[1] >= binSize) valBins[1] = binSize - 1;
-
-						int bin1x = floor(valBins[0]);
-						int bin2x = (bin1x + 1) % binSize;
-
-						int bin1y = floor(valBins[1]);
-						int bin2y = (bin1y + 1) % binSize;
-
-						// linearly interpolate
-						float tBeginX = bin1x == 0 ? 0 : bin1x * max / binSize;
-						float tEndX = bin2x == 0 ? max : bin2x * max / binSize;
-
-						float tBeginY = bin1y == 0 ? 0 : bin1y * max / binSize;
-						float tEndY = bin2y == 0 ? max : bin2y * max / binSize;
-
-						double u = (tEndX - anglePixel[0]) / (tEndX - tBeginX);
-						double v = (tEndY - anglePixel[1]) / (tEndY - tBeginY);
+							double weight = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
 
 
-						histogram[bin1x][bin1y] += weight * u * (v);
-						histogram[bin2x][bin1y] += weight * (1 - u) * (v);
-						histogram[bin1x][bin2y] += weight * u * (1 - v);
-						histogram[bin2x][bin2y] += weight * (1 - u) * (1 - v);
+							// distribute based on angle
+							// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
+							cv::Vec2f valBins = anglePixel / max * binSize;
+							if (valBins[0] >= binSize) valBins[0] = binSize - 1;
+							if (valBins[1] >= binSize) valBins[1] = binSize - 1;
+
+							int bin1x = floor(valBins[0]);
+							int bin2x = (bin1x + 1) % binSize;
+
+							int bin1y = floor(valBins[1]);
+							int bin2y = (bin1y + 1) % binSize;
+
+							// linearly interpolate
+							float tBeginX = bin1x == 0 ? 0 : bin1x * max / binSize;
+							float tEndX = bin2x == 0 ? max : bin2x * max / binSize;
+
+							float tBeginY = bin1y == 0 ? 0 : bin1y * max / binSize;
+							float tEndY = bin2y == 0 ? max : bin2y * max / binSize;
+
+							double u = (tEndX - anglePixel[0]) / (tEndX - tBeginX);
+							double v = (tEndY - anglePixel[1]) / (tEndY - tBeginY);
+
+							histogram.at<float>(bin1y, bin1x) += weight * u * (v);
+							histogram.at<float>(bin1y, bin2x) += weight * (1 - u) * (v);
+							histogram.at<float>(bin2y, bin1x) += weight * u * (1 - v);
+							histogram.at<float>(bin2y, bin2x) += weight * (1 - u) * (1 - v);
+
+							/*histogram[bin1x][bin1y] += weight * u * (v);
+							histogram[bin2x][bin1y] += weight * (1 - u) * (v);
+							histogram[bin1x][bin2y] += weight * u * (1 - v);
+							histogram[bin2x][bin2y] += weight * (1 - u) * (1 - v);*/
+						}
 					}
+				}
+				else {
+					preparedData->calculateHistogramIntegral(iHistRoi.x + x * patchSize, iHistRoi.y + y * patchSize, patchSize, patchSize, histogram);
 				}
 			}
 		}
+
+
+
 		std::vector<std::vector<Histogram>> flattenedCells(nrOfCellsHeight, std::vector<Histogram>(nrOfCellsWidth, Histogram()));
 		for (int y = 0; y < nrOfCellsHeight; y++) {
 			for (int x = 0; x < nrOfCellsWidth; x++) {
-				flattenedCells[y][x] = cells[y][x].flatten();
+
+				//flattenedCells[y][x] = cells[y][x].flatten();
+				cv::Mat histogram = fullhistogram(cv::Rect(x * binSize, y * binSize, binSize, binSize));
+				Histogram dst(binSize * binSize, 0);
+
+				int idx = 0;
+				for (int j = 0; j < binSize; j++)
+				{
+					for (int i = 0; i < binSize; i++)
+					{
+						dst[idx] = histogram.at<float>(i, j);
+						idx++;
+					}
+				}
+				flattenedCells[y][x] = dst;
 			}
 		}
 

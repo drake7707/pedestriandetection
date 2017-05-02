@@ -1,120 +1,157 @@
 #include "CoOccurenceMatrix.h"
 
+namespace coocc {
 
+	IntegralHistogram2D prepareData(cv::Mat& img, int binSize) {
 
-std::vector<std::vector<CoOccurrenceMatrix>> getCoOccurenceMatrix(cv::Mat& img, int patchSize, int binSize) {
-	int nrOfCellsWidth = img.cols / patchSize;
-	int nrOfCellsHeight = img.rows / patchSize;
+		IntegralHistogram2D hist;
 
-	std::vector<std::vector<CoOccurrenceMatrix>> cells(nrOfCellsHeight, std::vector<CoOccurrenceMatrix>(nrOfCellsWidth, CoOccurrenceMatrix(binSize, std::vector<float>(binSize, 0))));
+		hist.create(img.cols - 1, img.rows - 1, binSize, [&](int x, int y, std::vector<std::vector<cv::Mat>>& ihist) -> void {
+			float val = floor(img.at<float>(y, x) * (binSize - 1));
 
-	for (int y = 0; y < nrOfCellsHeight; y++) {
+			float valRight = floor(img.at<float>(y + 0, x + 1) * (binSize - 1));
+			float valBottom = floor(img.at<float>(y + 1, x + 0) * (binSize - 1));
 
-		for (int x = 0; x < nrOfCellsWidth; x++) {
+			// increment
+			ihist[valRight][val].at<double>(y, x) = ihist[valRight][val].at<double>(y, x) + 1;
+			ihist[valBottom][val].at<double>(y, x) = ihist[valBottom][val].at<double>(y, x) + 1;
+		});
 
-			cv::Mat patch = img(cv::Rect(x * patchSize, y * patchSize, patchSize, patchSize));
-			cells[y][x] = getCoOccurenceMatrixOfPatch(patch, binSize);
-		}
+		return hist;
 	}
 
-	return cells;
-}
+	cv::Mat getCoOccurenceMatrix(cv::Mat& img, int imgWidth, int imgHeight, int patchSize, int binSize, cv::Rect& iHistROI, const IntegralHistogram2D* iHist) {
+		int nrOfCellsWidth = imgWidth / patchSize;
+		int nrOfCellsHeight = imgHeight / patchSize;
 
-CoOccurrenceMatrix getCoOccurenceMatrixOfPatch(cv::Mat& img, int binSize) {
-	// combined C0,1 and C1,0 2D histogram
-	CoOccurrenceMatrix coOccurrenceMatrix(binSize, std::vector<float>(binSize, 0));
+		cv::Mat cooccurrence(nrOfCellsHeight * binSize, nrOfCellsWidth * binSize, CV_32FC1, cv::Scalar(0));
 
-	/*for (int l = 0; l < binSize; l++)
-	{
-		for (int k = 0; k < binSize; k++)
-		{*/
-			for (int j = 0; j < img.rows - 1; j++)
-			{
-				for (int i = 0; i < img.cols - 1; i++)
-				{
-					float val = floor(img.at<float>(j, i) * (binSize - 1));
 
-					float valRight = floor(img.at<float>(j + 0, i + 1) * (binSize - 1));
-					float valBottom = floor(img.at<float>(j + 1, i + 0) * (binSize - 1));
+		//std::vector<std::vector<CoOccurrenceMatrix>> cells(nrOfCellsHeight, std::vector<CoOccurrenceMatrix>(nrOfCellsWidth, CoOccurrenceMatrix(binSize, std::vector<float>(binSize, 0))));
 
-					//if (val == k && valRight == l)
-						coOccurrenceMatrix[valRight][val]++;
+		if (iHist == nullptr) {
+			for (int y = 0; y < nrOfCellsHeight; y++) {
 
-					//if (val == k && valBottom == l)
-						coOccurrenceMatrix[valBottom][val]++;
+				for (int x = 0; x < nrOfCellsWidth; x++) {
+
+					cv::Mat coOccurrenceOfPatch = cooccurrence(cv::Rect(x * binSize, y * binSize, binSize, binSize));
+					cv::Mat patch = img(cv::Rect(x * patchSize, y * patchSize, patchSize, patchSize));
+					getCoOccurenceMatrixOfPatch(patch, binSize, coOccurrenceOfPatch);
 				}
 			}
+		}
+		else {
+			for (int y = 0; y < nrOfCellsHeight; y++) {
+				for (int x = 0; x < nrOfCellsWidth; x++) {
+					// width & height are -1 because that's the upper bounds (see getCoOccurenceMatrixOfPatch for loops)
+					//cells[y][x] = iHist->calculateHistogramIntegral(iHistROI.x + x  * patchSize, iHistROI.y + y * patchSize, patchSize - 1, patchSize - 1);
+					cv::Mat coOccurrenceOfPatch = cooccurrence(cv::Rect(x * binSize, y * binSize, binSize, binSize));
+					iHist->calculateHistogramIntegral(iHistROI.x + x  * patchSize, iHistROI.y + y * patchSize, patchSize - 1, patchSize - 1, coOccurrenceOfPatch);
+				}
+			}
+		}
+		return cooccurrence;
+	}
+
+	void getCoOccurenceMatrixOfPatch(cv::Mat& img, int binSize, cv::Mat& coOccurrenceOfPatch) {
+		// combined C0,1 and C1,0 2D histogram
+		//CoOccurrenceMatrix coOccurrenceMatrix(binSize, std::vector<float>(binSize, 0));
+
+		/*for (int l = 0; l < binSize; l++)
+		{
+			for (int k = 0; k < binSize; k++)
+			{*/
+		for (int j = 0; j < img.rows - 1; j++)
+		{
+			for (int i = 0; i < img.cols - 1; i++)
+			{
+				float val = floor(img.at<float>(j, i) * (binSize - 1));
+
+				float valRight = floor(img.at<float>(j + 0, i + 1) * (binSize - 1));
+				float valBottom = floor(img.at<float>(j + 1, i + 0) * (binSize - 1));
+
+				//if (val == k && valRight == l)
+				coOccurrenceOfPatch.at<float>(val, valRight) = coOccurrenceOfPatch.at<float>(val, valRight) + 1;
+				//coOccurrenceMatrix[valRight][val]++;
+
+				//if (val == k && valBottom == l)
+				coOccurrenceOfPatch.at<float>(val, valBottom) = coOccurrenceOfPatch.at<float>(val, valBottom) + 1;
+				//coOccurrenceMatrix[valBottom][val]++;
+			}
+		}
 		/*}
 	}*/
 
-	return coOccurrenceMatrix;
-}
+		//return coOccurrenceMatrix;
+	}
 
-cv::Mat getCoOccurenceMatrixImage(int width, int height, CoOccurrenceMatrix& matrix) {
+	cv::Mat getCoOccurenceMatrixImage(int width, int height, CoOccurrenceMatrix& matrix) {
 
-	int orgWidth = width;
-	int orgHeight = height;
+		int orgWidth = width;
+		int orgHeight = height;
 
-	int bins = matrix.size();
+		int bins = matrix.size();
 
-	width = width < bins ? bins : width;
-	height = height < bins ? bins : height;
-	
+		width = width < bins ? bins : width;
+		height = height < bins ? bins : height;
 
-	float max = std::numeric_limits<float>().min();
-	for (int j = 0; j < bins; j++)
-	{
-		for (int i = 0; i < bins; i++)
+
+		float max = std::numeric_limits<float>().min();
+		for (int j = 0; j < bins; j++)
 		{
-			if (max < matrix[j][i])
-				max = matrix[j][i];
+			for (int i = 0; i < bins; i++)
+			{
+				if (max < matrix[j][i])
+					max = matrix[j][i];
+			}
 		}
-	}
 
 
-	cv::Mat img(width, height, CV_8UC3, cv::Scalar(0, 0, 0));
+		cv::Mat img(width, height, CV_8UC3, cv::Scalar(0, 0, 0));
 
-	int cellSize = img.cols / bins;
-	for (int j = 0; j < bins; j++)
-	{
-		for (int i = 0; i < bins; i++)
+		int cellSize = img.cols / bins;
+		for (int j = 0; j < bins; j++)
 		{
-			float alpha = 1.0f * matrix[j][i] / max;
-			// white (255,255,255) -> blue (255,0,0)
-			cv::rectangle(img, cv::Rect(i * cellSize, j * cellSize, cellSize, cellSize), cv::Scalar(255, 255 - alpha * 255, 255 - alpha * 255), -1);
+			for (int i = 0; i < bins; i++)
+			{
+				float alpha = 1.0f * matrix[j][i] / max;
+				// white (255,255,255) -> blue (255,0,0)
+				cv::rectangle(img, cv::Rect(i * cellSize, j * cellSize, cellSize, cellSize), cv::Scalar(255, 255 - alpha * 255, 255 - alpha * 255), -1);
+			}
 		}
+
+		if (width != orgWidth || height != orgHeight)
+			cv::resize(img, img, cv::Size(orgWidth, orgHeight));
+
+		return img;
 	}
 
-	if (width != orgWidth || height != orgHeight)
-		cv::resize(img, img, cv::Size(orgWidth, orgHeight));
+	cv::Mat createFullCoOccurrenceMatrixImage(cv::Mat baseImage, std::vector<std::vector<CoOccurrenceMatrix>>& cells, int patchSize) {
+		int nrOfCellsWidth = baseImage.cols / patchSize;
+		int nrOfCellsHeight = baseImage.rows / patchSize;
 
-	return img;
-}
-
-cv::Mat createFullCoOccurrenceMatrixImage(cv::Mat baseImage, std::vector<std::vector<CoOccurrenceMatrix>>& cells, int patchSize) {
-	int nrOfCellsWidth = baseImage.cols / patchSize;
-	int nrOfCellsHeight = baseImage.rows / patchSize;
-
-	cv::Mat img = baseImage.clone();
-	if (img.channels() == 1) {
-		if (img.type() == CV_32FC1) {
-			img.convertTo(img, CV_8UC1, 255, 0);
-			cv::cvtColor(img, img, CV_GRAY2BGR);
+		cv::Mat img = baseImage.clone();
+		if (img.channels() == 1) {
+			if (img.type() == CV_32FC1) {
+				img.convertTo(img, CV_8UC1, 255, 0);
+				cv::cvtColor(img, img, CV_GRAY2BGR);
+			}
+			else
+				cv::cvtColor(img, img, CV_GRAY2BGR);
 		}
-		else
-			cv::cvtColor(img, img, CV_GRAY2BGR);
+
+		for (int y = 0; y < nrOfCellsHeight; y++) {
+
+			for (int x = 0; x < nrOfCellsWidth; x++) {
+
+
+				cv::Mat& patch = img(cv::Rect(x * patchSize + 1, y * patchSize + 1, patchSize - 2, patchSize - 2));
+				cv::Mat matrixImage = getCoOccurenceMatrixImage(patchSize - 2, patchSize - 2, cells[y][x]);
+				matrixImage.copyTo(patch);
+			}
+		}
+
+		return img;
 	}
 
-	for (int y = 0; y < nrOfCellsHeight; y++) {
-
-		for (int x = 0; x < nrOfCellsWidth; x++) {
-
-
-			cv::Mat& patch = img(cv::Rect(x * patchSize + 1, y * patchSize + 1, patchSize - 2, patchSize - 2));
-			cv::Mat matrixImage =  getCoOccurenceMatrixImage(patchSize - 2, patchSize - 2, cells[y][x]);
-			matrixImage.copyTo(patch);
-		}
-	}
-
-	return img;
 }

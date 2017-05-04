@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
 <opencv_storage>
-<trainingRound>2</trainingRound>
-<name_count>2</name_count>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
 <name_0>"KITTI_CoOccurrence(RGB)+HDD+HOG(RGB)+SURF(RGB) round 0"</name_0>
 <name_1>"KITTI_CoOccurrence(RGB)+HDD+HOG(RGB)+SURF(RGB) round 1"</name_1>
+<name_2>"KITTI_CoOccurrence(RGB)+HDD+HOG(RGB)+SURF(RGB) round 2"</name_2>
+<name_3>"KITTI_CoOccurrence(RGB)+HDD+HOG(RGB)+SURF(RGB) round 3"</name_3>
 <valueShifts>
-  9.39999962e+00 7.19999981e+00</valueShifts>
+  9.39999962e+00 7.19999981e+00 7.40000010e+00 7.80000019e+00</valueShifts>
 <classifierHitCount>
-  0 0</classifierHitCount>
+  6575625 907234 460549 1214191</classifierHitCount>
 </opencv_storage>

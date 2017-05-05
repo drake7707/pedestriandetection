@@ -18,23 +18,23 @@ int CoOccurenceMatrixFeatureCreator::getNumberOfFeatures() const {
 	return nrOfCellsWidth * nrOfCellsHeight * binSize*binSize;
 }
 
-
-std::unique_ptr<IPreparedData> CoOccurenceMatrixFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
-
-	cv::Mat img = rgbScale.clone();
-	cv::cvtColor(img, img, CV_BGR2HLS);
-	img.convertTo(img, CV_32FC1, 1.0);
-	cv::Mat hsl[3];
-	cv::split(img, hsl);
-
-	cv::Mat hue = hsl[0] / 180;
-
-	IntegralHistogram2D hist = coocc::prepareData(hue, binSize);
-
-	IntHist2DPreparedData* data = new IntHist2DPreparedData();
-	data->integralHistogram = hist;
-	return std::unique_ptr<IPreparedData>(data);
-}
+// Not much of a performance gain and uses too much RAM
+//std::unique_ptr<IPreparedData> CoOccurenceMatrixFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
+//
+//	cv::Mat img = rgbScale.clone();
+//	cv::cvtColor(img, img, CV_BGR2HLS);
+//	img.convertTo(img, CV_32FC1, 1.0);
+//	cv::Mat hsl[3];
+//	cv::split(img, hsl);
+//
+//	cv::Mat hue = hsl[0] / 180;
+//
+//	IntegralHistogram2D hist = coocc::prepareData(hue, binSize);
+//
+//	IntHist2DPreparedData* data = new IntHist2DPreparedData();
+//	data->integralHistogram = hist;
+//	return std::unique_ptr<IPreparedData>(data);
+//}
 
 
 FeatureVector CoOccurenceMatrixFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {

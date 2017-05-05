@@ -60,14 +60,15 @@ cv::Mat HONVFeatureCreator::buildAngleMat(cv::Mat depth) const {
 	return angleMat;
 }
 
-std::unique_ptr<IPreparedData> HONVFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
-
-	cv::Mat angle = buildAngleMat(depthScale);
-	IntegralHistogram2D hist = hog::prepare2DDataForHistogramsOfX(cv::Mat(depthScale.rows, depthScale.cols, CV_32FC1, cv::Scalar(1)), angle, binSize);
-	IntHist2DPreparedData* data = new IntHist2DPreparedData();
-	data->integralHistogram = hist;
-	return std::unique_ptr<IPreparedData>(data);
-}
+// Uses too much RAM
+//std::unique_ptr<IPreparedData> HONVFeatureCreator::buildPreparedDataForFeatures(cv::Mat& rgbScale, cv::Mat& depthScale, cv::Mat& thermalScale) const {
+//
+//	cv::Mat angle = buildAngleMat(depthScale);
+//	IntegralHistogram2D hist = hog::prepare2DDataForHistogramsOfX(cv::Mat(depthScale.rows, depthScale.cols, CV_32FC1, cv::Scalar(1)), angle, binSize);
+//	IntHist2DPreparedData* data = new IntHist2DPreparedData();
+//	data->integralHistogram = hist;
+//	return std::unique_ptr<IPreparedData>(data);
+//}
 
 FeatureVector HONVFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 

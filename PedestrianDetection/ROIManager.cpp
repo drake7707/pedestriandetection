@@ -26,7 +26,7 @@ void ROIManager::prepare(cv::Mat& mRGB, cv::Mat& mDepth, cv::Mat& mThermal)
 
 		std::vector<float> scales = { 0.5, 0.75, 1 };
 
-		std::vector<cv::Rect> candidates;
+		std::vector<cv::Rect2d> candidates;
 
 		cv::Mat thermalMask(mThermal.rows, mThermal.cols, CV_8UC1, cv::Scalar(0));
 
@@ -106,8 +106,9 @@ void ROIManager::prepare(cv::Mat& mRGB, cv::Mat& mDepth, cv::Mat& mThermal)
 			cv::rectangle(thermalMask, r, cv::Scalar(1), -1);
 		}
 
-		thermalRegions.create(mThermal.cols, mThermal.rows, 1, [&](int x, int y, std::vector<cv::Mat>& ihist) -> void { ihist[0].at<float>(y, x) += thermalMask.at<char>(y, x); });
-
+		thermalRegions.create(mThermal.cols, mThermal.rows, 1, [&](int x, int y, std::vector<cv::Mat>& ihist) -> void { ihist[0].at<double>(y, x) += thermalMask.at<char>(y, x); });
+		this->candidates = candidates;
+		this->thermalMask = thermalMask;
 	}
 
 
@@ -140,6 +141,8 @@ bool ROIManager::needToEvaluate(const cv::Rect2d& bbox, const cv::Mat& mRGB, con
 
 	bool hasThermal = mThermal.rows > 0 && mThermal.cols > 0;
 	if (needToEvaluate && hasThermal) {
+
+		
 		float sum = thermalRegions.calculateHistogramIntegral(bbox.x, bbox.y, bbox.width, bbox.height)[0];
 		if (sum > 0) {
 			// bbox has intersected with a candidate region
@@ -147,7 +150,7 @@ bool ROIManager::needToEvaluate(const cv::Rect2d& bbox, const cv::Mat& mRGB, con
 		else {
 			// bbox did not intersect with candidate region, no need to evaluate
 			needToEvaluate = false;
-		}
+		}		
 	}
 
 	return needToEvaluate;

@@ -3,11 +3,16 @@
 #include "opencv2/opencv.hpp"
 #include <functional>
 #include "IntegralHistogram.h"
+#include "Helper.h"
+
 class ROIManager
 {
 
 private:
 	IntegralHistogram thermalRegions;
+	std::vector<cv::Rect2d> candidates;
+	cv::Mat thermalMask;
+
 
 public:
 	ROIManager();

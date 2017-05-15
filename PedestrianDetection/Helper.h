@@ -61,7 +61,7 @@ int getOverlapIndex(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
 /// <summary>
 /// Checks whether the rect intersects at all with the given regions
 /// </summary>
-bool intersectsWith(cv::Rect2d r, std::vector<cv::Rect2d>& selectedRegions);
+bool intersectsWith(cv::Rect2d r, const std::vector<cv::Rect2d>& selectedRegions);
 
 /// <summary>
 /// Calculates the intersection over union between 2 rectangles

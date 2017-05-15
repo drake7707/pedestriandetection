@@ -135,7 +135,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings, std::st
 	if (dataset == "KITTI")
 		dataSet = std::unique_ptr<DataSet>(new KITTIDataSet(settings.kittiDataSetPath));
 	else if (dataset == "KAIST")
-		dataSet = std::unique_ptr<DataSet>(new KAISTDataSet(settings.kittiDataSetPath));
+		dataSet = std::unique_ptr<DataSet>(new KAISTDataSet(settings.kaistDataSetPath));
 	else
 		throw std::exception("Invalid data set");
 
@@ -150,7 +150,7 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings, std::st
 	ClassifierEvaluation eval(dataSet->getNrOfImages());
 
 	int nr = 0;
-	parallel_for(0, dataSet->getNrOfImages(), settings.slidingWindowParallelization, [&](int i) -> void {
+	parallel_for(0, dataSet->getNrOfImages(), 1, [&](int i) -> void {
 		ProgressWindow::getInstance()->updateStatus(std::string("Testing classifier"), 1.0 * nr / dataSet->getNrOfImages(), std::to_string(i));
 
 		if (labelsPerNumber[i].size() <= 0)
@@ -600,7 +600,7 @@ void testSlidingWindow(EvaluationSettings& settings, std::string& dataset) {
 	if (dataset == "KITTI")
 		dataSet = std::unique_ptr<DataSet>(new KITTIDataSet(settings.kittiDataSetPath));
 	else if (dataset == "KAIST")
-		dataSet = std::unique_ptr<DataSet>(new KAISTDataSet(settings.kittiDataSetPath));
+		dataSet = std::unique_ptr<DataSet>(new KAISTDataSet(settings.kaistDataSetPath));
 	else
 		throw std::exception("Invalid data set");
 
@@ -1662,7 +1662,7 @@ int main(int argc, char** argv)
 	settings.read(std::string("settings.ini"));
 
 	FeatureTester tester;
-	tester.nrOfConcurrentJobs = 4;
+	tester.nrOfConcurrentJobs = 5;
 
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, IFeatureCreator::Target::RGB, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("S2HOG(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGHistogramVarianceFeatureCreator(name, IFeatureCreator::Target::RGB, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
@@ -1710,17 +1710,17 @@ int main(int argc, char** argv)
 
 	//explainModel(tester, settings, { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, std::string("KITTI"));
 
-	//testClassifier(tester, settings, std::string("KITTI"), { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, -7.85);
+	//testClassifier(tester, settings, std::string("KAIST"), { "HOG(RGB)", "HOG(Thermal)", "CoOccurrence(RGB)" }, 20);
 
-	//testSlidingWindow(settings, std::string("KITTI"));
+	testSlidingWindow(settings, std::string("KAIST"));
 
 	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
 	//drawRiskOnDepthDataSet(&kittiDataSet);
 
-	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
-	//browseThroughTrainingSet(std::string("trainingsets\\KITTI_HDD+HOG(RGB)_train1.txt"), &kittiDataSet);
+	//KAISTDataSet kaistDataSet(settings.kaistDataSetPath);
+	//browseThroughTrainingSet(std::string("trainingsets\\KAIST_CoOccurrence(RGB)+HOG(RGB)+HOG(Thermal)_train4.txt"), &kaistDataSet);
 
-	testSpeed(tester, settings);
+	//testSpeed(tester, settings);
 
 	//checkDistanceBetweenTPAndTN(std::string("trainingsets\\HOG(RGB)_train3.txt"), std::string("tptnsimilarity_hog_train3.csv"));
 
@@ -1730,11 +1730,11 @@ int main(int argc, char** argv)
 
 
 
-	if (settings.kittiDataSetPath != "") {
-		KITTIDataSet dataSet(settings.kittiDataSetPath);
-		buildTesterJobsFromInputSets(tester, &dataSet, settings);
-		tester.runJobs();
-	}
+	//if (settings.kittiDataSetPath != "") {
+	//	KITTIDataSet dataSet(settings.kittiDataSetPath);
+	//	buildTesterJobsFromInputSets(tester, &dataSet, settings);
+	//	tester.runJobs();
+	//}
 
 
 	if (settings.kaistDataSetPath != "") {

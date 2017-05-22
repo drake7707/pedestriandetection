@@ -19,9 +19,8 @@ int HistogramDepthFeatureCreator::getNumberOfFeatures() const {
 FeatureVector HistogramDepthFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& depth, cv::Mat& thermal, cv::Rect& roi, const IPreparedData* preparedData) const {
 
 	//	cv::normalize(depth, img, 0, 1, cv::NormTypes::NORM_MINMAX);
-
 	// normalize but ignore 0 img values and set these 0 values to the min.
-		// this ignores the holes
+	// this ignores the holes
 
 	cv::Mat img = depth;
 	float max = std::numeric_limits<float>().min();
@@ -68,7 +67,7 @@ FeatureVector HistogramDepthFeatureCreator::getFeatures(cv::Mat& rgb, cv::Mat& d
 
 
 cv::Mat HistogramDepthFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
-	// todo
+	// no explanation for histogram(depth)
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 	return explanation;
 }

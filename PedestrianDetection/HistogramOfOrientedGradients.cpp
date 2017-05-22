@@ -23,11 +23,7 @@ namespace hog {
 				for (int i = 0; i < cells[y + 1][x + 1].size(); i++)
 					dstHistogram[idx++] = cells[y + 1][x + 1][i];
 
-				/*	double max = *std::max_element(dstHistogram.begin(), dstHistogram.end());
-				if (max > 0) {
-				for (int i = 0; i < dstHistogram.size(); i++)
-				dstHistogram[i] /= max;
-				}*/
+
 				if (l2normalize) {
 					double sum = 0;
 					for (int i = 0; i < dstHistogram.size(); i++)
@@ -243,7 +239,6 @@ namespace hog {
 							// 15 - 0 / (20-0) = 0.75
 							// (t_end - t) / (t_end - t_begin)
 							// 20 - 15 / (20-0) = 0.25
-							// yay for computergraphics triangular scheme
 
 							double tBegin = bin1 == 0 ? 0 : bin1 * max / binSize;
 							double tEnd = bin2 == 0 ? max : bin2 * max / binSize;
@@ -375,15 +370,12 @@ namespace hog {
 		int nrOfCellsWidth = refWidth / patchSize;
 		int nrOfCellsHeight = refHeight / patchSize;
 
-		//std::vector<std::vector<Histogram2D>> cells(nrOfCellsHeight, std::vector<Histogram2D>(nrOfCellsWidth, Histogram2D(binSize, 0)));
 		cv::Mat fullhistogram(nrOfCellsHeight * binSize, nrOfCellsWidth * binSize, CV_32FC1, cv::Scalar(0));
-
 
 		for (int y = 0; y < nrOfCellsHeight; y++) {
 
 			for (int x = 0; x < nrOfCellsWidth; x++) {
 
-				//Histogram2D& histogram = cells[y][x];
 				cv::Mat histogram = fullhistogram(cv::Rect(x * binSize, y * binSize, binSize, binSize));
 
 				if (preparedData == nullptr) {
@@ -393,7 +385,6 @@ namespace hog {
 							cv::Vec2f anglePixel = normalizedBinningValues.at<cv::Vec2f>(cv::Point(x * patchSize + k, y * patchSize + l));
 
 							double weight = weights.at<float>(cv::Point(x * patchSize + k, y * patchSize + l));
-
 
 							// distribute based on angle
 							// 15 in [0-20] = 0.25 * 15 for bin 0 and 0.75 * 15 for bin 1
@@ -421,11 +412,6 @@ namespace hog {
 							histogram.at<float>(bin1y, bin2x) += weight * (1 - u) * (v);
 							histogram.at<float>(bin2y, bin1x) += weight * u * (1 - v);
 							histogram.at<float>(bin2y, bin2x) += weight * (1 - u) * (1 - v);
-
-							/*histogram[bin1x][bin1y] += weight * u * (v);
-							histogram[bin2x][bin1y] += weight * (1 - u) * (v);
-							histogram[bin1x][bin2y] += weight * u * (1 - v);
-							histogram[bin2x][bin2y] += weight * (1 - u) * (1 - v);*/
 						}
 					}
 				}
@@ -441,7 +427,6 @@ namespace hog {
 		for (int y = 0; y < nrOfCellsHeight; y++) {
 			for (int x = 0; x < nrOfCellsWidth; x++) {
 
-				//flattenedCells[y][x] = cells[y][x].flatten();
 				cv::Mat histogram = fullhistogram(cv::Rect(x * binSize, y * binSize, binSize, binSize));
 				Histogram dst(binSize * binSize, 0);
 

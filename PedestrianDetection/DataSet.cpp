@@ -62,7 +62,6 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 			ROIManager roiManager;
 			roiManager.prepare(mRGB, mDepth, mThermal);
 
-			//		cv::Mat img = mRGB.clone();
 			for (int s = 0; s < windowSizes.size(); s++) {
 				double scale = 1.0  * refWidth / windowSizes[s].width;
 
@@ -111,7 +110,6 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 							int resultClass;
 							if (overlaps(bboxInSourceSize, truePositiveRegions)) {
 								resultClass = 1;
-								//cv::rectangle(img, bboxInSourceSize, cv::Scalar(0, 255, 0), 2);
 							}
 							else
 								resultClass = -1;
@@ -123,12 +121,7 @@ void DataSet::iterateDataSetWithSlidingWindow(const std::vector<cv::Size>& windo
 				}, baseWindowStride, refWidth, refHeight);
 			}
 
-			//	cv::imshow("Original", img);
-				//cv::waitKey(0);
 			onImageProcessed(imgNumber, truePositiveCategories, truePositiveRegions);
-			//cv::imshow("Temp", tmp);
-			//cv::waitKey(0);
-
 
 		}
 		//}

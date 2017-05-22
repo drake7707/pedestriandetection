@@ -68,13 +68,9 @@ void FeatureTester::addJob(std::set<std::string>& set, DataSet* dataSet, Evaluat
 
 void FeatureTester::runJobs() {
 
-
-	// make sure all creates are ready to roll
-	//prepareCreators();
-
 	std::mutex resultsFileMutex;
 
-	// run 4 jobs concurrently
+	// run multiple jobs concurrently 
 	Semaphore semaphore(nrOfConcurrentJobs);
 
 	std::vector<FeatureTesterJob*> finishedJobs;
@@ -99,6 +95,7 @@ void FeatureTester::runJobs() {
 					std::cout << "Starting job " << featureSetName << std::endl;
 					job->run();
 
+					// mark a job is processed so it won't be tried again on next run
 					resultsFileMutex.lock();
 					ft->markFeatureSetProcessed(job->getDataSet(), std::string(featureSetName));
 					resultsFileMutex.unlock();

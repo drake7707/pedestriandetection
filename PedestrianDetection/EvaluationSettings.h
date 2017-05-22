@@ -32,9 +32,6 @@ public:
 	std::string kittiDataSetPath = "";
 	std::string kaistDataSetPath = "";
 
-	//int slidingWindowEveryXImage = 1;
-
-
 	std::vector<cv::Size> windowSizes = {
 		/*cv::Size(24,48),*/
 		cv::Size(32,64),

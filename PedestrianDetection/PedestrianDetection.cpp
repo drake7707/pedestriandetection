@@ -396,202 +396,6 @@ void testClassifier(FeatureTester& tester, EvaluationSettings& settings, std::st
 	});
 }
 
-
-//void testFeature() {
-//	int nr = 0;
-//	while (true) {
-//		char nrStr[7];
-//		sprintf(nrStr, "%06d", nr);
-//
-//		cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-//		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\regions\\tp\\rgb" + std::to_string(nr) + ".png");
-//		//cv::Mat tp = cv::imread(kittiDatasetPath + "\\rgb\\000000.png", CV_LOAD_IMAGE_UNCHANGED);
-//		//cv::Mat tp = cv::imread("D:\\test.png", CV_LOAD_IMAGE_ANYDEPTH);
-//		//tp.convertTo(tp, CV_32FC1, 1.0 / 0xFFFF, 0);
-//
-//		cv::Mat tn = cv::imread(kittiDatasetPath + "\\regions\\tn\\rgb" + std::to_string(nr) + ".png");
-//
-//		std::function<void(cv::Mat&, std::string)> func = [&](cv::Mat& img, std::string msg) -> void {
-//
-//			cv::Mat rgb = img.clone();
-//			cv::cvtColor(img, img, CV_BGR2HLS);
-//			img.convertTo(img, CV_32FC1, 1.0);
-//			cv::Mat hsl[3];
-//			cv::split(img, hsl);
-//
-//			//hsl[0].convertTo(hsl[0], CV_32FC1, 1.0 / 360);
-//
-//			cv::imshow(msg + "_input", hsl[0] / 180);
-//
-//
-//			cv::Mat hue = hsl[0] / 180;
-//			auto cells = getCoOccurenceMatrix(hue, patchSize, 16);
-//
-//			cv::Mat m = createFullCoOccurrenceMatrixImage(rgb, cells, patchSize);
-//			cv::imshow(msg, m);
-//
-//
-//
-//
-//			//HOG::HOGResult result =  HOG::getHistogramsOfDepthDifferences(img, patchSize, binSize, true, true);
-//			/*	cv::Ptr<cv::FastFeatureDetector> detector = cv::FastFeatureDetector::create();
-//			std::vector<cv::KeyPoint> keypoints;
-//
-//
-//			cv::Mat descriptors;
-//			detector->detect(img, keypoints);
-//
-//
-//			//detector->compute(img, keypoints, descriptors);
-//
-//			cv::Mat imgKeypoints;
-//			cv::drawKeypoints(img, keypoints, imgKeypoints);
-//			*/
-//
-//			/*	cv::Mat depth;
-//				int d = img.depth();
-//				if (img.type() != CV_32FC1) {
-//					img.convertTo(depth, CV_32FC1, 1, 0);
-//				}
-//				else
-//					depth = img;*/
-//					/*
-//					Mat normals(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-//					Mat angleMat(depth.rows, depth.cols, CV_32FC3, cv::Scalar(0));
-//
-//					//depth = depth * 255;
-//					for (int y = 1; y < depth.rows; y++)
-//					{
-//						for (int x = 1; x < depth.cols; x++)
-//						{
-//
-//
-//							float r = x + 1 >= depth.cols ? depth.at<float>(y, x) : depth.at<float>(y, x + 1);
-//							float l = x - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y, x - 1);
-//
-//							float b = y + 1 >= depth.rows ? depth.at<float>(y, x) : depth.at<float>(y + 1, x);
-//							float t = y - 1 < 0 ? depth.at<float>(y, x) : depth.at<float>(y - 1, x);
-//
-//
-//							float dzdx = (r - l) / 2.0;
-//							float dzdy = (b - t) / 2.0;
-//
-//							Vec3f d(-dzdx, -dzdy, 0.0f);
-//
-//							Vec3f tt(x, y - 1, depth.at<float>(y - 1, x));
-//							Vec3f ll(x - 1, y, depth.at<float>(y, x - 1));
-//							Vec3f c(x, y, depth.at<float>(y, x));
-//
-//							Vec3f d2 = (ll - c).cross(tt - c);
-//
-//
-//							Vec3f n = normalize(d);
-//
-//							double azimuth = atan2(-d2[1], -d2[0]); // -pi -> pi
-//							if (azimuth < 0)
-//								azimuth += 2 * CV_PI;
-//
-//							double zenith = atan(sqrt(d2[1] * d2[1] + d2[0] * d2[0]));
-//
-//							cv::Vec3f angles(azimuth / (2 * CV_PI), (zenith + CV_PI / 2) / CV_PI, 0);
-//
-//
-//							angleMat.at<cv::Vec3f>(y, x) = cv::Vec3f(dzdx, dzdy, 0);
-//
-//							normals.at<Vec3f>(y, x) = n;
-//						}
-//					}
-//
-//					normalize(abs(angleMat), angleMat, 0, 1, cv::NormTypes::NORM_MINMAX);
-//
-//					auto& result = HOG::get2DHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), angleMat, patchSize, 9, true, false);
-//
-//
-//
-//					//				cv::imshow(msg, normals);
-//
-//								//cvtColor(img, img, CV_BGR2GRAY);
-//								//cv::Mat lbp = Algorithms::OLBP(img);
-//								//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
-//
-//								//cv::Mat padded;
-//								//int padding = 1;
-//								//padded.create(img.rows,img.cols, lbp.type());
-//								//padded.setTo(cv::Scalar::all(0));
-//								//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
-//
-//								//
-//								//auto& result = HOG::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, 20, true, false);
-//
-//					cv::Mat tmp;
-//					img.convertTo(tmp, CV_8UC3, 255, 0);
-//					cv::imshow(msg, result.combineHOGImage(img));*/
-//
-//					/*cv::Mat magnitude(img.size(), CV_32FC1, cv::Scalar(0));
-//					cv::Mat angle(img.size(), CV_32FC1, cv::Scalar(0));
-//
-//
-//					for (int j = 0; j < depth.rows; j++)
-//					{
-//						for (int i = 0; i < depth.cols ; i++)
-//						{
-//
-//							float r = i + 1 >= depth.cols ? depth.at<float>(j, i) : depth.at<float>(j, i + 1);
-//							float l = i - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j, i - 1);
-//
-//							float b = j + 1 >= depth.rows ? depth.at<float>(j, i) : depth.at<float>(j + 1, i);
-//							float t = j - 1 < 0 ? depth.at<float>(j, i) : depth.at<float>(j - 1, i);
-//
-//							float dx = (r - l) / 2;
-//							float dy = (b - t) / 2;
-//
-//							double anglePixel = atan2(dy, dx);
-//							// don't limit to 0-pi, but instead use 0-2pi range
-//							anglePixel = (anglePixel < 0 ? anglePixel + 2 * CV_PI : anglePixel) + CV_PI / 2;
-//							if (anglePixel > 2 * CV_PI) anglePixel -= 2 * CV_PI;
-//
-//							double magPixel = sqrt((dx*dx) + (dy*dy));
-//							magnitude.at<float>(j, i) = magPixel;
-//							angle.at<float>(j, i) = anglePixel / (2 * CV_PI);
-//						}
-//					}
-//
-//					cv::normalize(abs(magnitude), magnitude, 0, 255, cv::NormTypes::NORM_MINMAX);
-//
-//					auto& result =  HOG::getHistogramsOfX(magnitude, angle, patchSize, binSize, true, false);
-//					cv::Mat tmp;
-//					img.convertTo(tmp, CV_8UC3, 255, 0);
-//					cv::imshow(msg, magnitude);*/
-//
-//
-//					//Mat gray;
-//					//cv::cvtColor(img, gray, CV_BGR2GRAY);
-//
-//					//Mat lbp = Algorithms::OLBP(gray);
-//
-//					//lbp.convertTo(lbp, CV_32FC1, 1 / 255.0, 0);
-//					//cv::Mat padded;
-//					//int padding = 1;
-//					//padded.create(img.rows, img.cols, lbp.type());
-//					//padded.setTo(cv::Scalar::all(0));
-//					//lbp.copyTo(padded(Rect(padding, padding, lbp.cols, lbp.rows)));
-//
-//
-//					//auto& result = HOG::getHistogramsOfX(cv::Mat(img.rows, img.cols, CV_32FC1, cv::Scalar(1)), padded, patchSize, binSize, true, false);
-//					//cv::imshow(msg, result.combineHOGImage(img));
-//
-//		};
-//
-//		func(tp, "TP");
-//
-//		func(tn, "TN");
-//
-//		cv::waitKey(0);
-//		nr++;
-//	}
-//
-//}
-
 void testSlidingWindow(EvaluationSettings& settings, std::string& dataset) {
 
 	std::string alwaysMissedPositivesFile = dataset + "_alwaysmissedpositives.csv";
@@ -943,8 +747,6 @@ void printHeightVerticalAvgDepthRelation(std::string& trainingFile, EvaluationSe
 
 		cv::Mat tmp = rgb.clone();
 
-
-
 		ProgressWindow::getInstance()->updateStatus(std::string("Height/Depth correlation"), 1.0 * imgNr / tSet.getNumberOfImages(), "Iterating true positives of training set (" + std::to_string(imgNr) + ")");
 
 		for (auto& r : regions) {
@@ -1107,8 +909,6 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings, std::set<
 		cv::Mat img;
 
 		img = imgs[i];
-		//	cv::normalize(img, img, 0, 1, cv::NormTypes::NORM_MINMAX);
-			//imgs[i].convertTo(img, CV_8UC1, 255);
 
 		cv::imshow("explaingray_" + *it, img);
 		img = heatmap::toHeatMap(img);
@@ -1155,22 +955,9 @@ void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tes
 	if (depthScale.cols > 0 && depthScale.rows > 0)
 		regionDepth = depthScale(bbox);
 
-	cv::Mat regionThermal = regionDepth; // temporarily just to evaluate speed
+	cv::Mat regionThermal = regionDepth; // temporarily
 										 /*if (thermalScale.cols > 0 && thermalScale.rows > 0)
 										 regionThermal = thermalScale(bbox);*/
-
-
-										 //int nr = 100;
-										 //IntegralHistogram hst;
-										 //hst.create(100, 100, 10, [&](int x, int y, std::vector<cv::Mat>& ihst) -> void {
-
-										 //	double val = sqrt(x / (float)nr * x / (float)nr + y / (float)nr * y / (float)nr);
-										 //	int curbin = floor(val * 10);
-										 //	if (curbin >= 0 && curbin < 10)
-										 //	ihst[curbin].at<float>(y, x) += 1;
-										 //});
-
-										 //auto result = hst.calculateHistogramIntegral(8, 8, 64, 64);
 
 	if (fileExists("inputsets.txt")) {
 		std::ifstream istr("inputsets.txt");
@@ -1305,8 +1092,6 @@ void testSpeed(FeatureTester& tester, EvaluationSettings& settings) {
 
 
 void buildTesterJobsFromInputSets(FeatureTester& tester, DataSet* dataSet, EvaluationSettings& settings) {
-
-
 
 	tester.nrOfConcurrentJobs = 4;
 	if (fileExists("inputsets.txt")) {
@@ -1662,7 +1447,7 @@ int main(int argc, char** argv)
 	settings.read(std::string("settings.ini"));
 
 	FeatureTester tester;
-	tester.nrOfConcurrentJobs = 5;
+	tester.nrOfConcurrentJobs = 4;
 
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("HOG(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGFeatureCreator(name, IFeatureCreator::Target::RGB, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
 	tester.addFeatureCreatorFactory(FactoryCreator(std::string("S2HOG(RGB)"), [&](std::string& name) -> std::unique_ptr<IFeatureCreator> { return std::move(std::unique_ptr<IFeatureCreator>(new HOGHistogramVarianceFeatureCreator(name, IFeatureCreator::Target::RGB, patchSize, binSize, settings.refWidth, settings.refHeight))); }));
@@ -1712,7 +1497,7 @@ int main(int argc, char** argv)
 
 	//testClassifier(tester, settings, std::string("KAIST"), { "HOG(RGB)", "HOG(Thermal)", "CoOccurrence(RGB)" }, 20);
 
-	testSlidingWindow(settings, std::string("KAIST"));
+	//testSlidingWindow(settings, std::string("KAIST"));
 
 	//KITTIDataSet kittiDataSet(settings.kittiDataSetPath);
 	//drawRiskOnDepthDataSet(&kittiDataSet);
@@ -1730,11 +1515,11 @@ int main(int argc, char** argv)
 
 
 
-	//if (settings.kittiDataSetPath != "") {
-	//	KITTIDataSet dataSet(settings.kittiDataSetPath);
-	//	buildTesterJobsFromInputSets(tester, &dataSet, settings);
-	//	tester.runJobs();
-	//}
+	if (settings.kittiDataSetPath != "") {
+		KITTIDataSet dataSet(settings.kittiDataSetPath);
+		buildTesterJobsFromInputSets(tester, &dataSet, settings);
+		tester.runJobs();
+	}
 
 
 	if (settings.kaistDataSetPath != "") {

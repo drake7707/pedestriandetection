@@ -100,9 +100,6 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 	int nrRegions = 0;
 	double featureBuildTime = 0;
 
-	auto comp = [](std::pair<float, SlidingWindowRegion> a, std::pair<float, SlidingWindowRegion> b) { return a.first > b.first; };
-	//std::priority_queue<std::pair<float, SlidingWindowRegion>, std::vector<std::pair<float, SlidingWindowRegion>>, decltype(comp)> worstFalseNegatives(comp);
-
 	std::mutex mutex;
 	std::function<void(std::function<void()>)> lock = [&](std::function<void()> func) -> void {
 		mutex.lock();
@@ -128,15 +125,9 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 
 
 	}, [&](int imgNr, double scale, cv::Mat& fullRGBScale, cv::Mat& fullDepthScale, cv::Mat& fullThermalScale) -> void {
+		// prepare data in advance for the image for each scale. Each scale is evaluated in series, so the data only has to be kept once for each image
 		std::vector<std::unique_ptr<IPreparedData>> preparedData = set.buildPreparedDataForFeatures(fullRGBScale, fullDepthScale, fullThermalScale);
 		lock([&]() -> void {
-			//if (preparedDataPerImage.find(imgNr) != preparedDataPerImage.end()) {
-			//	// delete old scale prepared data
-			//	for (int i = 0; i < preparedDataPerImage[imgNr].size(); i++) {
-			//		if (preparedDataPerImage[imgNr][i] != nullptr)
-			//			delete preparedDataPerImage[imgNr][i];
-			//	}
-			//}
 			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
@@ -237,10 +228,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 							}
 						}
 						else {
-							//worstFalseNegatives.push(std::pair<float, SlidingWindowRegion>(abs(evaluationResult), SlidingWindowRegion(imageNumber, region)));
-							//// smallest numbers will be popped
-							//if (worstFalseNegatives.size() > maxNrOfFalsePosOrNeg) // keep the top worst performing regions
-							//	worstFalseNegatives.pop();
+							// don't track worst false negatives						
 						}
 					}
 				}
@@ -250,12 +238,9 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 		// full image is processed
 		lock([&]() -> void {
 			//// clean up of prepared data
-			//for (int i = 0; i < preparedDataPerImage[imgNr].size(); i++) {
-			//	if (preparedDataPerImage[imgNr][i] != nullptr)
-			//		delete preparedDataPerImage[imgNr][i];
-			//}
 			preparedDataPerImage.erase(imgNr);
 
+			// track nr of evaluations
 			for (int i = 0; i < settings.nrOfEvaluations; i++)
 				swresult.evaluations[i].nrOfImagesEvaluated++;
 			nrOfImagesEvaluated++;
@@ -268,7 +253,6 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 		swresult.evaluations[i].evaluationSpeedPerRegionMS = 1.0 * (featureBuildTime + sumTimesRegions) / nrRegions;
 
 	swresult.worstFalsePositives.reserve(settings.maxNrOfFalsePosOrNeg);
-	//swresult.worstFalseNegatives.reserve(worstFalseNegatives.size());
 
 	// determine value shift where TPR = tprToObtainWorstFalsePositives
 	double valueShiftRequired = std::numeric_limits<double>().min();
@@ -276,6 +260,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 	int evaluationIndexForValueShift = -1;
 
 	std::cout << std::fixed;
+
 	for (int i = 0; i < swresult.evaluations.size(); i++)
 	{
 		if (swresult.evaluations[i].getTPR() > settings.requiredTPRRate) { // only consider evaluations above the min threshold TPR
@@ -286,6 +271,7 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 			}
 		}
 	}
+
 	if (evaluationIndexForValueShift == -1) {
 		// there is no evaluation with TPR >= treshold
 		// take the largest TPR value then
@@ -329,18 +315,10 @@ EvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindow(const Evalua
 	auto it = worstFalsePositives.rbegin();
 	while (it != worstFalsePositives.rend() && nrAdded < settings.maxNrOfFalsePosOrNeg) {
 		auto& wnd = *it;
-		//std::cout << "Worst FP region score= " << wnd.score << " image= " << wnd.imageNumber << " bbox=" << wnd.bbox.x << "," << wnd.bbox.y << " " << wnd.bbox.width << "x" << wnd.bbox.height << std::endl;
 		swresult.worstFalsePositives.push_back(wnd);
 		nrAdded++;
 		it++;
 	}
-
-	//while (worstFalseNegatives.size() > 0) {
-	//	auto pair = worstFalseNegatives.top();
-	//	worstFalseNegatives.pop();
-	//	//	std::cout << "Worst FN region score= " << pair.first << " image= " << pair.second.imageNumber << " bbox=" << pair.second.bbox.x << "," << pair.second.bbox.y << " " << pair.second.bbox.width << "x" << pair.second.bbox.height << std::endl;
-	//	swresult.worstFalseNegatives.push_back(pair.second);
-	//}
 
 	ProgressWindow::getInstance()->finish(std::string(name));
 
@@ -382,13 +360,7 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 	}, [&](int imgNr, double scale, cv::Mat& fullRGBScale, cv::Mat& fullDepthScale, cv::Mat& fullThermalScale) -> void {
 		std::vector<std::unique_ptr<IPreparedData>> preparedData = set.buildPreparedDataForFeatures(fullRGBScale, fullDepthScale, fullThermalScale);
 		lock([&]() -> void {
-			//if (preparedDataPerImage.find(imgNr) != preparedDataPerImage.end()) {
-			//	// delete old scale prepared data
-			//	for (int i = 0; i < preparedDataPerImage[imgNr].size(); i++) {
-			//		if (preparedDataPerImage[imgNr][i] != nullptr)
-			//			delete preparedDataPerImage[imgNr][i];
-			//	}
-			//}
+			// prepare data in advance for the image for each scale. Each scale is evaluated in series, so the data only has to be kept once for each image
 			preparedDataPerImage[imgNr] = std::move(preparedData);
 		});
 	},
@@ -430,9 +402,9 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 				if (resultClass == 1)
 					predictedPositives.push_back(SlidingWindowRegion(w.imageNumber, w.bbox, abs(w.score + valueShift)));
 			}
+			// apply Non Maximum Suppression on all the predicted positives to retain only the windows over all overlapping windows with highest score
 			predictedPositives = applyNonMaximumSuppression(predictedPositives);
-			//predictedPositives = nms::nms(predictedPositives,0.5);
-
+		
 			lock([&]() -> void {
 				for (auto& category : dataSet->getCategories())
 					swresult.evaluations[category][i].valueShift = valueShift;
@@ -483,10 +455,6 @@ FinalEvaluationSlidingWindowResult IEvaluator::evaluateWithSlidingWindowAndNMS(c
 			evaluatedWindowsPerImage.erase(imgNr);
 
 			// clean up of prepared data
-			/*for (int i = 0; i < preparedDataPerImage[imgNr].size(); i++) {
-				if (preparedDataPerImage[imgNr][i] != nullptr)
-					delete preparedDataPerImage[imgNr][i];
-			}*/
 			preparedDataPerImage.erase(imgNr);
 
 			for (int i = 0; i < settings.nrOfEvaluations; i++) {

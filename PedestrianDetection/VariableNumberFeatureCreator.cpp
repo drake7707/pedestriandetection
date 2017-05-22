@@ -151,9 +151,9 @@ int VariableNumberFeatureCreator::getNumberOfFeatures() const {
 
 
 cv::Mat VariableNumberFeatureCreator::explainFeatures(int offset, std::vector<float>& weightPerFeature, int refWidth, int refHeight) const {
-	// TODO draw centroids as keypoints
 	cv::Mat explanation(cv::Size(refWidth, refHeight), CV_32FC1, cv::Scalar(0));
 
+	// draw all the centroids
 	for (int i = 0; i < centroids.size(); i++) {
 
 		double weight = weightPerFeature[offset + i];
@@ -173,8 +173,6 @@ cv::Mat VariableNumberFeatureCreator::explainFeatures(int offset, std::vector<fl
 		int radius = p.size / 2;
 		cv::circle(explanation, p.pt, radius, color, 1);
 		cv::line(explanation, p.pt, cv::Point(p.pt.x + radius * cos(p.angle / 180 * CV_PI), p.pt.y + radius * sin(p.angle / 180 * CV_PI)), color, 1);
-
-		//cv::
 		//cv::drawKeypoints(explanation, keypoints, explanation, color);// , cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	}
 	return explanation;

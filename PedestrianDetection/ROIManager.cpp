@@ -23,7 +23,7 @@ void ROIManager::prepare(cv::Mat& mRGB, cv::Mat& mDepth, cv::Mat& mThermal)
 		cv::Mat mThermal8U;
 		mThermal.convertTo(mThermal8U, CV_8UC1, 255);
 
-
+		// use 3 scales pedestrians in the distance and closeby are both detected
 		std::vector<float> scales = { 0.5, 0.75, 1 };
 
 		std::vector<cv::Rect2d> candidates;
@@ -57,9 +57,7 @@ void ROIManager::prepare(cv::Mat& mRGB, cv::Mat& mDepth, cv::Mat& mThermal)
 					double t3 = cv::max(1.06 * (tl - alpha), tl + 2);
 					double t2 = cv::min(t3, tl + 8);
 					double t1 = cv::min(t2, 230.0);
-					double th = cv::max(t1, tl);
-					//  let th = tl + beta;
-
+					double th = cv::max(t1, tl);				
 
 					if (value > th)
 						dest.at<char>(j, i) = 255;
@@ -120,7 +118,7 @@ bool ROIManager::needToEvaluate(const cv::Rect2d& bbox, const cv::Mat& mRGB, con
 {
 	bool needToEvaluate = true;
 
-	// calculate the average depth IF depth is available, //TODO maybe also use integral image for the depth so the sum can be instantly calculated ?
+	// calculate the average depth IF depth is available, 
 	bool hasDepth = mDepth.rows > 0 && mDepth.cols > 0;
 	if (needToEvaluate && hasDepth) {
 		double depthAvg = 0;

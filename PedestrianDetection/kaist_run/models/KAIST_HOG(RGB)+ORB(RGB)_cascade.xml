@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KAIST_HOG(RGB)+ORB(RGB) round 0"</name_0>
+<name_1>"KAIST_HOG(RGB)+ORB(RGB) round 1"</name_1>
+<name_2>"KAIST_HOG(RGB)+ORB(RGB) round 2"</name_2>
+<name_3>"KAIST_HOG(RGB)+ORB(RGB) round 3"</name_3>
+<valueShifts>
+  3.79999995e+00 3.40000010e+00 1.60000002e+00 3.79999995e+00</valueShifts>
+<classifierHitCount>
+  1608611 418179 180518 3556956</classifierHitCount>
+</opencv_storage>

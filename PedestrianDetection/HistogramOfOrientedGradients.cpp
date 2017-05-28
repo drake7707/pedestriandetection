@@ -286,7 +286,7 @@ namespace hog {
 
 		int idx = 0;
 
-		int nrOfFeatures = getNumberOfFeatures(imgWidth, imgHeight, patchSize, binSize, l2normalize);
+		int nrOfFeatures = nrOfCellsWidth * nrOfCellsHeight * binSize * binSize; // getNumberOfFeatures(imgWidth, imgHeight, patchSize, binSize, l2normalize);
 		int to = offset + nrOfFeatures;
 
 		cv::Mat explanation(cv::Size(imgWidth, imgHeight), CV_32FC1, cv::Scalar(0));

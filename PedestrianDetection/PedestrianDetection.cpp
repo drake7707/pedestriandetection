@@ -935,6 +935,128 @@ void explainModel(FeatureTester& tester, EvaluationSettings& settings, std::set<
 	cv::waitKey(0);
 }
 
+void explainModelAveragePerFeatureDescriptor(FeatureTester& tester, EvaluationSettings& settings, std::string& dataset) {
+
+
+	std::map<std::string, cv::Mat> totalImagesPerFeatureDescriptor;
+	for (auto c : tester.getFeatureCreatorFactories()) {
+		totalImagesPerFeatureDescriptor[c] = cv::Mat(settings.refHeight, settings.refWidth, CV_32FC1, cv::Scalar(0));
+	}
+
+	if (fileExists("inputsets.txt")) {
+		std::ifstream istr("inputsets.txt");
+		std::string line;
+		while (std::getline(istr, line)) {
+
+			if (line.length() > 0 && line[0] != '#') {
+				std::set<std::string> set;
+				auto parts = splitString(line, '+');
+				for (auto& p : parts)
+					set.emplace(p);
+
+				auto fset = tester.getFeatureSet(set);
+				std::string featureSetName = fset->getFeatureSetName();
+				std::string cascadeFile = std::string("models\\" + dataset + "_" + featureSetName + "_cascade.xml");
+				if (!fileExists(cascadeFile))
+					continue;
+				//throw std::exception(std::string("The cascade file " + cascadeFile + " does not exist").c_str());
+
+				EvaluatorCascade cascade(featureSetName);
+				cascade.load(cascadeFile, std::string("models"));
+
+				std::vector<int> classifierHits(cascade.size(), 0);
+
+				classifierHits = cascade.getClassifierHitCount();
+
+				int classifierHitSum = 0;
+				for (auto val : classifierHits) classifierHitSum += val;
+
+				int rounds = cascade.size();
+				int padding = 5;
+
+				// don't initialize directly or it will point to the same data
+				std::vector<cv::Mat> imgs;// (set.size(), cv::Mat(cv::Size(refWidth, refHeight * 4), CV_32FC1, cv::Scalar(0)));
+				for (int i = 0; i < set.size(); i++)
+					imgs.push_back(cv::Mat(cv::Size((settings.refWidth + padding)*rounds + 4 * padding + settings.refWidth, settings.refHeight), CV_32FC1, cv::Scalar(0)));
+
+
+				std::vector<cv::Mat> totalImgs;
+				for (int i = 0; i < set.size(); i++)
+					totalImgs.push_back(cv::Mat(cv::Size(settings.refWidth, settings.refHeight), CV_32FC1, cv::Scalar(0)));
+
+				for (int i = 0; i < rounds; i++)
+				{
+					ModelEvaluator model = cascade.getModelEvaluator(i);
+
+					auto cur = model.explainModel(fset, settings.refWidth, settings.refHeight);
+
+					for (int j = 0; j < cur.size(); j++) {
+
+						if (cur[j].cols > 0 && cur[j].rows > 0) {
+							cv::normalize(cur[j], cur[j], 0, 1, cv::NormTypes::NORM_MINMAX);
+							totalImgs[j] += cur[j] * (1.0 * classifierHits[j] / classifierHitSum);
+
+							cv::Mat& dst = imgs[j](cv::Rect(i*(settings.refWidth + padding), 0, settings.refWidth, settings.refHeight));
+							cur[j].copyTo(dst);
+						}
+					}
+				}
+
+				cv::Mat mergeTotalImg = totalImgs[0].clone();
+				for (int i = 1; i < imgs.size(); i++) {
+					cv::normalize(totalImgs[i], totalImgs[i], 0, 1, cv::NormTypes::NORM_MINMAX);
+					mergeTotalImg += totalImgs[i];
+				}
+
+				auto it = set.begin();
+				for (int i = 0; i < imgs.size(); i++) {
+					cv::Mat img;
+
+					img = imgs[i];
+					//  cv::normalize(img, img, 0, 1, cv::NormTypes::NORM_MINMAX);
+					//imgs[i].convertTo(img, CV_8UC1, 255);
+
+					/// cv::imshow("explaingray_" + *it, img);
+					img = heatmap::toHeatMap(img);
+
+
+					cv::Mat totalimage = totalImgs[i];
+					cv::normalize(totalimage, totalimage, 0, 1, cv::NormTypes::NORM_MINMAX);
+					cv::Mat heatmapTotalImage = heatmap::toHeatMap(totalimage);
+					heatmapTotalImage.copyTo(img(cv::Rect(imgs[i].cols - settings.refWidth, 0, settings.refWidth, settings.refHeight)));
+
+					//  cv::imshow("explain_" + *it, img);
+
+
+
+					//  cv::imshow("explaintotal_" + *it, heatmap::toHeatMap(totalimage));
+
+					cv::Mat& oldTotal = totalImagesPerFeatureDescriptor[*it];
+					if (totalimage.cols > 0 && totalimage.rows > 0) {
+						oldTotal += totalimage;
+					}
+
+					it++;
+				}
+
+				cv::normalize(mergeTotalImg, mergeTotalImg, 0, 1, cv::NormTypes::NORM_MINMAX);
+				//cv::imshow("explainmergetotal", heatmap::toHeatMap(mergeTotalImg));
+
+				//cv::waitKey(0);
+
+			}
+		}
+	}
+
+
+	for (auto& pair : totalImagesPerFeatureDescriptor) {
+
+		cv::normalize(pair.second, pair.second, 0, 1, cv::NormTypes::NORM_MINMAX);
+		cv::Mat img = heatmap::toHeatMap(pair.second);
+		cv::imwrite(pair.first + ".png", img);
+	}
+}
+
 
 void verifyWithAndWithoutIntegralHistogramsFeaturesAreTheSame(FeatureTester& tester, EvaluationSettings& settings) {
 
@@ -1494,6 +1616,7 @@ int main(int argc, char** argv)
 	//createAverageGradient(settings);
 
 	//explainModel(tester, settings, { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, std::string("KITTI"));
+	explainModelAveragePerFeatureDescriptor(tester, settings, std::string("KITTI"));
 
 	//testClassifier(tester, settings, std::string("KAIST"), { "HOG(RGB)", "HOG(Thermal)", "CoOccurrence(RGB)" }, 20);
 

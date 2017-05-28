@@ -366,4 +366,5 @@ __pycache__/
 /PedestrianDetection/hogrgbhogdepth_results.csv
 /enc_temp_folder/c8cae88469a1b9c14a7cfcf4cfd7e8e9
 /enc_temp_folder/1632afca1a1cfa5cbd94abf11e3afad
-*.png
+/PedestrianDetection/fullrun2/results
+/PedestrianDetection/fullrun2

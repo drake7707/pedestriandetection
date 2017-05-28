@@ -124,7 +124,8 @@ void ModelEvaluator::train(const TrainingDataSet& trainingDataSet, const Feature
 
 	std::vector<double>	priors(2);
 
-	double tnWeight = nrTrueNegatives;// *1.0 / N;
+	// make sure to set the class weights according to their sizes
+	double tnWeight = nrTrueNegatives;
 	double tpWeight = nrTruePositives;
 	priors[0] = tnWeight;
 	priors[1] = tpWeight;
@@ -214,16 +215,13 @@ void ModelEvaluator::saveModel(std::string& path) {
 	model.boost->write(fs);
 	fs << "mean" << model.meanVector;
 	fs << "sigma" << model.sigmaVector;
-	//model.boost->save(filename + ".boost.xml");
+	
 	fs.release();
-
 }
 
 void ModelEvaluator::loadModel(std::string& path) {
-
 	std::string filename = path;
 
-	//model.boost = cv::Algorithm::load<cv::ml::Boost>(filename + ".boost.xml");
 	cv::FileStorage fsRead(filename, cv::FileStorage::READ);
 
 	model.boost = cv::Algorithm::read<cv::ml::Boost>(fsRead.root());

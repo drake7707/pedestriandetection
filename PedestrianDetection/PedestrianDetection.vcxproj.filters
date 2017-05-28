@@ -390,7 +390,4 @@
       <Filter>Resource Files\Source Files\Algorithms</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-  </ItemGroup>
 </Project>

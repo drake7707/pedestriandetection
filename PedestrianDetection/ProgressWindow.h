@@ -35,12 +35,27 @@ public:
 	
 
 
+	/// <summary>
+	/// Returns the singleton instance of the window
+	/// </summary>
 	static ProgressWindow* getInstance();
 
+
+	/// <summary>
+	/// Updates the percentage and displayed text of the progress bar with given name (creates a progress bar if it didn't exist yet) 
+	/// </summary>
 	void updateStatus(std::string& name, double percentage, std::string text);
 
+
+	/// <summary>
+	/// Shows and periodically updats the progress bar window
+	/// </summary>
 	void run();
 
-	void finish(std::string& key);
+
+	/// <summary>
+	/// Finishes the progress bar associated with given name
+	/// </summary>
+	void finish(std::string& name);
 };
 

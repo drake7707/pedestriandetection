@@ -111,7 +111,6 @@ void EvaluatorCascade::load(std::string& path, std::string& modelsDirectory) {
 
 
 	std::vector<std::string> names;
-	//fsRead["names"] >> names;
 	int nameCount;
 	fsRead["name_count"] >> nameCount;
 

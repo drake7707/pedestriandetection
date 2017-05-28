@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<trainingRound>4</trainingRound>
+<name_count>4</name_count>
+<name_0>"KAIST_ORB(RGB) round 0"</name_0>
+<name_1>"KAIST_ORB(RGB) round 1"</name_1>
+<name_2>"KAIST_ORB(RGB) round 2"</name_2>
+<name_3>"KAIST_ORB(RGB) round 3"</name_3>
+<valueShifts>
+  1.39999998e+00 4.00000006e-01 1.39999998e+00 1.39999998e+00</valueShifts>
+<classifierHitCount>
+  186744 552 1385 5575583</classifierHitCount>
+</opencv_storage>

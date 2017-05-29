@@ -1616,7 +1616,7 @@ int main(int argc, char** argv)
 	//createAverageGradient(settings);
 
 	//explainModel(tester, settings, { "HOG(RGB)", "CoOccurrence(RGB)", "SDDG(Depth)" }, std::string("KITTI"));
-	explainModelAveragePerFeatureDescriptor(tester, settings, std::string("KITTI"));
+	//explainModelAveragePerFeatureDescriptor(tester, settings, std::string("KITTI"));
 
 	//testClassifier(tester, settings, std::string("KAIST"), { "HOG(RGB)", "HOG(Thermal)", "CoOccurrence(RGB)" }, 20);
 
